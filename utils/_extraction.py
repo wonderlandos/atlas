@@ -84,6 +84,8 @@ def _process_relative_to(unpack_root, relative_to):
         raise Exception()
     for src_path in relative_root.iterdir():
         dest_path = unpack_root / src_path.name
+        if os.path.isdir(dest_path):
+            shutil.rmtree(dest_path)
         src_path.rename(dest_path)
     relative_root.rmdir()
 
