@@ -37,7 +37,6 @@ core/bromite/disable-fetching-field-trials.patch
 
 extra/ungoogled-chromium/add-ungoogled-flag-headers.patch
 extra/inox-patchset/0006-modify-default-prefs.patch
-extra/inox-patchset/0008-restore-classic-ntp.patch
 extra/inox-patchset/0013-disable-missing-key-warning.patch
 extra/inox-patchset/0016-chromium-sandbox-pie.patch
 extra/inox-patchset/0019-disable-battery-status-service.patch
@@ -112,3 +111,6 @@ extra/helium/add-extra-channel-info.patch
 extra/helium/change-keychain-name.patch
 extra/helium/change-chromium-branding.patch
 extra/helium/change-product-dir-name.patch
+
+extra/helium/always-use-better-ntp.patch
+extra/helium/clean-new-tab-page.patch
