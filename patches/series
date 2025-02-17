@@ -44,7 +44,6 @@ extra/inox-patchset/0019-disable-battery-status-service.patch
 extra/debian/disable/google-api-warning.patch
 extra/iridium-browser/net-cert-increase-default-key-length-for-newly-gener.patch
 extra/iridium-browser/mime_util-force-text-x-suse-ymp-to-be-downloaded.patch
-extra/iridium-browser/prefs-always-prompt-for-download-directory-by-defaul.patch
 extra/iridium-browser/updater-disable-auto-update.patch
 extra/iridium-browser/Remove-EV-certificates.patch
 extra/iridium-browser/browser-disable-profile-auto-import-on-first-run.patch
