@@ -155,3 +155,16 @@
  bool GetDefaultRoamingUserDataDirectory(base::FilePath* result) {
    if (!base::PathService::Get(base::DIR_ROAMING_APP_DATA, result))
      return false;
+--- a/chrome/common/chrome_paths_mac.mm
++++ b/chrome/common/chrome_paths_mac.mm
+@@ -104,6 +104,10 @@ bool GetDefaultUserDataDirectory(base::F
+   return GetDefaultUserDataDirectoryForProduct(ProductDirName(), result);
+ }
+ 
++bool GetChromeUserDataDirectory(base::FilePath* result) {
++  return GetDefaultUserDataDirectoryForProduct("Google/Chrome", result);
++}
++
+ bool GetUserDocumentsDirectory(base::FilePath* result) {
+   return base::apple::GetUserDirectory(NSDocumentDirectory, result);
+ }
