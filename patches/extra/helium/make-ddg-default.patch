@@ -1,8 +1,6 @@
-Index: src/components/search_engines/prepopulated_engines.json
-===================================================================
---- src.orig/components/search_engines/prepopulated_engines.json
-+++ src/components/search_engines/prepopulated_engines.json
-@@ -155,7 +155,7 @@
+--- a/components/search_engines/prepopulated_engines.json
++++ b/components/search_engines/prepopulated_engines.json
+@@ -155,31 +155,13 @@
      // *** *** *** *** WARNING *** *** *** ***
      // TODO(crbug.com/343792225): Identify a way to resolve this problem and implement
      // necessary changes.
@@ -11,28 +9,42 @@ Index: src/components/search_engines/prepopulated_engines.json
        "name": "Google",
        "keyword": "google.com",
        "favicon_url": "https://www.google.com/images/branding/product/ico/googleg_alldp.ico",
-@@ -177,9 +177,7 @@
-         "{google:baseURL}s#q={searchTerms}",
-         "{google:baseURL}s?q={searchTerms}"
-       ],
+-      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:language}{google:prefetchSource}{google:searchClient}{google:sourceId}{google:contextualSearchVersion}ie={inputEncoding}",
+-      "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&gs_ri={google:suggestRid}&xssi=t&q={searchTerms}&{google:inputType}{google:omniboxFocusType}{google:cursorPosition}{google:currentPageUrl}{google:pageClassification}{google:clientCacheTimeToLive}{google:searchVersion}{google:sessionToken}{google:prefetchQuery}sugkey={google:suggestAPIKeyParameter}",
+-      "image_url": "{google:baseSearchByImageURL}upload",
+-      "image_translate_url": "{google:baseSearchByImageURL}upload?filtertype=tr&{imageTranslateSourceLocale}{imageTranslateTargetLocale}",
+-      "contextual_search_url": "{google:baseURL}_/contextualsearch?{google:contextualSearchVersion}{google:contextualSearchContextData}",
+-      "image_url_post_params": "encoded_image={google:imageThumbnail},image_url={google:imageURL},sbisrc={google:imageSearchSource},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},processed_image_dimensions={google:processedImageDimensions}",
+-      "side_search_param": "sidesearch",
+-      "image_translate_source_language_param_key": "sourcelang",
+-      "image_translate_target_language_param_key": "targetlang",
+-      "side_image_search_param": "sideimagesearch",
+-      "search_intent_params": ["si", "gs_ssp"],
+-      "alternate_urls": [
+-        "{google:baseURL}#q={searchTerms}",
+-        "{google:baseURL}search#q={searchTerms}",
+-        "{google:baseURL}webhp#q={searchTerms}",
+-        "{google:baseURL}s#q={searchTerms}",
+-        "{google:baseURL}s?q={searchTerms}"
+-      ],
 -      "type": "SEARCH_ENGINE_GOOGLE",
 -      "preconnect_to_search_url" : "ALLOWED",
 -      "prefetch_likely_navigations" : "ALLOWED",
++      "search_url": "https://www.google.com/search?q={searchTerms}",
++      "suggest_url": "https://www.google.com/complete/search?client=chrome&q={searchTerms}",
 +      "type": "SEARCH_ENGINE_OTHER",
        "id": 1
      },
  
-@@ -1483,4 +1481,4 @@
+@@ -1483,4 +1465,4 @@
    "generate_array": {
      "array_name": "kAllEngines"
    }
 -}
 \ No newline at end of file
 +}
-Index: src/components/search_engines/search_engine_countries-inc.cc
-===================================================================
---- src.orig/components/search_engines/search_engine_countries-inc.cc
-+++ src/components/search_engines/search_engine_countries-inc.cc
+--- a/components/search_engines/search_engine_countries-inc.cc
++++ b/components/search_engines/search_engine_countries-inc.cc
 @@ -38,1416 +38,18 @@ struct EngineAndTier {
  
  // Default (for countries with no better engine set)
@@ -1453,10 +1465,8 @@ Index: src/components/search_engines/search_engine_countries-inc.cc
  
    std::vector<EngineAndTier> t_url;
    for (size_t i = 0; i < num_engines; i++) {
-Index: src/components/search_engines/template_url_prepopulate_data.cc
-===================================================================
---- src.orig/components/search_engines/template_url_prepopulate_data.cc
-+++ src/components/search_engines/template_url_prepopulate_data.cc
+--- a/components/search_engines/template_url_prepopulate_data.cc
++++ b/components/search_engines/template_url_prepopulate_data.cc
 @@ -318,7 +318,7 @@ std::unique_ptr<TemplateURLData> GetPrep
      PrefService* prefs,
      search_engines::SearchEngineChoiceService* search_engine_choice_service) {
@@ -1466,10 +1476,8 @@ Index: src/components/search_engines/template_url_prepopulate_data.cc
                                          /*use_first_as_fallback=*/true);
  }
  
-Index: src/components/search_engines/search_engine_choice/generated_marketing_snippets.cc
-===================================================================
---- src.orig/components/search_engines/search_engine_choice/generated_marketing_snippets.cc
-+++ src/components/search_engines/search_engine_choice/generated_marketing_snippets.cc
+--- a/components/search_engines/search_engine_choice/generated_marketing_snippets.cc
++++ b/components/search_engines/search_engine_choice/generated_marketing_snippets.cc
 @@ -24,9 +24,6 @@ int GetMarketingSnippetResourceId(const
    if (engine_keyword == TemplateURLPrepopulateData::ecosia.keyword) {
      return IDS_ECOSIA_SEARCH_DESCRIPTION;
@@ -1480,10 +1488,8 @@ Index: src/components/search_engines/search_engine_choice/generated_marketing_sn
    if (engine_keyword == TemplateURLPrepopulateData::lilo.keyword) {
      return IDS_LILO_SEARCH_DESCRIPTION;
    }
-Index: src/components/search_engines/search_engine_utils.cc
-===================================================================
---- src.orig/components/search_engines/search_engine_utils.cc
-+++ src/components/search_engines/search_engine_utils.cc
+--- a/components/search_engines/search_engine_utils.cc
++++ b/components/search_engines/search_engine_utils.cc
 @@ -35,7 +35,7 @@ SearchEngineType GetEngineType(const GUR
    // incoming URL's host is "[*.]google.<TLD>".
    if (google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
