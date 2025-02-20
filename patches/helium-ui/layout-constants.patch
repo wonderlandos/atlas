@@ -1,0 +1,93 @@
+--- a/chrome/browser/ui/layout_constants.cc
++++ b/chrome/browser/ui/layout_constants.cc
+@@ -60,7 +60,7 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LOCATION_BAR_ELEMENT_PADDING:
+       return touch_ui ? 3 : 2;
+     case LOCATION_BAR_PAGE_INFO_ICON_VERTICAL_PADDING:
+-      return touch_ui ? 3 : 5;
++      return touch_ui ? 3 : 4;
+     case LOCATION_BAR_LEADING_DECORATION_EDGE_PADDING:
+       // TODO(manukh): See comment in `LocationBarView::Layout()`. We have too
+       //   many feature permutations that would affect this and other layout
+@@ -69,11 +69,11 @@ int GetLayoutConstant(LayoutConstant constant) {
+       //   here once we decide on a permutation.
+       NOTREACHED();
+     case LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING:
+-      return touch_ui ? 3 : 12;
++      return touch_ui ? 3 : 4;
+     case LOCATION_BAR_TRAILING_DECORATION_INNER_PADDING:
+       return touch_ui ? 3 : 8;
+     case LOCATION_BAR_HEIGHT:
+-      return touch_ui ? 36 : 34;
++      return touch_ui ? 36 : 32;
+     case LOCATION_BAR_ICON_SIZE:
+       return touch_ui ? 20 : 16;
+     case LOCATION_BAR_LEADING_ICON_SIZE:
+@@ -96,12 +96,12 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case TAB_CLOSE_BUTTON_SIZE:
+       return touch_ui ? 24 : 16;
+     case TAB_HEIGHT:
+-      return 34 + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
++      return 36;
+     case TAB_STRIP_HEIGHT:
+       return GetLayoutConstant(TAB_HEIGHT) +
+              GetLayoutConstant(TAB_STRIP_PADDING);
+     case TAB_STRIP_PADDING:
+-      return 6;
++      return 4;
+     case TAB_SEPARATOR_HEIGHT:
+       return touch_ui ? 24 : 20;
+     case TAB_PRE_TITLE_PADDING:
+@@ -109,14 +109,9 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case TAB_STACK_DISTANCE:
+       return touch_ui ? 4 : 6;
+     case TABSTRIP_TOOLBAR_OVERLAP:
+-      // Because tab scrolling puts the tabstrip on a separate layer,
+-      // changing paint order, this overlap isn't compatible with scrolling.
+-      if (base::FeatureList::IsEnabled(tabs::kScrollableTabStrip)) {
+-        return 0;
+-      }
+-      return 1;
++      return 0;
+     case TOOLBAR_BUTTON_HEIGHT:
+-      return touch_ui ? 48 : 34;
++      return touch_ui ? 48 : 32;
+     case TOOLBAR_DIVIDER_CORNER_RADIUS:
+       return 1;
+     case TOOLBAR_DIVIDER_HEIGHT:
+@@ -128,7 +123,7 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case TOOLBAR_ELEMENT_PADDING:
+       return touch_ui ? 0 : 4;
+     case TOOLBAR_ICON_DEFAULT_MARGIN:
+-      return touch_ui ? 0 : 2;
++      return touch_ui ? 0 : 8;
+     case TOOLBAR_STANDARD_SPACING:
+       return touch_ui ? 12 : 9;
+     case PAGE_INFO_ICON_SIZE:
+@@ -136,7 +131,7 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case DOWNLOAD_ICON_SIZE:
+       return 20;
+     case TOOLBAR_CORNER_RADIUS:
+-      return 8;
++      return 0;
+     default:
+       break;
+   }
+@@ -168,7 +163,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+     }
+ 
+     case TOOLBAR_BUTTON:
+-      return gfx::Insets(touch_ui ? 12 : 7);
++      return gfx::Insets(touch_ui ? 12 : 5);
+ 
+     case BROWSER_APP_MENU_CHIP_PADDING:
+       if (touch_ui) {
+@@ -185,7 +180,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+       }
+ 
+     case TOOLBAR_INTERIOR_MARGIN:
+-      return touch_ui ? gfx::Insets() : gfx::Insets::VH(6, 5);
++      return touch_ui ? gfx::Insets() : gfx::Insets::VH(3, 3);
+ 
+     case WEBUI_TAB_STRIP_TOOLBAR_INTERIOR_MARGIN:
+       return gfx::Insets::VH(4, 0);
