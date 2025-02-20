@@ -115,3 +115,7 @@ extra/helium/make-ddg-default.patch
 
 extra/helium/always-use-better-ntp.patch
 extra/helium/clean-new-tab-page.patch
+
+helium-ui/location-bar-rounding.patch
+helium-ui/layout-constants.patch
+helium-ui/tab-style.patch
