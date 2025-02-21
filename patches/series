@@ -106,13 +106,15 @@ extra/ungoogled-chromium/disable-downloads-page-referrer-url.patch
 extra/ungoogled-chromium/enable-extra-locales.patch
 extra/ungoogled-chromium/disable-chromelabs.patch
 
-extra/helium/add-extra-channel-info.patch
-extra/helium/change-chromium-branding.patch
-extra/helium/scan-chrome-native-messaging-hosts.patch
-extra/helium/make-ddg-default.patch
+helium/add-extra-channel-info.patch
+helium/change-chromium-branding.patch
+helium/scan-chrome-native-messaging-hosts.patch
+helium/make-ddg-default.patch
 
-extra/helium/always-use-better-ntp.patch
-extra/helium/clean-new-tab-page.patch
+helium/copy-page-url-shortcut.patch
+
+helium/always-use-better-ntp.patch
+helium/clean-new-tab-page.patch
 
 helium-ui/location-bar-rounding.patch
 helium-ui/layout-constants.patch
