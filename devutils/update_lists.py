@@ -111,6 +111,7 @@ DOMAIN_EXCLUDE_PREFIXES = [
     # Exclusions for files covered with other patches/unnecessary
     'components/search_engines/prepopulated_engines.json',
     'third_party/blink/renderer/core/dom/document.cc',
+    'tools/search_engine_choice/generate_search_engine_icons.py',
 ]
 
 # pylint: enable=line-too-long
