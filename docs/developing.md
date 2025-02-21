@@ -37,15 +37,6 @@ To gain a deeper understanding of this updating process, have a read through [do
     * `httplib2` and `six` are also required if you wish to utilize a source clone instead of the source tarball.
 
 ### Downloading the source code
-
-#### Source tarball download (recommended):
-```sh
-mkdir -p build/download_cache
-./utils/downloads.py retrieve -i downloads.ini -c build/download_cache
-./utils/downloads.py unpack -i downloads.ini -c build/download_cache build/src
-```
-
-#### Source clone:
 ```sh
 ./utils/clone.py -o build/src
 ```
