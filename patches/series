@@ -107,9 +107,7 @@ extra/ungoogled-chromium/enable-extra-locales.patch
 extra/ungoogled-chromium/disable-chromelabs.patch
 
 extra/helium/add-extra-channel-info.patch
-extra/helium/change-keychain-name.patch
 extra/helium/change-chromium-branding.patch
-extra/helium/change-product-dir-name.patch
 extra/helium/scan-chrome-native-messaging-hosts.patch
 extra/helium/make-ddg-default.patch
 
