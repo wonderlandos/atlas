@@ -15139,7 +15139,6 @@ tools/rust/build_bindgen.py
 tools/rust/build_rust.py
 tools/sample_clang_tidy_results.py
 tools/search_engine_choice/download_search_engine_icons.py
-tools/search_engine_choice/generate_search_engine_icons.py
 tools/search_engine_choice/generate_search_engine_icons_config.json
 tools/site_compare/commands/measure.py
 tools/site_compare/commands/scrape.py
