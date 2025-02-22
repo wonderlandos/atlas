@@ -1,0 +1,42 @@
+--- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
++++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
+@@ -544,7 +544,9 @@ gfx::RoundedCornersF IconLabelBubbleView::GetCornerRadii() const {
+   if (radii_.has_value()) {
+     return radii_.value();
+   }
+-  return gfx::RoundedCornersF(GetPreferredSize().height() / 2);
++
++  // location bar rounding is 8px and padding is 4px, so inner rounding is 4px
++  return gfx::RoundedCornersF(4.0f);
+ }
+ 
+ void IconLabelBubbleView::SetCornerRadii(const gfx::RoundedCornersF& radii) {
+--- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
++++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
+@@ -476,7 +476,7 @@ bool LocationBarView::IsInitialized() const {
+ 
+ int LocationBarView::GetBorderRadius() const {
+   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+-      views::Emphasis::kMaximum, size());
++      views::Emphasis::kHigh, size());
+ }
+ 
+ std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
+@@ -746,7 +746,7 @@ void LocationBarView::Layout(PassKey) {
+   // The padding between the left edges of the location bar and the LHS icon
+   // (e.g. the page info icon, the google G icon, the selected suggestion icon,
+   // etc)
+-  int icon_left = 5;
++  int icon_left = 4;
+   // The padding between the LHS icon and the text.
+   int text_left = 8;
+   // Indentation to match the suggestion icons & texts.
+@@ -1213,7 +1213,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
+ }
+ 
+ gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
+-  const int border_radius = height() / 2;
++  const int border_radius = GetBorderRadius();
+   gfx::Rect bounds_without_endcaps(GetLocalBounds());
+   bounds_without_endcaps.Inset(gfx::Insets::VH(0, border_radius));
+   return bounds_without_endcaps;
