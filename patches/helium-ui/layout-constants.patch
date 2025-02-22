@@ -64,15 +64,6 @@
      case TOOLBAR_STANDARD_SPACING:
        return touch_ui ? 12 : 9;
      case PAGE_INFO_ICON_SIZE:
-@@ -136,7 +131,7 @@ int GetLayoutConstant(LayoutConstant constant) {
-     case DOWNLOAD_ICON_SIZE:
-       return 20;
-     case TOOLBAR_CORNER_RADIUS:
--      return 8;
-+      return 0;
-     default:
-       break;
-   }
 @@ -168,7 +163,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
      }
  

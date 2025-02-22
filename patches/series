@@ -116,6 +116,7 @@ helium/copy-page-url-shortcut.patch
 helium/always-use-better-ntp.patch
 helium/clean-new-tab-page.patch
 
+helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch
 helium-ui/layout-constants.patch
 helium-ui/tab-style.patch
