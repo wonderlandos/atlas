@@ -1,0 +1,11 @@
+--- a/chrome/browser/ui/views/toolbar/toolbar_button.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_button.cc
+@@ -157,7 +157,7 @@ void ToolbarButton::ClearHighlight() {
+ 
+ int ToolbarButton::GetRoundedCornerRadius() const {
+   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+-      views::Emphasis::kMaximum, GetTargetSize());
++      views::Emphasis::kHigh, GetTargetSize());
+ }
+ 
+ float ToolbarButton::GetCornerRadiusFor(ToolbarButton::Edge edge) const {

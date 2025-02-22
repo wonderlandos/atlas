@@ -1,0 +1,32 @@
+--- a/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
+@@ -139,7 +139,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
+     SetImageLabelSpacing(8);
+     SetCustomPadding(ChromeLayoutProvider::Get()->GetInsetsMetric(
+         INSETS_OMNIBOX_PILL_BUTTON));
+-    SetCornerRadius(GetLayoutConstant(TOOLBAR_CORNER_RADIUS));
++    SetCornerRadius(8);
+ 
+     auto* const ink_drop = views::InkDrop::Get(this);
+     SetAnimationDuration(base::TimeDelta());
+--- a/chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.cc
++++ b/chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.cc
+@@ -232,8 +232,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
+   contents_host_->layer()->SetFillsBoundsOpaquely(false);
+ 
+   // Use rounded corners.
+-  const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+-      views::ShapeContextTokens::kOmniboxExpandedRadius);
++  const int corner_radius = 8.0f;
+   contents_host_->layer()->SetRoundedCornerRadius(
+       gfx::RoundedCornersF(corner_radius));
+   contents_host_->layer()->SetIsFastRoundedCorner(true);
+@@ -287,7 +286,7 @@ gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
+   if (ui::TouchUiController::Get()->touch_ui()) {
+     return gfx::Insets::TLBR(6, 1, 5, 1);
+   }
+-  return gfx::Insets::VH(5, 6);
++  return gfx::Insets::VH(3, 4);
+ }
+ 
+ // static

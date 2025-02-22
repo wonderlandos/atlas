@@ -120,3 +120,5 @@ helium-ui/location-bar-style.patch
 helium-ui/layout-constants.patch
 helium-ui/tab-style.patch
 helium-ui/tab-strip-controls.patch
+helium-ui/toolbar-style.patch
+helium-ui/omnibox-style.patch
