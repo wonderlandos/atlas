@@ -55,15 +55,18 @@
      case TOOLBAR_DIVIDER_CORNER_RADIUS:
        return 1;
      case TOOLBAR_DIVIDER_HEIGHT:
-@@ -128,7 +123,7 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -128,9 +123,9 @@ int GetLayoutConstant(LayoutConstant constant) {
      case TOOLBAR_ELEMENT_PADDING:
        return touch_ui ? 0 : 4;
      case TOOLBAR_ICON_DEFAULT_MARGIN:
 -      return touch_ui ? 0 : 2;
-+      return touch_ui ? 0 : 8;
++      return touch_ui ? 0 : 4;
      case TOOLBAR_STANDARD_SPACING:
-       return touch_ui ? 12 : 9;
+-      return touch_ui ? 12 : 9;
++      return touch_ui ? 12 : 8;
      case PAGE_INFO_ICON_SIZE:
+       return 20;
+     case DOWNLOAD_ICON_SIZE:
 @@ -168,7 +163,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
      }
  
@@ -78,7 +81,7 @@
  
      case TOOLBAR_INTERIOR_MARGIN:
 -      return touch_ui ? gfx::Insets() : gfx::Insets::VH(6, 5);
-+      return touch_ui ? gfx::Insets() : gfx::Insets::VH(3, 3);
++      return touch_ui ? gfx::Insets() : gfx::Insets::VH(3, 8);
  
      case WEBUI_TAB_STRIP_TOOLBAR_INTERIOR_MARGIN:
        return gfx::Insets::VH(4, 0);
