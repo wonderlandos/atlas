@@ -30,3 +30,52 @@
  }
  
  // static
+--- a/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
+@@ -103,7 +103,7 @@ class OmniboxResultViewButton : public views::ImageButton {
+ BEGIN_METADATA(OmniboxResultViewButton)
+ END_METADATA
+ 
+-constexpr float kIPHBackgroundBorderRadius = 8;
++constexpr float kIPHBackgroundBorderRadius = 0;
+ 
+ }  // namespace
+ 
+@@ -296,7 +296,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
+               &OmniboxResultView::ButtonPressed, base::Unretained(this),
+               OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION)));
+   remove_suggestion_button_->SetProperty(views::kMarginsKey,
+-                                         gfx::Insets::TLBR(0, 0, 0, 16));
++                                         gfx::Insets::TLBR(0, 0, 0, 8));
+   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
+   auto* const remove_focus_ring =
+       views::FocusRing::Get(remove_suggestion_button_);
+@@ -351,10 +351,9 @@ std::unique_ptr<views::Background> OmniboxResultView::GetPopupCellBackground(
+         /*for_border_thickness=*/0);
+   }
+ 
+-  const float half_row_height = OmniboxMatchCellView::kRowHeight / 2;
+-  gfx::RoundedCornersF radii = {0, half_row_height, half_row_height, 0};
+   return views::CreateThemedRoundedRectBackground(
+-      GetOmniboxBackgroundColorId(part_state), radii);
++      GetOmniboxBackgroundColorId(part_state),
++      kIPHBackgroundBorderRadius);
+ }
+ 
+ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
+--- a/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
+@@ -117,12 +117,7 @@ views::View* OmniboxRowView::GetActiveAuxiliaryButtonForAccessibility() const {
+ }
+ 
+ gfx::Insets OmniboxRowView::GetInsets() const {
+-  if (result_view_->GetThemeState() == OmniboxPartState::IPH) {
+-    int LRInsets = OmniboxMatchCellView::kIphOffset;
+-    return gfx::Insets::TLBR(8, LRInsets, 8, LRInsets);
+-  }
+-
+-  return gfx::Insets::TLBR(0, 0, 0, 16);
++  return gfx::Insets::TLBR(0, 0, 0, 0);
+ }
+ 
+ BEGIN_METADATA(OmniboxRowView)
