@@ -1,6 +1,39 @@
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -857,7 +868,6 @@ void ToolbarView::Layout(PassKey) {
+@@ -271,18 +271,6 @@ void ToolbarView::Init() {
+   aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+ #endif
+ 
+-  // The background views must be behind container_view_.
+-  background_view_left_ = AddChildViewAt(std::make_unique<View>(), 0);
+-  background_view_left_->SetBackground(
+-      std::make_unique<TabstripLikeBackground>(browser_view_));
+-  background_view_right_ = AddChildViewAt(std::make_unique<View>(), 0);
+-  background_view_right_->SetBackground(
+-      std::make_unique<TabstripLikeBackground>(browser_view_));
+-
+-  active_state_subscription_ =
+-      GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+-          &ToolbarView::ActiveStateChanged, base::Unretained(this)));
+-
+   auto location_bar = std::make_unique<LocationBarView>(
+       browser_, browser_->profile(), browser_->command_controller(), this,
+       display_mode_ != DisplayMode::NORMAL);
+@@ -841,13 +840,6 @@ void ToolbarView::Layout(PassKey) {
+   // The container view should be the exact same size/position as ToolbarView.
+   container_view_->SetSize(size());
+ 
+-  // The background views should be behind the top-left and top-right corners
+-  // of the container_view_.
+-  const int corner_radius = GetLayoutConstant(TOOLBAR_CORNER_RADIUS);
+-  background_view_left_->SetBounds(0, 0, corner_radius, corner_radius);
+-  background_view_right_->SetBounds(width() - corner_radius, 0, corner_radius,
+-                                    corner_radius);
+-
+   if (display_mode_ == DisplayMode::CUSTOM_TAB) {
+     custom_tab_bar_->SetBounds(0, 0, width(),
+                                custom_tab_bar_->GetPreferredSize().height());
+@@ -857,7 +849,6 @@ void ToolbarView::Layout(PassKey) {
  
    if (display_mode_ == DisplayMode::NORMAL) {
      LayoutCommon();
@@ -8,7 +41,7 @@
    }
  
    if (toolbar_controller_) {
-@@ -895,45 +905,6 @@ void ToolbarView::OnThemeChanged() {
+@@ -895,50 +886,6 @@ void ToolbarView::OnThemeChanged() {
    SchedulePaint();
  }
  
@@ -51,6 +84,11 @@
 -  container_view_->SetClipPath(path);
 -}
 -
- void ToolbarView::ActiveStateChanged() {
-   background_view_left_->SchedulePaint();
-   background_view_right_->SchedulePaint();
+-void ToolbarView::ActiveStateChanged() {
+-  background_view_left_->SchedulePaint();
+-  background_view_right_->SchedulePaint();
+-}
+-
+ void ToolbarView::NewTabButtonPressed(const ui::Event& event) {
+   chrome::ExecuteCommand(browser_view_->browser(), IDC_NEW_TAB);
+   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
