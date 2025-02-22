@@ -13,18 +13,19 @@
  void IconLabelBubbleView::SetCornerRadii(const gfx::RoundedCornersF& radii) {
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -222,7 +222,9 @@ LocationBarView::LocationBarView(Browser* browser,
+@@ -222,7 +222,10 @@ LocationBarView::LocationBarView(Browser* browser,
                   !v->GetOmniboxPopupView()->IsOpen();
          }));
      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
 -    views::InstallPillHighlightPathGenerator(this);
 +
-+    // equivalent of location bar's radius, aka views::Emphasis::kHigh, aka 8
-+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), 8);
++    // same border radius as the location bar itself
++    views::InstallRoundRectHighlightPathGenerator(
++      this, gfx::Insets(), GetBorderRadius());
  
  #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
      if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
-@@ -476,7 +478,7 @@ bool LocationBarView::IsInitialized() const {
+@@ -476,7 +479,7 @@ bool LocationBarView::IsInitialized() const {
  
  int LocationBarView::GetBorderRadius() const {
    return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -33,7 +34,7 @@
  }
  
  std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
-@@ -746,7 +748,7 @@ void LocationBarView::Layout(PassKey) {
+@@ -746,7 +749,7 @@ void LocationBarView::Layout(PassKey) {
    // The padding between the left edges of the location bar and the LHS icon
    // (e.g. the page info icon, the google G icon, the selected suggestion icon,
    // etc)
@@ -42,7 +43,7 @@
    // The padding between the LHS icon and the text.
    int text_left = 8;
    // Indentation to match the suggestion icons & texts.
-@@ -1213,7 +1215,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
+@@ -1213,7 +1216,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
  }
  
  gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
