@@ -30,6 +30,42 @@
  }
  
  int ChromeRefresh2023TabStyle::GetTabOverlap() const {
+--- a/chrome/browser/ui/views/tabs/tab_group_highlight.cc
++++ b/chrome/browser/ui/views/tabs/tab_group_highlight.cc
+@@ -49,33 +49,7 @@ bool TabGroupHighlight::GetCanProcessEventsWithinSubtree() const {
+ }
+ 
+ SkPath TabGroupHighlight::GetPath() const {
+-  // This path imitates the shape of a tab (see GM2TabStyle::GetPath()). It
+-  // doesn't reuse the exact same GetPath() function because it doesn't need
+-  // much of the complexity there. Group highlights only appear on group drag,
+-  // which is a well-scoped interaction. A dragging group doesn't nestle in with
+-  // the tabs around it, so there are no special cases needed when determining
+-  // its shape.
+-  const int corner_radius = TabStyle::Get()->GetBottomCornerRadius();
+-  const int top = GetLayoutConstant(TAB_STRIP_PADDING);
+-
+   SkPath path;
+-  path.moveTo(0, bounds().height());
+-  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
+-             SkPathDirection::kCCW, corner_radius,
+-             bounds().height() - corner_radius);
+-  path.lineTo(corner_radius, top + corner_radius);
+-  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
+-             SkPathDirection::kCW, 2 * corner_radius, top);
+-  path.lineTo(bounds().width() - 2 * corner_radius, top);
+-  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
+-             SkPathDirection::kCW, bounds().width() - corner_radius,
+-             top + corner_radius);
+-  path.lineTo(bounds().width() - corner_radius,
+-              bounds().height() - corner_radius);
+-  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
+-             SkPathDirection::kCCW, bounds().width(), bounds().height());
+-  path.close();
+-
+   return path;
+ }
+ 
 --- a/chrome/browser/ui/views/tabs/tab_style_views.cc
 +++ b/chrome/browser/ui/views/tabs/tab_style_views.cc
 @@ -213,8 +213,6 @@ SkPath TabStyleViewsImpl::GetPath(TabStyle::PathType path_type,
