@@ -5,7 +5,6 @@ upstream-fixes/fix-building-without-safe-browsing.patch
 
 core/inox-patchset/0001-fix-building-without-safebrowsing.patch
 core/inox-patchset/0003-disable-autofill-download-manager.patch
-core/inox-patchset/0005-disable-default-extensions.patch
 core/inox-patchset/0015-disable-update-pings.patch
 core/inox-patchset/0021-disable-rlz.patch
 core/iridium-browser/safe_browsing-disable-incident-reporting.patch
