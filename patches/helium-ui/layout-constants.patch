@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
-@@ -60,7 +60,7 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -60,7 +60,7 @@ int GetLayoutConstant(LayoutConstant con
      case LOCATION_BAR_ELEMENT_PADDING:
        return touch_ui ? 3 : 2;
      case LOCATION_BAR_PAGE_INFO_ICON_VERTICAL_PADDING:
@@ -9,7 +9,7 @@
      case LOCATION_BAR_LEADING_DECORATION_EDGE_PADDING:
        // TODO(manukh): See comment in `LocationBarView::Layout()`. We have too
        //   many feature permutations that would affect this and other layout
-@@ -69,11 +69,11 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -69,11 +69,11 @@ int GetLayoutConstant(LayoutConstant con
        //   here once we decide on a permutation.
        NOTREACHED();
      case LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING:
@@ -23,7 +23,7 @@
      case LOCATION_BAR_ICON_SIZE:
        return touch_ui ? 20 : 16;
      case LOCATION_BAR_LEADING_ICON_SIZE:
-@@ -96,12 +96,12 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -96,12 +96,12 @@ int GetLayoutConstant(LayoutConstant con
      case TAB_CLOSE_BUTTON_SIZE:
        return touch_ui ? 24 : 16;
      case TAB_HEIGHT:
@@ -38,7 +38,7 @@
      case TAB_SEPARATOR_HEIGHT:
        return touch_ui ? 24 : 20;
      case TAB_PRE_TITLE_PADDING:
-@@ -109,14 +109,9 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -109,14 +109,9 @@ int GetLayoutConstant(LayoutConstant con
      case TAB_STACK_DISTANCE:
        return touch_ui ? 4 : 6;
      case TABSTRIP_TOOLBAR_OVERLAP:
@@ -55,7 +55,7 @@
      case TOOLBAR_DIVIDER_CORNER_RADIUS:
        return 1;
      case TOOLBAR_DIVIDER_HEIGHT:
-@@ -124,13 +119,13 @@ int GetLayoutConstant(LayoutConstant constant) {
+@@ -124,13 +119,13 @@ int GetLayoutConstant(LayoutConstant con
      case TOOLBAR_DIVIDER_SPACING:
        return 9;
      case TOOLBAR_DIVIDER_WIDTH:
@@ -72,7 +72,7 @@
      case PAGE_INFO_ICON_SIZE:
        return 20;
      case DOWNLOAD_ICON_SIZE:
-@@ -168,7 +163,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+@@ -168,7 +163,7 @@ gfx::Insets GetLayoutInsets(LayoutInset
      }
  
      case TOOLBAR_BUTTON:
@@ -81,7 +81,7 @@
  
      case BROWSER_APP_MENU_CHIP_PADDING:
        if (touch_ui) {
-@@ -185,7 +180,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+@@ -185,7 +180,7 @@ gfx::Insets GetLayoutInsets(LayoutInset
        }
  
      case TOOLBAR_INTERIOR_MARGIN:

@@ -9,7 +9,7 @@
  
  class ControlButtonHighlightPathGenerator
      : public views::HighlightPathGenerator {
-@@ -235,15 +233,11 @@ void TabStripControlButton::UpdateBackground() {
+@@ -235,15 +233,11 @@ void TabStripControlButton::UpdateBackgr
  }
  
  int TabStripControlButton::GetCornerRadius() const {

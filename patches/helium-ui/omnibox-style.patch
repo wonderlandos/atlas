@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.cc
 +++ b/chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.cc
-@@ -232,8 +232,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
+@@ -232,8 +232,7 @@ RoundedOmniboxResultsFrame::RoundedOmnib
    contents_host_->layer()->SetFillsBoundsOpaquely(false);
  
    // Use rounded corners.
@@ -10,7 +10,7 @@
    contents_host_->layer()->SetRoundedCornerRadius(
        gfx::RoundedCornersF(corner_radius));
    contents_host_->layer()->SetIsFastRoundedCorner(true);
-@@ -287,7 +286,7 @@ gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
+@@ -287,7 +286,7 @@ gfx::Insets RoundedOmniboxResultsFrame::
    if (ui::TouchUiController::Get()->touch_ui()) {
      return gfx::Insets::TLBR(6, 1, 5, 1);
    }
@@ -21,7 +21,7 @@
  // static
 --- a/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
-@@ -103,7 +103,7 @@ class OmniboxResultViewButton : public views::ImageButton {
+@@ -103,7 +103,7 @@ class OmniboxResultViewButton : public v
  BEGIN_METADATA(OmniboxResultViewButton)
  END_METADATA
  
@@ -30,7 +30,7 @@
  
  }  // namespace
  
-@@ -296,7 +296,7 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
+@@ -296,7 +296,7 @@ OmniboxResultView::OmniboxResultView(Omn
                &OmniboxResultView::ButtonPressed, base::Unretained(this),
                OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION)));
    remove_suggestion_button_->SetProperty(views::kMarginsKey,
@@ -39,7 +39,7 @@
    views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
    auto* const remove_focus_ring =
        views::FocusRing::Get(remove_suggestion_button_);
-@@ -351,10 +351,9 @@ std::unique_ptr<views::Background> OmniboxResultView::GetPopupCellBackground(
+@@ -351,10 +351,9 @@ std::unique_ptr<views::Background> Omnib
          /*for_border_thickness=*/0);
    }
  
@@ -54,7 +54,7 @@
  void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 --- a/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
-@@ -117,12 +117,7 @@ views::View* OmniboxRowView::GetActiveAuxiliaryButtonForAccessibility() const {
+@@ -117,12 +117,7 @@ views::View* OmniboxRowView::GetActiveAu
  }
  
  gfx::Insets OmniboxRowView::GetInsets() const {

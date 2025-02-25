@@ -157,7 +157,7 @@
      return false;
 --- a/chrome/common/chrome_paths_mac.mm
 +++ b/chrome/common/chrome_paths_mac.mm
-@@ -104,6 +104,10 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -110,6 +110,10 @@ bool GetDefaultUserDataDirectory(base::F
    return GetDefaultUserDataDirectoryForProduct(ProductDirName(), result);
  }
  

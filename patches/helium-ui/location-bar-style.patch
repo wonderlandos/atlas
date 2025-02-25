@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
 +++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
-@@ -544,7 +544,9 @@ gfx::RoundedCornersF IconLabelBubbleView::GetCornerRadii() const {
+@@ -544,7 +544,9 @@ gfx::RoundedCornersF IconLabelBubbleView
    if (radii_.has_value()) {
      return radii_.value();
    }
@@ -13,7 +13,7 @@
  void IconLabelBubbleView::SetCornerRadii(const gfx::RoundedCornersF& radii) {
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -222,7 +222,10 @@ LocationBarView::LocationBarView(Browser* browser,
+@@ -222,7 +222,10 @@ LocationBarView::LocationBarView(Browser
                   !v->GetOmniboxPopupView()->IsOpen();
          }));
      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
@@ -25,7 +25,7 @@
  
  #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
      if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
-@@ -476,7 +479,7 @@ bool LocationBarView::IsInitialized() const {
+@@ -476,7 +479,7 @@ bool LocationBarView::IsInitialized() co
  
  int LocationBarView::GetBorderRadius() const {
    return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -43,7 +43,7 @@
    // The padding between the LHS icon and the text.
    int text_left = 8;
    // Indentation to match the suggestion icons & texts.
-@@ -1213,7 +1216,7 @@ int LocationBarView::GetMinimumTrailingWidth() const {
+@@ -1213,7 +1216,7 @@ int LocationBarView::GetMinimumTrailingW
  }
  
  gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
