@@ -24,8 +24,8 @@
 +#define CHROME_BROWSER_EXISTING_SWITCH_FLAG_CHOICES_H_
 +const FeatureEntry::Choice kWebRTCIPPolicy[] = {
 +    {"Disable non proxied udp",
-+     "webrtc-ip-handling-policy",
-+     "disable_non_proxied_udp"},
++     "",
++     ""},
 +    {"Default",
 +     "webrtc-ip-handling-policy",
 +     "default"},
