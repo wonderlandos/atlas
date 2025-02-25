@@ -16,7 +16,7 @@
  constexpr int kChromeRefreshTabHorizontalPadding = 8;
  
  class ChromeRefresh2023TabStyle : public TabStyle {
-@@ -107,11 +107,11 @@ int ChromeRefresh2023TabStyle::GetMinimumInactiveWidth() const {
+@@ -107,11 +107,11 @@ int ChromeRefresh2023TabStyle::GetMinimu
  }
  
  int ChromeRefresh2023TabStyle::GetTopCornerRadius() const {
@@ -32,7 +32,7 @@
  int ChromeRefresh2023TabStyle::GetTabOverlap() const {
 --- a/chrome/browser/ui/views/tabs/tab_group_highlight.cc
 +++ b/chrome/browser/ui/views/tabs/tab_group_highlight.cc
-@@ -49,33 +49,7 @@ bool TabGroupHighlight::GetCanProcessEventsWithinSubtree() const {
+@@ -49,33 +49,7 @@ bool TabGroupHighlight::GetCanProcessEve
  }
  
  SkPath TabGroupHighlight::GetPath() const {
@@ -68,7 +68,7 @@
  
 --- a/chrome/browser/ui/views/tabs/tab_style_views.cc
 +++ b/chrome/browser/ui/views/tabs/tab_style_views.cc
-@@ -213,8 +213,6 @@ SkPath TabStyleViewsImpl::GetPath(TabStyle::PathType path_type,
+@@ -213,8 +213,6 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
    CHECK(tab());
    const int stroke_thickness = GetStrokeThickness(force_active);
  
@@ -77,7 +77,7 @@
    // We'll do the entire path calculation in aligned pixels.
    // TODO(dfried): determine if we actually want to use |stroke_thickness| as
    // the inset in this case.
-@@ -227,250 +225,82 @@ SkPath TabStyleViewsImpl::GetPath(TabStyle::PathType path_type,
+@@ -227,250 +225,82 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
        GetTopCornerRadiusForWidth(tab()->width()) * scale;
    float extension_corner_radius = tab_style()->GetBottomCornerRadius() * scale;
  
@@ -86,7 +86,44 @@
 -       state != TabStyle::TabSelectionState::kActive) ||
 -      path_type == TabStyle::PathType::kHighlight ||
 -      path_type == TabStyle::PathType::kInteriorClip ||
--      path_type == TabStyle::PathType::kHitTest) {
++  float top_content_corner_radius = content_corner_radius;
++  float bottom_content_corner_radius = content_corner_radius;
++  float tab_height = GetLayoutConstant(TAB_HEIGHT) * scale;
++
++  // The tab displays favicon animations that can emerge from the toolbar. The
++  // interior clip needs to extend the entire height of the toolbar to support
++  // this. Detached tab shapes do not need to respect this.
++  if (path_type != TabStyle::PathType::kInteriorClip &&
++      path_type != TabStyle::PathType::kHitTest) {
++    tab_height -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
++    tab_height -= GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
++  }
++
++  // Don't round the bottom corners to avoid creating dead space between tabs.
++  if (path_type == TabStyle::PathType::kHitTest) {
++    bottom_content_corner_radius = 0;
++  }
++
++  int left = aligned_bounds.x() + extension_corner_radius;
++  int top = aligned_bounds.y() + GetLayoutConstant(TAB_STRIP_PADDING) * scale;
++  int right = aligned_bounds.right() - extension_corner_radius;
++  const int bottom = top + tab_height;
++
++  // For maximized and full screen windows, extend the tab hit test to the top
++  // of the tab, encompassing the top padding. This makes it easy to click on
++  // tabs by moving the mouse to the top of the screen.
++  if (path_type == TabStyle::PathType::kHitTest &&
++      tab()->controller()->IsFrameCondensed()) {
++    top -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
++    // Don't round the top corners to avoid creating dead space between tabs.
++    top_content_corner_radius = 0;
++  }
++
++  // if the size of the space for the path is smaller than the size of a
++  // favicon or if we are building a path for the hit test, expand to take the
++  // entire width of the separator margins AND the separator.
++  if ((right - left) < (gfx::kFaviconSize * scale) ||
+       path_type == TabStyle::PathType::kHitTest) {
 -    // TODO (crbug.com/1451400): This constant should be unified with
 -    // kCRtabstripRegionViewControlPadding in tab_strip_region_view.
 -
@@ -122,10 +159,7 @@
 -      // Don't round the top corners to avoid creating dead space between tabs.
 -      top_content_corner_radius = 0;
 -    }
-+  float top_content_corner_radius = content_corner_radius;
-+  float bottom_content_corner_radius = content_corner_radius;
-+  float tab_height = GetLayoutConstant(TAB_HEIGHT) * scale;
- 
+-
 -    // if the size of the space for the path is smaller than the size of a
 -    // favicon or if we are building a path for the hit test, expand to take the
 -    // entire width of the separator margins AND the separator.
@@ -154,7 +188,29 @@
 -                  right_separator_overlap) *
 -                 scale;
 -      }
--    }
++    // Take the entire size of the separator. in odd separator size cases, the
++    // right side will take the remaining space.
++    const int left_separator_overlap =
++        tab_style()->GetSeparatorSize().width() / 2;
++    const int right_separator_overlap =
++        tab_style()->GetSeparatorSize().width() - left_separator_overlap;
++
++    // If there is a tab before this one, then expand into its overlap.
++    const Tab* const previous_tab =
++        tab()->controller()->GetAdjacentTab(tab(), -1);
++    if (previous_tab) {
++      left -= (tab_style()->GetSeparatorMargins().right() +
++               left_separator_overlap) *
++              scale;
++    }
++
++    // If there is a tab after this one, then expand into its overlap.
++    const Tab* const next_tab = tab()->controller()->GetAdjacentTab(tab(), 1);
++    if (next_tab) {
++      right += (tab_style()->GetSeparatorMargins().left() +
++                right_separator_overlap) *
++               scale;
+     }
 -
 -    // Radii are clockwise from top left.
 -    const SkVector radii[4] = {
@@ -178,15 +234,8 @@
 -    }
 -
 -    return path;
-+  // The tab displays favicon animations that can emerge from the toolbar. The
-+  // interior clip needs to extend the entire height of the toolbar to support
-+  // this. Detached tab shapes do not need to respect this.
-+  if (path_type != TabStyle::PathType::kInteriorClip &&
-+      path_type != TabStyle::PathType::kHitTest) {
-+    tab_height -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
-+    tab_height -= GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
-   }
- 
+-  }
+-
 -  // Compute |extension| as the width outside the separators.  This is a fixed
 -  // value equal to the normal corner radius.
 -  const float extension = extension_corner_radius;
@@ -217,9 +266,6 @@
 -    content_corner_radius -= 0.5f * stroke_adjustment;
 -    tab_bottom -= 0.5f * stroke_adjustment;
 -    extension_corner_radius -= 0.5f * stroke_adjustment;
-+  // Don't round the bottom corners to avoid creating dead space between tabs.
-+  if (path_type == TabStyle::PathType::kHitTest) {
-+    bottom_content_corner_radius = 0;
    }
 -  const ShapeModifier shape_modifier = GetShapeModifier(path_type);
 -  const bool extend_left_to_bottom = shape_modifier & kNoLowerLeftArc;
@@ -227,27 +273,23 @@
 -  const bool compact_left_to_bottom =
 -      !extend_left_to_bottom && (shape_modifier & kCompactLeftArc);
  
--  SkPath path;
-+  int left = aligned_bounds.x() + extension_corner_radius;
-+  int top = aligned_bounds.y() + GetLayoutConstant(TAB_STRIP_PADDING) * scale;
-+  int right = aligned_bounds.right() - extension_corner_radius;
-+  const int bottom = top + tab_height;
- 
++  // Radii are clockwise from top left.
++  const SkVector radii[4] = {
++      SkVector(top_content_corner_radius, top_content_corner_radius),
++      SkVector(top_content_corner_radius, top_content_corner_radius),
++      SkVector(bottom_content_corner_radius, bottom_content_corner_radius),
++      SkVector(bottom_content_corner_radius, bottom_content_corner_radius)};
++  SkRRect rrect;
++  rrect.setRectRadii(SkRect::MakeLTRB(left, top, right, bottom), radii);
+   SkPath path;
+-
 -  float left_extension_corner_radius = extension_corner_radius;
 -  if (compact_left_to_bottom) {
 -    left_extension_corner_radius = (tab_style()->GetBottomCornerRadius() -
 -                                    GetLayoutConstant(TOOLBAR_CORNER_RADIUS)) *
 -                                   scale;
-+  // For maximized and full screen windows, extend the tab hit test to the top
-+  // of the tab, encompassing the top padding. This makes it easy to click on
-+  // tabs by moving the mouse to the top of the screen.
-+  if (path_type == TabStyle::PathType::kHitTest &&
-+      tab()->controller()->IsFrameCondensed()) {
-+    top -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
-+    // Don't round the top corners to avoid creating dead space between tabs.
-+    top_content_corner_radius = 0;
-   }
- 
+-  }
+-
 -  // Avoid mallocs at every new path verb by preallocating an
 -  // empirically-determined amount of space in the verb and point buffers.
 -  const int kMaxPathPoints = 20;
@@ -283,26 +325,7 @@
 -      path.arcTo(left_extension_corner_radius, left_extension_corner_radius, 0,
 -                 SkPath::kSmall_ArcSize, SkPathDirection::kCCW, tab_left,
 -                 tab_bottom - left_extension_corner_radius);
-+  // if the size of the space for the path is smaller than the size of a
-+  // favicon or if we are building a path for the hit test, expand to take the
-+  // entire width of the separator margins AND the separator.
-+  if ((right - left) < (gfx::kFaviconSize * scale) ||
-+      path_type == TabStyle::PathType::kHitTest) {
-+    // Take the entire size of the separator. in odd separator size cases, the
-+    // right side will take the remaining space.
-+    const int left_separator_overlap =
-+        tab_style()->GetSeparatorSize().width() / 2;
-+    const int right_separator_overlap =
-+        tab_style()->GetSeparatorSize().width() - left_separator_overlap;
-+
-+    // If there is a tab before this one, then expand into its overlap.
-+    const Tab* const previous_tab =
-+        tab()->controller()->GetAdjacentTab(tab(), -1);
-+    if (previous_tab) {
-+      left -= (tab_style()->GetSeparatorMargins().right() +
-+               left_separator_overlap) *
-+              scale;
-     }
+-    }
 -  }
 -
 -  // Draw the ascender and top-left curve, if present.
@@ -320,7 +343,7 @@
 -               SkPath::kSmall_ArcSize, SkPathDirection::kCW,
 -               tab_left + content_corner_radius, tab_top);
 -  }
- 
+-
 -  // Draw the top crossbar and top-right curve, if present.
 -  if (extend_to_top) {
 -    //   ┌━━━━━━━━━┑
@@ -352,15 +375,9 @@
 -    }
 -    if (tab_bottom != extended_bottom) {
 -      path.lineTo(right, tab_bottom);
-+    // If there is a tab after this one, then expand into its overlap.
-+    const Tab* const next_tab = tab()->controller()->GetAdjacentTab(tab(), 1);
-+    if (next_tab) {
-+      right += (tab_style()->GetSeparatorMargins().left() +
-+                right_separator_overlap) *
-+               scale;
-     }
-   }
- 
+-    }
+-  }
+-
 -  // Draw anything remaining: the descender, the bottom right horizontal
 -  // stroke, or the right edge of the extension, depending on which
 -  // conditions fired above.
@@ -372,15 +389,6 @@
 -  if (path_type != TabStyle::PathType::kBorder) {
 -    path.close();
 -  }
-+  // Radii are clockwise from top left.
-+  const SkVector radii[4] = {
-+      SkVector(top_content_corner_radius, top_content_corner_radius),
-+      SkVector(top_content_corner_radius, top_content_corner_radius),
-+      SkVector(bottom_content_corner_radius, bottom_content_corner_radius),
-+      SkVector(bottom_content_corner_radius, bottom_content_corner_radius)};
-+  SkRRect rrect;
-+  rrect.setRectRadii(SkRect::MakeLTRB(left, top, right, bottom), radii);
-+  SkPath path;
 +  path.addRRect(rrect);
  
    // Convert path to be relative to the tab origin.
