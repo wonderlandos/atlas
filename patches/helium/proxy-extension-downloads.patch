@@ -1,0 +1,146 @@
+--- a/extensions/common/extension_urls.cc
++++ b/extensions/common/extension_urls.cc
+@@ -42,6 +42,8 @@ const char kChromeWebstoreBaseURL[] = "t
+ const char kNewChromeWebstoreBaseURL[] = "trk:08:https://chromewebstore.google.com/";
+ const char kChromeWebstoreUpdateURL[] =
+     "trk:05:https://clients2.google.com/service/update2/crx";
++const char kHeliumProxyWebstoreUpdateURL[] =
++    "https://services.helium.computer/ext/webstore";
+ 
+ const char kAppMenuUtmSource[] = "ext_app_menu";
+ const char kExtensionsMenuUtmSource[] = "ext_extensions_menu";
+@@ -99,13 +101,10 @@ base::AutoReset<const GURL*> SetItemSnip
+ }
+ 
+ GURL GetDefaultWebstoreUpdateUrl() {
+-  return GURL(kChromeWebstoreUpdateURL);
++  return GURL(kHeliumProxyWebstoreUpdateURL);
+ }
+ 
+ GURL GetWebstoreUpdateUrl() {
+-  extensions::ExtensionsClient* client = extensions::ExtensionsClient::Get();
+-  if (client)
+-    return client->GetWebstoreUpdateURL();
+   return GetDefaultWebstoreUpdateUrl();
+ }
+ 
+--- a/extensions/common/extension_urls.h
++++ b/extensions/common/extension_urls.h
+@@ -35,6 +35,7 @@ namespace extension_urls {
+ extern const char kChromeWebstoreBaseURL[];
+ extern const char kChromeWebstoreUpdateURL[];
+ extern const char kNewChromeWebstoreBaseURL[];
++extern const char kHeliumProxyWebstoreUpdateURL[];
+ 
+ // Various utm attribution sources for web store URLs.
+ // From the sub-menu item in the extension menu inside the 3-dot menu.
+--- a/extensions/common/manifest_url_handlers.cc
++++ b/extensions/common/manifest_url_handlers.cc
+@@ -17,6 +17,7 @@
+ #include "extensions/common/manifest.h"
+ #include "extensions/common/manifest_constants.h"
+ #include "extensions/common/manifest_handlers/shared_module_info.h"
++#include "extensions/common/manifest_url_patcher.h"
+ #include "extensions/strings/grit/extensions_strings.h"
+ #include "ui/base/l10n/l10n_util.h"
+ 
+@@ -61,8 +62,14 @@ GURL ManifestURL::GetWebStoreURL(const E
+ }
+ 
+ // static
+-const GURL& ManifestURL::GetUpdateURL(const Extension* extension) {
+-  return Get(extension, keys::kUpdateURL);
++GURL ManifestURL::GetUpdateURL(const Extension* extension) {
++  const GURL& original_url = Get(extension, keys::kUpdateURL);
++
++  if (extension_urls::CanPatchUpdateUrl(original_url)) {
++    return extension_urls::PatchUpdateUrl(original_url);
++  }
++
++  return GURL(original_url);
+ }
+ 
+ // static
+--- /dev/null
++++ b/extensions/common/manifest_url_patcher.cc
+@@ -0,0 +1,37 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
++#define EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
++
++#include "extensions/common/extension_urls.h"
++#include "url/gurl.h"
++#include "base/notreached.h"
++
++namespace extension_urls {
++
++const char kChromeWebstoreCleanUpdateURL[] =
++    "https://clients2.google.com/service/update2/crx";
++
++GURL GetOriginalWebstoreUpdateUrl() {
++    return GURL(kChromeWebstoreCleanUpdateURL);
++}
++
++bool CanPatchUpdateUrl(const GURL& url) {
++    GURL chrome_webstore = GetOriginalWebstoreUpdateUrl();
++    return chrome_webstore.host_piece() == url.host_piece();
++}
++
++GURL PatchUpdateUrl(const GURL& url) {
++    GURL chrome_webstore = GetOriginalWebstoreUpdateUrl();
++    if (chrome_webstore.host_piece() == url.host_piece()) {
++        return GetDefaultWebstoreUpdateUrl();
++    }
++
++    NOTREACHED();
++}
++
++}  // namespace extension_urls
++
++#endif  // EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
+--- /dev/null
++++ b/extensions/common/manifest_url_patcher.h
+@@ -0,0 +1,18 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
++#define EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
++
++namespace extension_urls {
++
++extern const char kChromeWebstoreCleanUpdateURL[];
++
++GURL GetOriginalWebstoreUpdateUrl();
++bool CanPatchUpdateUrl(const GURL& url);
++GURL PatchUpdateUrl(const GURL& url);
++
++}  // namespace extension_urls
++
++#endif  // EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
+--- a/extensions/common/BUILD.gn
++++ b/extensions/common/BUILD.gn
+@@ -428,6 +428,8 @@ static_library("common") {
+     "manifest_handlers/webview_info.h",
+     "manifest_url_handlers.cc",
+     "manifest_url_handlers.h",
++    "manifest_url_patcher.cc",
++    "manifest_url_patcher.h",
+     "message_bundle.cc",
+     "message_bundle.h",
+     "permissions/api_permission.cc",
+--- a/extensions/common/manifest_url_handlers.h
++++ b/extensions/common/manifest_url_handlers.h
+@@ -43,7 +43,7 @@ struct ManifestURL : public Extension::M
+   static GURL GetWebStoreURL(const Extension* extension);
+ 
+   // Returns the Update URL for this extension.
+-  static const GURL& GetUpdateURL(const Extension* extension);
++  static GURL GetUpdateURL(const Extension* extension);
+ 
+   // Returns true if this extension's update URL is the extension gallery.
+   static bool UpdatesFromGallery(const Extension* extension);

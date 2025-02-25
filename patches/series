@@ -117,6 +117,7 @@ helium/copy-page-url-shortcut.patch
 
 helium/always-use-better-ntp.patch
 helium/clean-new-tab-page.patch
+helium/proxy-extension-downloads.patch
 
 helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch
@@ -126,3 +127,4 @@ helium-ui/tab-strip-controls.patch
 helium-ui/toolbar-style.patch
 helium-ui/omnibox-style.patch
 helium-ui/app-menu-style.patch
+
