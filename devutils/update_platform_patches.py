@@ -62,15 +62,17 @@ def _dir_empty(path):
     return False
 
 
-def _remove_files_with_dirs(root_dir, sorted_file_iter):
+def _rename_files_with_dirs(root_dir, sorted_file_iter):
     '''
-    Deletes a list of sorted files relative to root_dir, removing empty directories along the way
+    Moves a list of sorted files back to the upstream repo, removing empty directories along the way
     '''
     past_parent = None
+    upstream_path = Path(os.path.dirname(os.path.realpath(__file__))) / '../patches'
     for partial_path in sorted_file_iter:
         complete_path = Path(root_dir, partial_path)
+        complete_upstream_path = Path(upstream_path, partial_path)
         try:
-            complete_path.unlink()
+            complete_path.rename(complete_upstream_path)
         except FileNotFoundError:
             get_logger().warning('Could not remove prepended patch: %s', complete_path)
         if past_parent != complete_path.parent:
@@ -98,8 +100,8 @@ def unmerge_platform_patches(platform_patches_dir):
         filter(len,
                (platform_patches_dir / _SERIES_PREPEND).read_text(encoding=ENCODING).splitlines()))
 
-    # Remove prepended files with directories
-    _remove_files_with_dirs(platform_patches_dir, sorted(prepend_series))
+    # Move prepended files to original location, preserving changes, and clean up
+    _rename_files_with_dirs(platform_patches_dir, sorted(prepend_series))
 
     # Determine positions of blank spaces in series.orig
     if not (platform_patches_dir / _SERIES_ORIG).exists():
