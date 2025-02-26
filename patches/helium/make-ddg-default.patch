@@ -124,7 +124,7 @@
 -    {SearchEngineTier::kTopEngines, &ecosia},
 -    {SearchEngineTier::kRemainingEngines, &yahoo_emea},
 -    {SearchEngineTier::kRemainingEngines, &qwant},
-+    {SearchEngineTier::kRemainingEngines, &break_stuff_google},
++    {SearchEngineTier::kTopEngines, &break_stuff_google},
      {SearchEngineTier::kRemainingEngines, &privacywall},
 -};
 -// Bulgaria
