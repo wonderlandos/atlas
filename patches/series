@@ -111,7 +111,7 @@ helium/add-extra-channel-info.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch
 helium/make-ddg-default.patch
-
+helium/add-kagi-search.patch
 helium/copy-page-url-shortcut.patch
 
 helium/always-use-better-ntp.patch
