@@ -206,8 +206,7 @@ def apply_substitution(regex_path, files_path, source_tree, domainsub_cache):
     resolved_tree = source_tree.resolve()
     regex_pairs = DomainRegexList(regex_path).regex_pairs
     fileindex_content = io.BytesIO()
-    with tarfile.open(str(domainsub_cache), 'w:%s' % domainsub_cache.suffix[1:],
-                      compresslevel=1) if domainsub_cache else open(os.devnull, 'w') as cache_tar:
+    with tarfile.open(str(domainsub_cache), 'w:%s' % domainsub_cache.suffix[1:]) if domainsub_cache else open(os.devnull, 'w') as cache_tar:
         for relative_path in filter(len, files_path.read_text().splitlines()):
             if _INDEX_HASH_DELIMITER in relative_path:
                 if domainsub_cache:
