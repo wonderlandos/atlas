@@ -21,7 +21,9 @@ The following procedure outline the essential steps to build Chromium will all o
 ```sh
 mkdir -p build/download_cache
 ./utils/downloads.py retrieve -c build/download_cache -i downloads.ini
+./utils/downloads.py retrieve -c build/download_cache -i extras.ini
 ./utils/downloads.py unpack -c build/download_cache -i downloads.ini -- build/src
+./utils/downloads.py unpack -c build/download_cache -i extras.ini -- build/src
 ```
 
 2. Prune binaries
