@@ -117,6 +117,7 @@ helium/copy-page-url-shortcut.patch
 helium/always-use-better-ntp.patch
 helium/clean-new-tab-page.patch
 helium/proxy-extension-downloads.patch
+helium/download-icons-from-source.patch
 
 helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch

@@ -1,0 +1,103 @@
+uses the favicon.ico url from prepopulated_search_engines.json instead
+of relying on google favicons (why is this a thing?)
+
+--- a/tools/search_engine_choice/download_search_engine_icons.py
++++ b/tools/search_engine_choice/download_search_engine_icons.py
+@@ -23,6 +23,8 @@ import requests
+ 
+ import search_engine_icons_utils
+ 
++from PIL import Image
++from io import BytesIO
+ 
+ def get_image_hash(image_path):
+   """Gets the hash of the image that's passed as argument.
+@@ -84,9 +86,12 @@ def download_icons_from_android_search()
+     delete_files_in_directory(
+         f'components/resources/default_{percent}_percent/search_engine_choice')
+ 
+-  with open(search_engine_icons_utils.config_file_path, 'r',
++  with open(search_engine_icons_utils.prepopulated_engines_file_path, 'r',
++            encoding='utf-8') as engines_json, open(
++              search_engine_icons_utils.config_file_path, 'r',
+             encoding='utf-8') as config_json:
+     config_data = json.loads(json_comment_eater.Nom(config_json.read()))
++    engine_data = json.loads(json_comment_eater.Nom(engines_json.read()))
+     icon_hash_to_name = {}
+ 
+     for (engine, keyword) in sorted(
+@@ -96,34 +101,20 @@ def download_icons_from_android_search()
+       if engine in config_data['engine_aliases']:
+         engine = config_data['engine_aliases'][engine]
+ 
+-      directory_url = f'https://www.gstatic.com/android_search/search_providers/{engine}/'
+-      try_filenames = []
+-      if engine in config_data['non_default_icon_filenames']:
+-        try_filenames = [
+-            config_data['non_default_icon_filenames'][engine] + 'mdpi.png'
+-        ]
+-      try_filenames = try_filenames + [
+-          f'{engine}_icon_mdpi.png',
+-          f'{engine}_mdpi.png',
+-          'mdpi.png',
+-      ]
+-      any_found = False
+-      for filename in try_filenames:
+-        icon_url = directory_url + filename
+-        try:
+-          img_data = requests.get(icon_url)
+-        except requests.exceptions.RequestException as e:
+-          print('Error when loading URL {icon_url}: {e}')
+-          continue
+-        if img_data.status_code == 200:
+-          with open(icon_full_path, 'wb') as icon_file:
+-            icon_file.write(img_data.content)
+-          any_found = True
+-          break
+-      if not any_found:
+-        print('WARNING: no icon found for search engine: ' + engine)
++      icon_url = engine_data['elements'][engine]['favicon_url']
++      try:
++        img_data = requests.get(icon_url)
++      except requests.exceptions.RequestException as e:
++        print('Error when loading URL {icon_url}: {e}')
+         continue
+ 
++      if img_data.status_code == 200:
++        img = Image.open(BytesIO(img_data.content))
++        img.save(icon_full_path, format='png')
++      else:
++        print('WARNING: no icon found for search engine: ' + engine)
++        break
++
+       icon_hash = get_image_hash(icon_full_path)
+       if icon_hash in icon_hash_to_name:
+         # We already have this icon.
+@@ -131,27 +122,6 @@ def download_icons_from_android_search()
+         os.remove(icon_full_path)
+         continue
+ 
+-      # Download hidpi versions
+-      # If the low dpi version is basename_mdpi.png, download basename_xhdpi.png
+-      # and basename_xxhdpi.png.
+-      for (resource_path, hidpi) in [('default_200_percent', 'xhdpi'),
+-                                     ('default_300_percent', 'xxhdpi')]:
+-        # Replace the substring "mdpi" by "xhdpi" or "xxhdpi" from the end.
+-        (basename, mdpi_suffix, png_extension) = icon_url.rpartition('mdpi')
+-        hidpi_url = basename + hidpi + png_extension
+-        hidpi_path = f'components/resources/{resource_path}/search_engine_choice/{icon_name}.png'
+-        try:
+-          img_data = requests.get(hidpi_url)
+-        except requests.exceptions.RequestException as e:
+-          print('Error when loading URL {hidpi_url}: {e}')
+-          continue
+-        if img_data.status_code == 200:
+-          with open(hidpi_path, 'wb') as icon_file:
+-            icon_file.write(img_data.content)
+-        else:
+-          print('WARNING: no %s icon found for search engine: %s' %
+-                (hidpi, engine))
+-
+       engine_keyword_to_icon_name[keyword] = icon_name
+       icon_hash_to_name[icon_hash] = icon_name
+   print('Finished downloading icons')
