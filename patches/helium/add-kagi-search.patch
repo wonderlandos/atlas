@@ -5,7 +5,7 @@
      },
  
 +    "kagi": {
-+      "name": "Kagi Search",
++      "name": "Kagi",
 +      "keyword": "kagi.com",
 +      "favicon_url": "https://kagi.com/favicon.ico",
 +      "search_url": "https://kagi.com/search?q={searchTerms}",
@@ -41,9 +41,9 @@
  <enum name="OnboardingStartupState">
 --- a/components/search_engines/search_engine_countries-inc.cc
 +++ b/components/search_engines/search_engine_countries-inc.cc
-@@ -44,6 +44,7 @@ constexpr EngineAndTier engines_default[
+@@ -43,6 +43,7 @@ constexpr EngineAndTier engines_default[
+     {SearchEngineTier::kTopEngines, &bing},
      {SearchEngineTier::kTopEngines, &break_stuff_google},
-     {SearchEngineTier::kRemainingEngines, &privacywall},
      {SearchEngineTier::kRemainingEngines, &qwant},
 +    {SearchEngineTier::kRemainingEngines, &kagi},
  };
