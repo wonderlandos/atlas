@@ -403,22 +403,6 @@ by default.
  
  #if BUILDFLAG(IS_WIN)
    GURL url(base::WideToUTF16(args[0]));
---- a/extensions/common/extension_urls.cc
-+++ b/extensions/common/extension_urls.cc
-@@ -38,10 +38,10 @@ const GURL* g_item_snippet_url_for_test_
- 
- }  // namespace
- 
--const char kChromeWebstoreBaseURL[] = "https://chrome.google.com/webstore";
--const char kNewChromeWebstoreBaseURL[] = "https://chromewebstore.google.com/";
-+const char kChromeWebstoreBaseURL[] = "trk:09:https://chrome.google.com/webstore";
-+const char kNewChromeWebstoreBaseURL[] = "trk:08:https://chromewebstore.google.com/";
- const char kChromeWebstoreUpdateURL[] =
--    "https://clients2.google.com/service/update2/crx";
-+    "trk:05:https://clients2.google.com/service/update2/crx";
- 
- const char kAppMenuUtmSource[] = "ext_app_menu";
- const char kExtensionsMenuUtmSource[] = "ext_extensions_menu";
 --- a/google_apis/gaia/gaia_constants.cc
 +++ b/google_apis/gaia/gaia_constants.cc
 @@ -14,169 +14,169 @@ const char kChromeSource[] = "ChromiumBr

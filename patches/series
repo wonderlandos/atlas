@@ -119,6 +119,7 @@ helium/clean-new-tab-page.patch
 helium/proxy-extension-downloads.patch
 helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
+helium/break-chrome-webstore-update-url.patch
 
 helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch
