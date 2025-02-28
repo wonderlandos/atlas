@@ -112,6 +112,8 @@ DOMAIN_EXCLUDE_PREFIXES = [
     'components/search_engines/prepopulated_engines.json',
     'third_party/blink/renderer/core/dom/document.cc',
     'tools/search_engine_choice/generate_search_engine_icons.py',
+    'chrome/common/extensions/api/_api_features.json',
+    'extensions/common/api/_api_features.json',
 ]
 
 # pylint: enable=line-too-long

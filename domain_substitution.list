@@ -2180,7 +2180,6 @@ chrome/common/chrome_switches.cc
 chrome/common/conflicts/module_watcher_win.cc
 chrome/common/extensions/PRESUBMIT.py
 chrome/common/extensions/api/PRESUBMIT.py
-chrome/common/extensions/api/_api_features.json
 chrome/common/extensions/api/common_extension_api_unittest.cc
 chrome/common/extensions/api/content_settings.json
 chrome/common/extensions/api/cookies.json
@@ -4131,7 +4130,6 @@ extensions/browser/updater/safe_manifest_parser.h
 extensions/browser/updater/safe_manifest_parser_unittest.cc
 extensions/browser/url_loader_factory_manager.h
 extensions/common/api/PRESUBMIT.py
-extensions/common/api/_api_features.json
 extensions/common/api/app_runtime.idl
 extensions/common/api/app_window.idl
 extensions/common/api/bluetooth_low_energy.idl
@@ -10779,6 +10777,9 @@ third_party/google_input_tools/third_party/closure_library/closure/goog/ui/separ
 third_party/google_input_tools/third_party/closure_library/closure/goog/uri/utils.js
 third_party/google_input_tools/third_party/closure_library/closure/goog/useragent/useragent.js
 third_party/google_input_tools/third_party/closure_library/third_party/closure/goog/mochikit/async/deferred.js
+third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizer.h
+third_party/google_toolbox_for_mac/src/UnitTesting/GTMGoogleTestRunner.mm
+third_party/google_toolbox_for_mac/src/XcodeConfig/xcconfigs-readme.txt
 third_party/googletest/src/docs/_layouts/default.html
 third_party/googletest/src/googlemock/src/gmock_main.cc
 third_party/googletest/src/googletest/include/gtest/gtest_pred_impl.h
