@@ -1,0 +1,420 @@
+--- a/chrome/browser/search_engines/template_url_service_factory.cc
++++ b/chrome/browser/search_engines/template_url_service_factory.cc
+@@ -28,6 +28,7 @@
+ #include "components/search_engines/enterprise/enterprise_search_manager.h"
+ #include "components/search_engines/search_engines_pref_names.h"
+ #include "components/search_engines/template_url_service.h"
++#include "content/public/browser/storage_partition.h"
+ #include "rlz/buildflags/buildflags.h"
+ 
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+@@ -65,6 +66,7 @@ std::unique_ptr<KeyedService> TemplateUR
+   Profile* profile = Profile::FromBrowserContext(context);
+   return std::make_unique<TemplateURLService>(
+       CHECK_DEREF(profile->GetPrefs()),
++      context->GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess(),
+       CHECK_DEREF(
+           search_engines::SearchEngineChoiceServiceFactory::GetForProfile(
+               profile)),
+--- a/components/search_engines/template_url_data_util.h
++++ b/components/search_engines/template_url_data_util.h
+@@ -8,6 +8,7 @@
+ #include <memory>
+ 
+ #include "base/values.h"
++#include "components/search_engines/template_url_bang_manager.h"
+ 
+ namespace TemplateURLPrepopulateData {
+ struct PrepopulatedEngine;
+@@ -40,4 +41,5 @@ std::unique_ptr<TemplateURLData> Templat
+ std::unique_ptr<TemplateURLData> TemplateURLDataFromStarterPackEngine(
+     const TemplateURLStarterPackData::StarterPackEngine& engine);
+ 
++TemplateURLData TemplateURLDataFromBang(const Bangs::Bang& bang);
+ #endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_DATA_UTIL_H_
+--- a/components/search_engines/BUILD.gn
++++ b/components/search_engines/BUILD.gn
+@@ -37,6 +37,8 @@ static_library("search_engines") {
+     "search_terms_data.h",
+     "template_url.cc",
+     "template_url.h",
++    "template_url_bang_manager.cc",
++    "template_url_bang_manager.h",
+     "template_url_data.cc",
+     "template_url_data.h",
+     "template_url_data_util.cc",
+--- a/components/search_engines/template_url_data_util.cc
++++ b/components/search_engines/template_url_data_util.cc
+@@ -14,6 +14,7 @@
+ #include "components/search_engines/prepopulated_engines.h"
+ #include "components/search_engines/template_url_data.h"
+ #include "components/search_engines/template_url_starter_pack_data.h"
++#include "components/search_engines/template_url_bang_manager.h"
+ #include "ui/base/l10n/l10n_util.h"
+ #include "url/gurl.h"
+ 
+@@ -533,3 +534,19 @@ std::unique_ptr<TemplateURLData> Templat
+ 
+   return turl;
+ }
++
++TemplateURLData TemplateURLDataFromBang(const Bangs::Bang& bang) {
++  TemplateURLData turl;
++  turl.SetShortName(base::UTF8ToUTF16(bang.name));
++  turl.SetKeyword(u"!" + base::UTF8ToUTF16(bang.bang));
++  turl.SetURL(bang.template_url.spec());
++
++  GURL favicon_url = bang.template_url.GetWithEmptyPath();
++  favicon_url.path() = "/favicon.ico";
++  turl.favicon_url = std::move(favicon_url);
++
++  turl.safe_for_autoreplace = false;
++  turl.GenerateSyncGUID();
++  turl.is_active = TemplateURLData::ActiveStatus::kTrue;
++  return turl;
++}
+--- a/components/search_engines/template_url_service.cc
++++ b/components/search_engines/template_url_service.cc
+@@ -57,7 +57,9 @@
+ #include "components/search_engines/search_engines_switches.h"
+ #include "components/search_engines/search_terms_data.h"
+ #include "components/search_engines/template_url.h"
++#include "components/search_engines/template_url_bang_manager.h"
+ #include "components/search_engines/template_url_data.h"
++#include "components/search_engines/template_url_data_util.h"
+ #include "components/search_engines/template_url_prepopulate_data.h"
+ #include "components/search_engines/template_url_service_client.h"
+ #include "components/search_engines/template_url_service_observer.h"
+@@ -70,6 +72,7 @@
+ #include "components/sync/protocol/search_engine_specifics.pb.h"
+ #include "components/url_formatter/url_fixer.h"
+ #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
+ #include "url/gurl.h"
+ #include "url/origin.h"
+ 
+@@ -389,6 +392,7 @@ class TemplateURLService::PreLoadingProv
+ // TemplateURLService ---------------------------------------------------------
+ TemplateURLService::TemplateURLService(
+     PrefService& prefs,
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+     search_engines::SearchEngineChoiceService& search_engine_choice_service,
+     std::unique_ptr<SearchTermsData> search_terms_data,
+     const scoped_refptr<KeywordWebDataService>& web_data_service,
+@@ -399,6 +403,8 @@ TemplateURLService::TemplateURLService(
+       search_engine_choice_service_(search_engine_choice_service),
+       search_terms_data_(std::move(search_terms_data)),
+       web_data_service_(web_data_service),
++      url_loader_factory_(std::move(url_loader_factory)),
++      bang_manager_(Bangs::BangManager::GetInstance()),
+       client_(std::move(client)),
+       dsp_change_callback_(dsp_change_callback),
+       pre_loading_providers_(std::make_unique<PreLoadingProviders>()),
+@@ -414,10 +420,12 @@ TemplateURLService::TemplateURLService(
+ 
+ TemplateURLService::TemplateURLService(
+     PrefService& prefs,
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+     search_engines::SearchEngineChoiceService& search_engine_choice_service,
+     base::span<const TemplateURLService::Initializer> initializers)
+     : TemplateURLService(
+           prefs,
++          url_loader_factory,
+           search_engine_choice_service,
+           /*search_terms_data=*/std::make_unique<SearchTermsData>(),
+           /*web_data_service=*/nullptr,
+@@ -1400,11 +1408,21 @@ void TemplateURLService::Load() {
+ 
+   if (web_data_service_) {
+     load_handle_ = web_data_service_->GetKeywords(this);
++    bang_manager_->LoadBangs(url_loader_factory_,
++      base::BindOnce(&TemplateURLService::BangsLoadedCallback, base::Unretained(this)));
+   } else {
+     ChangeToLoadedState();
+   }
+ }
+ 
++void TemplateURLService::BangsLoadedCallback() {
++  for (const auto& bang : bang_manager_->GetBangs()) {
++    Add(std::make_unique<TemplateURL>(TemplateURLDataFromBang(bang)), true);
++  }
++
++  LOG(INFO) << "BangsLoadedCallback() called";
++}
++
+ base::CallbackListSubscription TemplateURLService::RegisterOnLoadedCallback(
+     base::OnceClosure callback) {
+   return loaded_ ? base::CallbackListSubscription()
+--- a/components/search_engines/template_url_service.h
++++ b/components/search_engines/template_url_service.h
+@@ -34,10 +34,12 @@
+ #include "components/search_engines/search_host_to_urls_map.h"
+ #include "components/search_engines/search_terms_data.h"
+ #include "components/search_engines/template_url.h"
++#include "components/search_engines/template_url_bang_manager.h"
+ #include "components/sync/model/sync_change.h"
+ #include "components/sync/model/syncable_service.h"
+ #include "components/sync/protocol/search_engine_specifics.pb.h"
+ #include "components/webdata/common/web_data_service_consumer.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
+ #if BUILDFLAG(IS_ANDROID)
+ #include "base/android/scoped_java_ref.h"
+ #endif
+@@ -138,6 +140,7 @@ class TemplateURLService final : public
+ 
+   TemplateURLService(
+       PrefService& prefs,
++      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+       search_engines::SearchEngineChoiceService& search_engine_choice_service,
+       std::unique_ptr<SearchTermsData> search_terms_data,
+       const scoped_refptr<KeywordWebDataService>& web_data_service,
+@@ -148,6 +151,7 @@ class TemplateURLService final : public
+   // some template URL data.
+   explicit TemplateURLService(
+       PrefService& prefs,
++      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+       search_engines::SearchEngineChoiceService& search_engine_choice_service,
+       base::span<const TemplateURLService::Initializer> initializers = {});
+ 
+@@ -706,6 +710,8 @@ class TemplateURLService final : public
+ 
+   void Init();
+ 
++  void BangsLoadedCallback();
++
+   // Simulate a loaded `TemplateURLService`.
+   void ApplyInitializersForTesting(
+       base::span<const TemplateURLService::Initializer> initializers);
+@@ -921,6 +927,10 @@ class TemplateURLService final : public
+   // Service used to store entries.
+   scoped_refptr<KeywordWebDataService> web_data_service_;
+ 
++  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
++
++  Bangs::BangManager* bang_manager_;
++
+   std::unique_ptr<TemplateURLServiceClient> client_;
+ 
+   // This closure is run when the default search provider is set to Google.
+--- /dev/null
++++ b/components/search_engines/template_url_bang_manager.cc
+@@ -0,0 +1,158 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "components/search_engines/template_url_bang_manager.h"
++
++#include <memory>
++#include <string>
++#include <vector>
++
++#include "base/functional/bind.h"
++#include "base/functional/callback.h"
++#include "base/memory/weak_ptr.h"
++#include "base/memory/singleton.h"
++#include "base/json/json_reader.h"
++#include "net/base/load_flags.h"
++#include "net/http/http_status_code.h"
++#include "services/network/public/cpp/resource_request.h"
++#include "services/network/public/cpp/simple_url_loader.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++#include "services/network/public/mojom/url_response_head.mojom.h"
++#include "url/gurl.h"
++
++namespace Bangs {
++
++const int kMaxFetchRetries = 3;
++const int kFetchTimeoutSeconds = 30;
++
++constexpr net::NetworkTrafficAnnotationTag kCustomizationDocumentNetworkTag =
++    net::DefineNetworkTrafficAnnotation("native_bangs",
++                                        R"(
++        semantics {
++            sender: "Native bang loader"
++            description:
++            "Get data for native bangs."
++            trigger:
++            "Triggered when the browser is opened. "
++            data: "None."
++            destination: GOOGLE_OWNED_SERVICE
++        }
++        policy {
++            cookies_allowed: NO
++        })");
++
++
++BangManager* BangManager::GetInstance() {
++    return base::Singleton<
++    BangManager,
++        base::DefaultSingletonTraits<BangManager>>::get();
++}
++
++void BangManager::LoadBangs(
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
++    base::OnceClosure callback) {
++    if (bangs_.empty() && !load_pending_) {
++        load_pending_ = true;
++        DoStartFileFetch(url_loader_factory);
++        callback_ = std::move(callback);
++    } else if (!load_pending_) {
++        std::move(callback).Run();
++    }
++}
++
++void BangManager::DoStartFileFetch(
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
++    auto request = std::make_unique<network::ResourceRequest>();
++    request->url = GURL(kBangsUrl);
++    request->load_flags = net::LOAD_NORMAL;
++    request->credentials_mode = network::mojom::CredentialsMode::kOmit;
++    request->headers.SetHeader("Accept", "application/json");
++
++    url_loader_ = network::SimpleURLLoader::Create(
++        std::move(request), kCustomizationDocumentNetworkTag);
++
++    url_loader_->SetTimeoutDuration(base::Seconds(kFetchTimeoutSeconds));
++    url_loader_->SetRetryOptions(
++        kMaxFetchRetries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
++
++    url_loader_->DownloadToString(
++        url_loader_factory.get(),
++        base::BindOnce(&BangManager::OnSimpleLoaderComplete, base::Unretained(this)),
++        5e6 /* 5 MB */
++    );
++}
++
++void BangManager::OnSimpleLoaderComplete(
++    std::unique_ptr<std::string> response_body) {
++    int response_code = -1;
++    std::string mime_type;
++
++    if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
++        response_code = url_loader_->ResponseInfo()->headers->response_code();
++        url_loader_->ResponseInfo()->headers->GetMimeType(&mime_type);
++    }
++
++    if (response_body && mime_type == "application/json") {
++        BangManager::LoadManifestFromString(*response_body);
++    } else {
++        LOG(ERROR) << "Fetching bangs failed:"
++                   << " response code = " << response_code;
++    }
++
++    load_pending_ = false;
++}
++
++void BangManager::LoadManifestFromString(const std::string& manifest) {
++    auto parsed = base::JSONReader::ReadAndReturnValueWithError(
++        manifest,
++        base::JSON_ALLOW_COMMENTS
++    );
++
++    if (!parsed.has_value()) {
++        LOG(ERROR) << parsed.error().message;
++        return;
++    } else if (!parsed->is_list()) {
++        LOG(ERROR) << "received invalid bang data - not an array";
++        return;
++    }
++
++    auto list = std::move(*parsed).TakeList();
++    bangs_.reserve(list.size());
++
++    size_t index = 0;
++
++    for (auto& bang : list) {
++        if (!bang.is_dict()) {
++            continue;
++        }
++
++        auto dict = std::move(bang).TakeDict();
++        auto bname = dict.FindString("s");
++        auto bbang = dict.FindString("t");
++        auto burl_template = dict.FindString("u");
++        if (!bname || !bbang || !burl_template) {
++            continue;
++        }
++
++        auto b_gurl = GURL(*burl_template);
++        if (!b_gurl.is_valid()) {
++            LOG(INFO) << "invalid bang url " << *burl_template;
++            continue;
++        }
++
++        bangs_.emplace_back(index++, *bname, *bbang, b_gurl);
++    }
++
++    LOG(INFO) << bangs_.size() << " bangs loaded";
++    if (callback_) {
++        std::move(callback_).Run();
++    }
++}
++
++const std::vector<Bang>& BangManager::GetBangs() {
++    return bangs_;
++}
++
++}
++
+--- /dev/null
++++ b/components/search_engines/template_url_bang_manager.h
+@@ -0,0 +1,58 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
++#define COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
++
++#include <memory>
++#include <string>
++#include <vector>
++
++#include "base/memory/weak_ptr.h"
++#include "base/functional/callback.h"
++#include "services/network/public/cpp/simple_url_loader.h"
++#include "services/network/public/cpp/shared_url_loader_factory.h"
++#include "url/gurl.h"
++
++namespace Bangs {
++    // Template URL where to fetch bangs data from.
++    static constexpr char kBangsUrl[] =
++        "https://services.helium.computer/bangs.json";
++
++    struct Bang {
++        size_t id;
++        std::string name;
++        std::string bang;
++        GURL template_url;
++    };
++
++    class BangManager {
++    public:
++        static BangManager* GetInstance();
++
++        BangManager() = default;
++        BangManager(const BangManager&) = delete;
++        BangManager& operator=(const BangManager&) = delete;
++
++        void LoadBangs(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory, base::OnceClosure callback);
++        const std::vector<Bang>& GetBangs();
++
++    private:
++        void DoStartFileFetch(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
++        void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
++        void LoadManifestFromString(const std::string& manifest);
++
++        // Weak factory for callbacks.
++        base::WeakPtrFactory<BangManager> weak_ptr_factory_{this};
++        // SimpleURLLoader instance.
++        std::unique_ptr<network::SimpleURLLoader> url_loader_;
++
++        std::vector<Bang> bangs_;
++        bool load_pending_;
++        base::OnceClosure callback_;
++    };
++}
++
++#endif  // COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
++

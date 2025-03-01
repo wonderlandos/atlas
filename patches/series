@@ -120,6 +120,10 @@ helium/proxy-extension-downloads.patch
 helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
 helium/break-chrome-webstore-update-url.patch
+helium/add-native-bangs.patch
+
+helium/settings/move-search-suggest.patch
+helium/settings/move-macos-settings.patch
 
 helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch
@@ -130,6 +134,3 @@ helium-ui/toolbar-style.patch
 helium-ui/omnibox-style.patch
 helium-ui/app-menu-style.patch
 helium-ui/fix-customize-side-panel.patch
-
-helium/settings/move-search-suggest.patch
-helium/settings/move-macos-settings.patch
