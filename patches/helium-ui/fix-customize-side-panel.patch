@@ -1,0 +1,53 @@
+--- a/chrome/browser/resources/side_panel/customize_chrome/app.ts
++++ b/chrome/browser/resources/side_panel/customize_chrome/app.ts
+@@ -133,24 +133,6 @@ export class AppElement extends AppElementBase {
+                   element.scrollIntoView({behavior: 'auto'});
+                 });
+ 
+-    this.attachedTabStateUpdatedId_ =
+-        CustomizeChromeApiProxy.getInstance()
+-            .callbackRouter.attachedTabStateUpdated.addListener(
+-                (isSourceTabFirstPartyNtp: boolean) => {
+-                  if (this.isSourceTabFirstPartyNtp_ ===
+-                      isSourceTabFirstPartyNtp) {
+-                    return;
+-                  }
+-
+-                  this.isSourceTabFirstPartyNtp_ = isSourceTabFirstPartyNtp;
+-
+-                  // Since some pages aren't supported in non first party mode,
+-                  // change the section back to the overview.
+-                  if (!this.isSourceTabFirstPartyNtp_ &&
+-                      !this.pageSupportedOnNonFirstPartyNtps()) {
+-                    this.page_ = CustomizeChromePage.OVERVIEW;
+-                  }
+-                });
+     this.pageHandler_.updateAttachedTabState();
+ 
+     // We wait for load because `scrollIntoView` above requires the page to be
+@@ -275,10 +257,6 @@ export class AppElement extends AppElementBase {
+     await this.updateComplete;
+     page.focusOnBackButton();
+   }
+-
+-  private pageSupportedOnNonFirstPartyNtps() {
+-    return this.page_ === CustomizeChromePage.TOOLBAR;
+-  }
+ }
+ 
+ declare global {
+--- a/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
++++ b/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
+@@ -129,12 +129,6 @@ export class AppearanceElement extends AppearanceElementBase {
+         });
+     this.pageHandler_.updateTheme();
+ 
+-    this.attachedTabStateUpdatedId_ =
+-        CustomizeChromeApiProxy.getInstance()
+-            .callbackRouter.attachedTabStateUpdated.addListener(
+-                (isSourceTabFirstPartyNtp: boolean) => {
+-                  this.isSourceTabFirstPartyNtp_ = isSourceTabFirstPartyNtp;
+-                });
+     this.pageHandler_.updateAttachedTabState();
+ 
+     this.ntpManagedByNameUpdatedId_ =
