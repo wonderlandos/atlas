@@ -2180,7 +2180,6 @@ chrome/common/chrome_switches.cc
 chrome/common/conflicts/module_watcher_win.cc
 chrome/common/extensions/PRESUBMIT.py
 chrome/common/extensions/api/PRESUBMIT.py
-chrome/common/extensions/api/_api_features.json
 chrome/common/extensions/api/common_extension_api_unittest.cc
 chrome/common/extensions/api/content_settings.json
 chrome/common/extensions/api/cookies.json
@@ -15474,7 +15473,6 @@ v8/third_party/test262-harness/src/templates/runner.intl402.html
 v8/third_party/test262-harness/src/templates/runner.test262.html
 v8/third_party/utf8-decoder/utf8-decoder.h
 v8/tools/builtins-pgo/download_profiles.py
-v8/tools/builtins-pgo/profiles/meta.json
 v8/tools/callstats.html
 v8/tools/callstats.py
 v8/tools/clusterfuzz/js_fuzzer/package.json
