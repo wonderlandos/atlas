@@ -130,3 +130,4 @@ helium-ui/toolbar-style.patch
 helium-ui/omnibox-style.patch
 helium-ui/app-menu-style.patch
 
+helium/settings/move-search-suggest.patch
