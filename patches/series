@@ -131,3 +131,4 @@ helium-ui/omnibox-style.patch
 helium-ui/app-menu-style.patch
 
 helium/settings/move-search-suggest.patch
+helium/settings/move-macos-settings.patch
