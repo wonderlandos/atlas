@@ -53,7 +53,7 @@
  #include "ui/base/l10n/l10n_util.h"
  #include "url/gurl.h"
  
-@@ -533,3 +534,19 @@ std::unique_ptr<TemplateURLData> Templat
+@@ -533,3 +534,20 @@ std::unique_ptr<TemplateURLData> Templat
  
    return turl;
  }
@@ -62,11 +62,12 @@
 +  TemplateURLData turl;
 +  turl.SetShortName(base::UTF8ToUTF16(bang.name));
 +  turl.SetKeyword(u"!" + base::UTF8ToUTF16(bang.bang));
-+  turl.SetURL(bang.template_url.spec());
++  turl.SetURL(bang.template_url);
 +
-+  GURL favicon_url = bang.template_url.GetWithEmptyPath();
++  GURL favicon_url = GURL(bang.template_url).GetWithEmptyPath();
 +  favicon_url.path() = "/favicon.ico";
 +  turl.favicon_url = std::move(favicon_url);
++  turl.starter_pack_id = 65536 + bang.id;
 +
 +  turl.safe_for_autoreplace = false;
 +  turl.GenerateSyncGUID();
@@ -123,7 +124,7 @@
            search_engine_choice_service,
            /*search_terms_data=*/std::make_unique<SearchTermsData>(),
            /*web_data_service=*/nullptr,
-@@ -1400,11 +1408,21 @@ void TemplateURLService::Load() {
+@@ -1400,11 +1408,25 @@ void TemplateURLService::Load() {
  
    if (web_data_service_) {
      load_handle_ = web_data_service_->GetKeywords(this);
@@ -135,11 +136,15 @@
  }
  
 +void TemplateURLService::BangsLoadedCallback() {
-+  for (const auto& bang : bang_manager_->GetBangs()) {
-+    Add(std::make_unique<TemplateURL>(TemplateURLDataFromBang(bang)), true);
-+  }
-+
 +  LOG(INFO) << "BangsLoadedCallback() called";
++
++  for (const auto& bang : bang_manager_->GetBangs()) {
++    auto template_data = TemplateURLDataFromBang(bang);
++    if (!GetTemplateURLForKeyword(template_data.keyword())) {
++      Add(std::make_unique<TemplateURL>(
++        std::move(template_data), TemplateURL::Type::LOCAL), true);
++    }
++  }
 +}
 +
  base::CallbackListSubscription TemplateURLService::RegisterOnLoadedCallback(
@@ -198,7 +203,7 @@
    // This closure is run when the default search provider is set to Google.
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.cc
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,166 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -256,10 +261,12 @@
 +    if (bangs_.empty() && !load_pending_) {
 +        load_pending_ = true;
 +        DoStartFileFetch(url_loader_factory);
-+        callback_ = std::move(callback);
 +    } else if (!load_pending_) {
 +        std::move(callback).Run();
++        return;
 +    }
++
++    callbacks_.push_back(std::move(callback));
 +}
 +
 +void BangManager::DoStartFileFetch(
@@ -337,17 +344,23 @@
 +        }
 +
 +        auto b_gurl = GURL(*burl_template);
-+        if (!b_gurl.is_valid()) {
++        if (!b_gurl.is_valid() || !b_gurl.SchemeIsHTTPOrHTTPS()) {
 +            LOG(INFO) << "invalid bang url " << *burl_template;
 +            continue;
 +        }
 +
-+        bangs_.emplace_back(index++, *bname, *bbang, b_gurl);
++        // We need to pass the URL here as-is, because otherwise URLs
++        // which have the template in the path will have it %-encoded,
++        // which will break everything.
++        bangs_.emplace_back(index++, *bname, *bbang, *burl_template);
 +    }
 +
 +    LOG(INFO) << bangs_.size() << " bangs loaded";
-+    if (callback_) {
-+        std::move(callback_).Run();
++    if (!callbacks_.empty()) {
++        auto callbacks = std::move(callbacks_);
++        for (auto& cb : callbacks) {
++            std::move(cb).Run();
++        }
 +    }
 +}
 +
@@ -386,7 +399,7 @@
 +        size_t id;
 +        std::string name;
 +        std::string bang;
-+        GURL template_url;
++        std::string template_url;
 +    };
 +
 +    class BangManager {
@@ -412,9 +425,23 @@
 +
 +        std::vector<Bang> bangs_;
 +        bool load_pending_;
-+        base::OnceClosure callback_;
++        std::vector<base::OnceClosure> callbacks_;
 +    };
 +}
 +
 +#endif  // COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
 +
+--- a/components/omnibox/browser/autocomplete_input.cc
++++ b/components/omnibox/browser/autocomplete_input.cc
+@@ -729,9 +729,9 @@ bool AutocompleteInput::HasHTTPSScheme(c
+ // static
+ AutocompleteInput::FeaturedKeywordMode
+ AutocompleteInput::GetFeaturedKeywordMode(const std::u16string& text) {
+-  if (text == u"@")
++  if (text == u"@" || text == u"!")
+     return FeaturedKeywordMode::kExact;
+-  if (text.starts_with(u'@'))
++  if (text.starts_with(u'@') || text.starts_with(u'!'))
+     return FeaturedKeywordMode::kPrefix;
+   return FeaturedKeywordMode::kFalse;
+ }
