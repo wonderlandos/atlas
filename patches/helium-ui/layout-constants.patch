@@ -81,7 +81,12 @@
  
      case BROWSER_APP_MENU_CHIP_PADDING:
        if (touch_ui) {
-@@ -185,7 +180,7 @@ gfx::Insets GetLayoutInsets(LayoutInset
+@@ -181,11 +176,11 @@ gfx::Insets GetLayoutInsets(LayoutInset
+       if (touch_ui) {
+         return GetLayoutInsets(TOOLBAR_BUTTON);
+       } else {
+-        return gfx::Insets::TLBR(7, 10, 7, 4);
++        return gfx::Insets::TLBR(5, 7, 5, 5);
        }
  
      case TOOLBAR_INTERIOR_MARGIN:
