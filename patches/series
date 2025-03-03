@@ -114,6 +114,7 @@ helium/make-ddg-default.patch
 helium/add-kagi-search.patch
 helium/copy-page-url-shortcut.patch
 
+helium/update-default-browser-prefs.patch
 helium/proxy-extension-downloads.patch
 helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
