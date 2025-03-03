@@ -114,8 +114,6 @@ helium/make-ddg-default.patch
 helium/add-kagi-search.patch
 helium/copy-page-url-shortcut.patch
 
-helium/always-use-better-ntp.patch
-helium/clean-new-tab-page.patch
 helium/proxy-extension-downloads.patch
 helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
@@ -125,6 +123,8 @@ helium/add-native-bangs.patch
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
 
+helium-ui/always-use-better-ntp.patch
+helium-ui/clean-new-tab-page.patch
 helium-ui/remove-toolbar-corners.patch
 helium-ui/location-bar-style.patch
 helium-ui/layout-constants.patch
