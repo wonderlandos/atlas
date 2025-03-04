@@ -1,0 +1,25 @@
+--- a/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm
++++ b/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm
+@@ -41,7 +41,7 @@ namespace {
+ // values in BrowserNonClientFrameViewMac::GetCaptionButtonInsets don't account
+ // for a window with an NSToolbar.
+ constexpr int kTrafficLightsWidth = 62;
+-constexpr int kTabAlignmentInset = 4;
++constexpr int kTabAlignmentInset = 8;
+ 
+ class ImmersiveModeFocusSearchMac : public views::FocusSearch {
+  public:
+@@ -228,11 +228,9 @@ void ImmersiveModeControllerMac::SetEnab
+ gfx::Insets ImmersiveModeControllerMac::GetTabStripRegionViewInsets() {
+   int right_left_inset = kTabAlignmentInset + kTrafficLightsWidth;
+ 
+-  // Without this +1 top inset the tabs sit 1px too high. I assume this is
+-  // because in fullscreen there is no resize handle.
+   return browser_view_->frame()->GetFrameView()->CaptionButtonsOnLeadingEdge()
+-             ? gfx::Insets::TLBR(1, right_left_inset, 0, 0)
+-             : gfx::Insets::TLBR(1, 0, 0, right_left_inset);
++             ? gfx::Insets::TLBR(0, right_left_inset, 0, 0)
++             : gfx::Insets::TLBR(0, 0, 0, right_left_inset);
+ }
+ 
+ bool ImmersiveModeControllerMac::IsEnabled() const {

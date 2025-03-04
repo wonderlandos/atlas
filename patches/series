@@ -135,3 +135,4 @@ helium-ui/toolbar-style.patch
 helium-ui/omnibox-style.patch
 helium-ui/app-menu-style.patch
 helium-ui/fix-customize-side-panel.patch
+helium-ui/adjust-immersive-padding.patch
