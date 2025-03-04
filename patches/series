@@ -120,6 +120,7 @@ helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
 helium/break-chrome-webstore-update-url.patch
 helium/add-native-bangs.patch
+helium/force-eu-search-features.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
