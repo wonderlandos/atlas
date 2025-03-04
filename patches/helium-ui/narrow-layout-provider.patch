@@ -1,0 +1,26 @@
+--- a/ui/views/layout/layout_provider.cc
++++ b/ui/views/layout/layout_provider.cc
+@@ -197,17 +197,17 @@ ShapeSysTokens GetShapeSysToken(ShapeCon
+   static constexpr auto shape_token_map =
+       base::MakeFixedFlatMap<ShapeContextTokens, ShapeSysTokens>({
+           {ShapeContextTokens::kBadgeRadius, ShapeSysTokens::kXSmall},
+-          {ShapeContextTokens::kButtonRadius, ShapeSysTokens::kFull},
++          {ShapeContextTokens::kButtonRadius, ShapeSysTokens::kSmall},
+           {ShapeContextTokens::kComboboxRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kDialogRadius, ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kDialogRadius, ShapeSysTokens::kSmall},
+           {ShapeContextTokens::kFindBarViewRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kMenuRadius, ShapeSysTokens::kMediumSmall},
+-          {ShapeContextTokens::kMenuAuxRadius, ShapeSysTokens::kMediumSmall},
+-          {ShapeContextTokens::kMenuTouchRadius, ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kMenuRadius, ShapeSysTokens::kSmall},
++          {ShapeContextTokens::kMenuAuxRadius, ShapeSysTokens::kSmall},
++          {ShapeContextTokens::kMenuTouchRadius, ShapeSysTokens::kSmall},
+           {ShapeContextTokens::kOmniboxExpandedRadius, ShapeSysTokens::kMedium},
+           {ShapeContextTokens::kTextfieldRadius, ShapeSysTokens::kSmall},
+           {ShapeContextTokens::kSidePanelContentRadius,
+-           ShapeSysTokens::kMedium},
++           ShapeSysTokens::kXSmall},
+           {ShapeContextTokens::kSidePanelPageContentRadius,
+            ShapeSysTokens::kSmall},
+       });
