@@ -9,7 +9,7 @@
 +      "keyword": "kagi.com",
 +      "favicon_url": "https://kagi.com/favicon.ico",
 +      "search_url": "https://kagi.com/search?q={searchTerms}",
-+      "suggest_url": "https://kagi.com/autosuggest?q={searchTerms}",
++      "suggest_url": "https://kagisuggest.com/api/autosuggest?q={searchTerms}",
 +      "new_tab_url": "https://kagi.com/",
 +      "type": "SEARCH_ENGINE_KAGI",
 +      "id": 255
