@@ -1,0 +1,10 @@
+--- a/components/update_client/update_checker.cc
++++ b/components/update_client/update_checker.cc
+@@ -103,7 +103,6 @@ void UpdateCheckerImpl::CheckForUpdates(
+     scoped_refptr<UpdateContext> context,
+     const base::flat_map<std::string, std::string>& additional_attributes,
+     UpdateCheckCallback update_check_callback) {
+-  return;
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+ 
+   update_check_callback_ = std::move(update_check_callback);

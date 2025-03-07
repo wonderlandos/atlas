@@ -144,3 +144,28 @@
  
    // Returns true if this extension's update URL is the extension gallery.
    static bool UpdatesFromGallery(const Extension* extension);
+--- a/components/component_updater/component_updater_url_constants.cc
++++ b/components/component_updater/component_updater_url_constants.cc
+@@ -15,9 +15,9 @@ namespace component_updater {
+ // The value of |kDefaultUrlSource| can be overridden with
+ // --component-updater=url-source=someurl.
+ const char kUpdaterJSONDefaultUrl[] =
+-    "https://update.googleapis.com/service/update2/json";
++    "https://services.helium.computer/ext/webstore/update";
+ 
+ const char kUpdaterJSONFallbackUrl[] =
+-    "http://update.googleapis.com/service/update2/json";
++    "trk:http://update.googleapis.com/service/update2/json";
+ 
+ }  // namespace component_updater
+--- a/chrome/browser/extensions/updater/chrome_extension_downloader_factory.cc
++++ b/chrome/browser/extensions/updater/chrome_extension_downloader_factory.cc
+@@ -50,7 +50,7 @@ ChromeExtensionDownloaderFactory::Create
+     manifest_query_params += "&testrequest=1";
+   }
+   downloader->set_manifest_query_params(manifest_query_params);
+-  downloader->set_ping_enabled_domain("google.com");
++  downloader->set_ping_enabled_domain("helium.computer");
+   return downloader;
+ }
+ 
