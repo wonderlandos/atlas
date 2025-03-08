@@ -68,3 +68,23 @@
  }
  
  BEGIN_METADATA(OmniboxRowView)
+--- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
+@@ -584,7 +584,7 @@ int OmniboxMatchCellView::GetImageIndent
+   // b) Entities, answers, and icons continue to be center-aligned.
+   // c) Regardless of the state of those other features and their widths.
+   // This applies to both touch-UI and non-touch-UI.
+-  int indent = 16 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
++  int indent = 13 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
+ 
+   return indent;
+ }
+@@ -614,7 +614,7 @@ int OmniboxMatchCellView::GetTextIndent(
+ 
+   // For normal matches, the gap between the left edge of this view and the
+   // left edge of its favicon or answer image.
+-  int indent = 52;
++  int indent = 49;
+ 
+   // The IPH row left inset is +`kIphOffset` from other suggestions, so the text
+   // indent should be -`kIphOffset` to keep the text aligned. IPH matches seem
