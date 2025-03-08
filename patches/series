@@ -115,6 +115,7 @@ helium/add-kagi-search.patch
 helium/copy-page-url-shortcut.patch
 
 helium/update-default-browser-prefs.patch
+helium/unbreak-chrome-webstore-url.patch
 helium/proxy-extension-downloads.patch
 helium/reenable-update-checks.patch
 helium/download-icons-from-source.patch
