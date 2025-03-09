@@ -12,17 +12,3 @@
    UpdatePolicy(std::move(bundle));
  }
  
---- a/components/policy/core/common/policy_loader_common.cc
-+++ b/components/policy/core/common/policy_loader_common.cc
-@@ -24,9 +24,9 @@ namespace {
- // implementation. And the Chrome one can be moved to c/b/policy.
- // From extensions/common/extension_urls.cc
- const char kChromeWebstoreUpdateURL[] =
--    "https://clients2.google.com/service/update2/crx";
-+    "https://services.helium.computer/ext/webstore";
- const char16_t kChromeWebstoreUpdateURL16[] =
--    u"https://clients2.google.com/service/update2/crx";
-+    u"https://services.helium.computer/ext/webstore";
- 
- // From chrome/browser/extensions/extension_management_constants.cc
- const char kWildcard[] = "*";
