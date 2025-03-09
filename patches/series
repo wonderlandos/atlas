@@ -128,6 +128,8 @@ helium/enable-tab-muting.patch
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
 
+helium/hop/setup.patch
+
 helium-ui/always-use-better-ntp.patch
 helium-ui/clean-new-tab-page.patch
 helium-ui/remove-toolbar-corners.patch
