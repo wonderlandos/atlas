@@ -130,6 +130,7 @@ helium/settings/move-macos-settings.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
+helium/hop/preinstall-ublock-origin.patch
 
 helium-ui/always-use-better-ntp.patch
 helium-ui/clean-new-tab-page.patch
