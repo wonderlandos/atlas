@@ -70,7 +70,7 @@
  BEGIN_METADATA(OmniboxRowView)
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
-@@ -584,7 +584,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -587,7 +587,7 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
@@ -79,7 +79,7 @@
  
    return indent;
  }
-@@ -614,7 +614,7 @@ int OmniboxMatchCellView::GetTextIndent(
+@@ -617,7 +617,7 @@ int OmniboxMatchCellView::GetTextIndent(
  
    // For normal matches, the gap between the left edge of this view and the
    // left edge of its favicon or answer image.
