@@ -4230,7 +4230,6 @@ extensions/browser/suggest_permission_util.cc
 extensions/browser/updater/extension_downloader.cc
 extensions/browser/updater/extension_downloader_test_helper.cc
 extensions/browser/updater/extension_downloader_unittest.cc
-extensions/browser/updater/safe_manifest_parser.cc
 extensions/browser/updater/safe_manifest_parser.h
 extensions/browser/updater/safe_manifest_parser_unittest.cc
 extensions/browser/url_loader_factory_manager.h
@@ -10567,9 +10566,6 @@ third_party/google_input_tools/third_party/closure_library/closure/goog/ui/regis
 third_party/google_input_tools/third_party/closure_library/closure/goog/ui/separator.js
 third_party/google_input_tools/third_party/closure_library/closure/goog/useragent/useragent.js
 third_party/google_input_tools/third_party/closure_library/third_party/closure/goog/mochikit/async/deferred.js
-third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizer.h
-third_party/google_toolbox_for_mac/src/UnitTesting/GTMGoogleTestRunner.mm
-third_party/google_toolbox_for_mac/src/XcodeConfig/xcconfigs-readme.txt
 third_party/googletest/src/docs/_layouts/default.html
 third_party/googletest/src/googlemock/src/gmock_main.cc
 third_party/googletest/src/googletest/include/gtest/gtest_pred_impl.h
@@ -15252,6 +15248,7 @@ v8/third_party/siphash/halfsiphash.cc
 v8/third_party/siphash/halfsiphash.h
 v8/third_party/utf8-decoder/utf8-decoder.h
 v8/tools/builtins-pgo/download_profiles.py
+v8/tools/builtins-pgo/profiles/meta.json
 v8/tools/callstats.html
 v8/tools/callstats.py
 v8/tools/clusterfuzz/js_fuzzer/package.json

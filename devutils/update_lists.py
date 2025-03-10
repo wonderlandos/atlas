@@ -118,6 +118,7 @@ DOMAIN_EXCLUDE_PREFIXES = [
     'extensions/common/api/_api_features.json',
     'chrome/common/extensions/api/_api_features.json',
     'extensions/common/extension_urls.cc',
+    'extensions/browser/updater/safe_manifest_parser.cc',
 ]
 
 # pylint: enable=line-too-long

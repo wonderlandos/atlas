@@ -8191,7 +8191,6 @@ third_party/glslang/src/Test/remap.invalid-spirv-2.spv
 third_party/glslang/src/Test/remap.literal64.everything.spv
 third_party/glslang/src/Test/remap.literal64.none.spv
 third_party/google-closure-library/scripts/ci/CloseAdobeDialog.exe
-third_party/google_toolbox_for_mac/src/UnitTesting/TestData/GTMUnitTestingTest.nib/keyedobjects.nib
 third_party/grpc/src/examples/android/helloworld/gradle/wrapper/gradle-wrapper.jar
 third_party/grpc/src/examples/php/GPBMetadata/Helloworld.php
 third_party/grpc/src/examples/php/route_guide/GPBMetadata/RouteGuide.php
