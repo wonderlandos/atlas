@@ -12,3 +12,14 @@
    UpdatePolicy(std::move(bundle));
  }
  
+--- a/chrome/browser/extensions/extension_management.cc
++++ b/chrome/browser/extensions/extension_management.cc
+@@ -587,7 +587,7 @@ void ExtensionManagement::Refresh() {
+   const base::Value::List* denied_list_pref =
+       LoadListPreference(pref_names::kInstallDenyList, false);
+   const base::Value::Dict* forced_list_pref =
+-      LoadDictPreference(pref_names::kInstallForceList, true);
++      LoadDictPreference(pref_names::kInstallForceList, false);
+   const base::Value::List* install_sources_pref =
+       LoadListPreference(pref_names::kAllowedInstallSites, true);
+   const base::Value::List* allowed_types_pref =
