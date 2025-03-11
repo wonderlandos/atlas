@@ -124,7 +124,18 @@
            search_engine_choice_service,
            /*search_terms_data=*/std::make_unique<SearchTermsData>(),
            /*web_data_service=*/nullptr,
-@@ -1390,11 +1398,25 @@ void TemplateURLService::Load() {
+@@ -551,6 +559,10 @@ bool TemplateURLService::ShowInActivesLi
+ }
+ 
+ bool TemplateURLService::HiddenFromLists(const TemplateURL* t_url) const {
++  if (t_url->bang_id()) {
++    return true;
++  }
++
+   switch (t_url->policy_origin()) {
+     case TemplateURLData::PolicyOrigin::kNoPolicy:
+       // Hide if the preferred search engine for the keyword is created by
+@@ -1390,11 +1402,25 @@ void TemplateURLService::Load() {
  
    if (web_data_service_) {
      load_handle_ = web_data_service_->GetKeywords(this);
@@ -496,18 +507,6 @@
    friend bool operator==(const TemplateURLData&,
                           const TemplateURLData&) = default;
  
---- a/chrome/browser/ui/webui/settings/search_engines_handler.cc
-+++ b/chrome/browser/ui/webui/settings/search_engines_handler.cc
-@@ -152,7 +152,8 @@ base::Value::Dict SearchEnginesHandler::
-   for (size_t i = last_default_engine_index; i < last_active_engine_index;
-        ++i) {
-     // Third argument is false, as the engine is not from an extension.
--    actives.Append(CreateDictionaryForEngine(i, i == default_index));
-+    if (list_controller_.GetTemplateURL(i)->bang_id() == 0)
-+      actives.Append(CreateDictionaryForEngine(i, i == default_index));
-   }
- 
-   // Build the third list (other search engines).
 --- a/components/search_engines/template_url.cc
 +++ b/components/search_engines/template_url.cc
 @@ -1683,6 +1683,8 @@ bool TemplateURL::IsBetterThanConflictin
