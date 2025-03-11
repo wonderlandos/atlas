@@ -27,21 +27,7 @@
                section="autofill">
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -190,13 +190,6 @@ function createRoutes(): SettingsRoutes
-     r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
-     r.IMPORT_DATA.isNavigableDialog = true;
-     // </if>
--
--    r.SYNC = r.PEOPLE.createChild('/syncSetup');
--    r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
--    if (!loadTimeData.getBoolean('enableAiSettingsPageRefresh') &&
--        loadTimeData.getBoolean('showHistorySearchControl')) {
--      r.HISTORY_SEARCH = r.SYNC.createChild('/historySearch');
--    }
-   }
- 
-   const visibility = pageVisibility || {};
-@@ -235,29 +228,6 @@ function createRoutes(): SettingsRoutes
+@@ -228,29 +228,6 @@ function createRoutes(): SettingsRoutes
      r.FONTS = r.APPEARANCE.createChild('/fonts');
    }
  
