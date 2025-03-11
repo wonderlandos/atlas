@@ -124,6 +124,7 @@ helium/break-chrome-webstore-update-url.patch
 helium/add-native-bangs.patch
 helium/force-eu-search-features.patch
 helium/enable-tab-muting.patch
+helium/disable-bookmarks-bar.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
