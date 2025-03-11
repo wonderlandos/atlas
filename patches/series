@@ -148,3 +148,4 @@ helium-ui/adjust-immersive-padding.patch
 helium-ui/adjust-side-panel-padding.patch
 helium-ui/narrow-layout-provider.patch
 helium-ui/clean-app-menu-model.patch
+helium-ui/remove-dead-toolbar-actions.patch
