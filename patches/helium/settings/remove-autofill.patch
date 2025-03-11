@@ -1,0 +1,73 @@
+--- a/chrome/browser/resources/settings/settings_menu/settings_menu.html
++++ b/chrome/browser/resources/settings/settings_menu/settings_menu.html
+@@ -57,13 +57,6 @@
+           $i18n{peoplePageTitle}
+           <cr-ripple></cr-ripple>
+         </a>
+-        <a role="menuitem" id="autofill" href="/autofill"
+-            hidden="[[!pageVisibility.autofill]]"
+-            class="cr-nav-menu-item">
+-          <cr-icon icon="settings:assignment"></cr-icon>
+-          $i18n{autofillPageTitle}
+-          <cr-ripple></cr-ripple>
+-        </a>
+         <a role="menuitem" href="/privacy"
+             hidden="[[!pageVisibility.privacy]]"
+             class="cr-nav-menu-item">
+--- a/chrome/browser/resources/settings/basic_page/basic_page.html
++++ b/chrome/browser/resources/settings/basic_page/basic_page.html
+@@ -53,7 +53,7 @@
+             <settings-ai-page prefs="{{prefs}}"></settings-ai-page>
+           </settings-section>
+         </template>
+-        <template is="dom-if" if="[[showPage_(pageVisibility.autofill)]]"
++        <template is="dom-if" if="[[false]]"
+             restamp>
+           <settings-section page-title="$i18n{autofillPageTitle}"
+               section="autofill">
+--- a/chrome/browser/resources/settings/route.ts
++++ b/chrome/browser/resources/settings/route.ts
+@@ -190,13 +190,6 @@ function createRoutes(): SettingsRoutes
+     r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
+     r.IMPORT_DATA.isNavigableDialog = true;
+     // </if>
+-
+-    r.SYNC = r.PEOPLE.createChild('/syncSetup');
+-    r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
+-    if (!loadTimeData.getBoolean('enableAiSettingsPageRefresh') &&
+-        loadTimeData.getBoolean('showHistorySearchControl')) {
+-      r.HISTORY_SEARCH = r.SYNC.createChild('/historySearch');
+-    }
+   }
+ 
+   const visibility = pageVisibility || {};
+@@ -235,29 +228,6 @@ function createRoutes(): SettingsRoutes
+     r.FONTS = r.APPEARANCE.createChild('/fonts');
+   }
+ 
+-  if (visibility.autofill !== false) {
+-    r.AUTOFILL = r.BASIC.createSection(
+-        '/autofill', 'autofill', loadTimeData.getString('autofillPageTitle'));
+-    r.PAYMENTS = r.AUTOFILL.createChild('/payments');
+-    r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
+-
+-    if (loadTimeData.getBoolean('autofillAiEnabled')) {
+-      r.AUTOFILL_AI = r.AUTOFILL.createChild('/autofillAi');
+-    }
+-
+-    // <if expr="enable_glic">
+-    if (visibility.glic !== false &&
+-        loadTimeData.getBoolean('showGlicSettings')) {
+-      r.GLIC = r.BASIC.createSection(
+-          '/glic', 'glic', loadTimeData.getString('glicPageTitle'));
+-    }
+-    // </if>
+-
+-    // <if expr="is_win or is_macosx">
+-    r.PASSKEYS = r.AUTOFILL.createChild('/passkeys');
+-    // </if>
+-  }
+-
+   if (visibility.privacy !== false) {
+     r.PRIVACY = r.BASIC.createSection(
+         '/privacy', 'privacy', loadTimeData.getString('privacyPageTitle'));
