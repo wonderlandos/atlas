@@ -57,7 +57,7 @@
    if (!browser_->profile()->IsOffTheRecord()) {
      auto recent_tabs_sub_menu =
          std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
-@@ -1833,15 +1797,6 @@ void AppMenuModel::Build() {
+@@ -1833,15 +1797,11 @@ void AppMenuModel::Build() {
          kTabGroupsMenuItem);
    }
  
@@ -70,10 +70,15 @@
 -    SetElementIdentifierAt(GetIndexOfCommandId(IDC_EXTENSIONS_SUBMENU).value(),
 -                           kExtensionsMenuItem);
 -  }
++  AddItemWithStringIdAndVectorIcon(
++      this, IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS,
++      IDS_EXTENSIONS_SUBMENU,
++      vector_icons::kExtensionChromeRefreshIcon);
++
    AddItemWithStringIdAndVectorIcon(this, IDC_CLEAR_BROWSING_DATA,
                                     IDS_CLEAR_BROWSING_DATA,
                                     kTrashCanRefreshIcon);
-@@ -1869,9 +1824,6 @@ void AppMenuModel::Build() {
+@@ -1869,9 +1829,6 @@ void AppMenuModel::Build() {
    }
  #endif
  
@@ -83,7 +88,7 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
-@@ -1912,11 +1864,7 @@ void AppMenuModel::Build() {
+@@ -1912,11 +1869,7 @@ void AppMenuModel::Build() {
    AddSubMenuWithStringIdAndVectorIcon(this, IDC_HELP_MENU, IDS_HELP_MENU,
                                        sub_menus_.back().get(), kHelpMenuIcon);
  #else
