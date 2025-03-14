@@ -31,7 +31,7 @@
  
 --- a/tools/metrics/histograms/enums.xml
 +++ b/tools/metrics/histograms/enums.xml
-@@ -21034,6 +21034,7 @@ Called by update_net_error_codes.py.-->
+@@ -21036,6 +21036,7 @@ Called by update_net_error_codes.py.-->
    <int value="72" label="YouSearch"/>
    <int value="73" label="StarterPackGemini"/>
    <int value="74" label="Lilo"/>
