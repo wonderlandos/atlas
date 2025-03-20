@@ -98,7 +98,7 @@
    deps = [
 --- a/chrome/common/importer/importer_type.h
 +++ b/chrome/common/importer/importer_type.h
-@@ -28,6 +28,13 @@ enum ImporterType {
+@@ -28,6 +28,14 @@ enum ImporterType {
  #if BUILDFLAG(IS_WIN)
    TYPE_EDGE = 6,
  #endif
@@ -109,6 +109,7 @@
 +  TYPE_YANDEX = 68,
 +  TYPE_WHALE = 69,
 +  TYPE_ARC = 70,
++  TYPE_BRAVE = 71,
  };
  
  }  // namespace importer
@@ -149,12 +150,12 @@
  IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
                                importer::TYPE_UNKNOWN,
 -                              importer::TYPE_EDGE)
-+                              importer::TYPE_ARC)
++                              importer::TYPE_BRAVE)
  #else
  IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
                                importer::TYPE_UNKNOWN,
 -                              importer::TYPE_BOOKMARKS_FILE)
-+                              importer::TYPE_ARC)
++                              importer::TYPE_BRAVE)
  #endif
  
  IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImportItem,

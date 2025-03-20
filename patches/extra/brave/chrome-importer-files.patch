@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,142 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -125,6 +125,12 @@
 +      GetChromeSourceProfiles(GetWhaleUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetWhaleUserDataFolder(), kWhaleBrowser, importer::TYPE_WHALE);
++
++  AddChromeToProfiles(
++    profiles,
++    GetChromeSourceProfiles(GetBraveUserDataFolder().Append(
++        base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
++    GetBraveUserDataFolder(), kBraveBrowser, importer::TYPE_BRAVE);
 +
 +#if BUILDFLAG(IS_LINUX)
 +  // Installed via snap Opera has different profile path.
@@ -358,7 +364,7 @@
 +#endif
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,54 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -398,6 +404,7 @@
 +base::FilePath GetOperaUserDataFolder();
 +base::FilePath GetYandexUserDataFolder();
 +base::FilePath GetWhaleUserDataFolder();
++base::FilePath GetBraveUserDataFolder();
 +
 +#if BUILDFLAG(IS_LINUX)
 +base::FilePath GetOperaSnapUserDataFolder();
@@ -414,7 +421,7 @@
 +#endif  // BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 --- /dev/null
 +++ b/chrome/common/importer/importer_constants.h
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,36 @@
 +/* Copyright (c) 2020 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -447,6 +454,7 @@
 +inline constexpr char kYandexBrowser[] = "Yandex";
 +inline constexpr char kWhaleBrowser[] = "NAVER Whale";
 +inline constexpr char kArcBrowser[] = "Arc";
++inline constexpr char kBraveBrowser[] = "Brave";
 +// End of browser names section
 +
 +#endif  // BRAVE_COMMON_IMPORTER_IMPORTER_CONSTANTS_H_
@@ -505,7 +513,7 @@
 +#endif  // BRAVE_COMMON_IMPORTER_SCOPED_COPY_FILE_H_
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_linux.cc
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,133 @@
 +/* Copyright (c) 2018 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -627,9 +635,21 @@
 +
 +  return result;
 +}
++
++base::FilePath GetBraveUserDataFolder() {
++  base::FilePath result;
++  if (!base::PathService::Get(base::DIR_HOME, &result))
++    return base::FilePath();
++
++  result = result.Append(".config");
++  result = result.Append("BraveSoftware");
++  result = result.Append("Brave-Browser");
++
++  return result;
++}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_mac.mm
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,72 @@
 +/* Copyright (c) 2018 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -697,9 +717,14 @@
 +  base::FilePath result = base::apple::GetUserLibraryPath();
 +  return result.Append("Application Support").Append("Arc").Append("User Data");
 +}
++
++base::FilePath GetBraveUserDataFolder() {
++  base::FilePath result = base::apple::GetUserLibraryPath();
++  return result.Append("Application Support").Append("BraveSoftware").Append("Brave-Browser");
++}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_win.cc
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,145 @@
 +/* Copyright (c) 2021 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -833,6 +858,16 @@
 +      .AppendASCII("TheBrowserCompany.Arc_ttt1ap7aakyb4")
 +      .AppendASCII("LocalCache")
 +      .AppendASCII("Local")
++      .AppendASCII("User Data");
++}
++
++base::FilePath GetBraveUserDataFolder() {
++  base::FilePath result;
++  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &result))
++    return base::FilePath();
++
++  return result.AppendASCII("BraveSoftware")
++      .AppendASCII("Brave-Browser")
 +      .AppendASCII("User Data");
 +}
 --- /dev/null
@@ -1262,7 +1297,7 @@
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORTER_OBSERVER_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.cc
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,110 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1287,6 +1322,7 @@
 +    case importer::TYPE_YANDEX:
 +    case importer::TYPE_WHALE:
 +    case importer::TYPE_ARC:
++    case importer::TYPE_BRAVE:
 +      return true;
 +    default:
 +      return false;
@@ -1988,7 +2024,7 @@
 +#endif  // BRAVE_BROWSER_IMPORTER_EXTENSIONS_IMPORT_HELPERS_H_
 --- /dev/null
 +++ b/chrome/utility/importer/brave_profile_import_impl.cc
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,133 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2035,6 +2071,8 @@
 +      return new ChromeImporter();
 +    case importer::TYPE_ARC:
 +      return new ChromeImporter();
++    case importer::TYPE_BRAVE:
++      return new ChromeImporter();
 +    default:
 +      break;
 +  }
@@ -2070,6 +2108,8 @@
 +    command_line->AppendSwitch("import-whale");
 +  } else if (source_profile.importer_type == importer::TYPE_ARC) {
 +    command_line->AppendSwitch("import-arc");
++  } else if (source_profile.importer_type == importer::TYPE_BRAVE) {
++    command_line->AppendSwitch("import-brave");
 +  } else if (source_profile.importer_type == importer::TYPE_VIVALDI) {
 +    command_line->AppendSwitch("import-vivaldi");
 +  }
