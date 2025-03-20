@@ -113,7 +113,7 @@
  }  // namespace importer
 --- a/tools/metrics/histograms/metadata/sql/histograms.xml
 +++ b/tools/metrics/histograms/metadata/sql/histograms.xml
-@@ -38,6 +38,7 @@ chromium-metrics-reviews@9oo91e.qjz9zk.
+@@ -38,6 +38,7 @@ chromium-metrics-reviews@google.com.
    <variant name="DataSharingGroupStorage" summary="DataSharingGroupStorage"/>
    <variant name="DBSCSessions" summary="DBSCSessions"/>
    <variant name="DIPS" summary="DIPS"/>
@@ -231,7 +231,7 @@
  #if BUILDFLAG(IS_WIN)
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -851,6 +851,8 @@ void AddImportDataStrings(content::WebUI
+@@ -853,6 +853,8 @@ void AddImportDataStrings(content::WebUI
        {"importHistory", IDS_SETTINGS_IMPORT_HISTORY_CHECKBOX},
        {"importFavorites", IDS_SETTINGS_IMPORT_FAVORITES_CHECKBOX},
        {"importPasswords", IDS_SETTINGS_IMPORT_PASSWORDS_CHECKBOX},
@@ -256,7 +256,7 @@
        </div>
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -1507,6 +1507,10 @@ static_library("ui") {
+@@ -1516,6 +1516,10 @@ static_library("ui") {
        "webui/settings/accessibility_main_handler.h",
        "webui/settings/appearance_handler.cc",
        "webui/settings/appearance_handler.h",
@@ -267,7 +267,7 @@
        "webui/settings/browser_lifetime_handler.cc",
        "webui/settings/browser_lifetime_handler.h",
        "webui/settings/captions_handler.cc",
-@@ -1660,6 +1664,13 @@ static_library("ui") {
+@@ -1669,6 +1673,13 @@ static_library("ui") {
        ]
      }
  
