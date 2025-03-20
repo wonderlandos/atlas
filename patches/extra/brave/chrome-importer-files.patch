@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,136 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -82,6 +82,12 @@
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetCanaryUserDataFolder(), kGoogleChromeBrowserCanary,
 +      importer::TYPE_CHROME);
++
++  AddChromeToProfiles(
++      profiles,
++      GetChromeSourceProfiles(GetArcUserDataFolder().Append(
++          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
++      GetArcUserDataFolder(), kArcBrowser, importer::TYPE_ARC);
 +#endif
 +  AddChromeToProfiles(
 +      profiles,
@@ -352,7 +358,7 @@
 +#endif
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.h
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,53 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -381,6 +387,8 @@
 +#if !BUILDFLAG(IS_LINUX)
 +// Canary is not available on Linux
 +base::FilePath GetCanaryUserDataFolder();
++// Arc only has Windows/Mac builds
++base::FilePath GetArcUserDataFolder();
 +#endif
 +base::FilePath GetChromiumUserDataFolder();
 +
@@ -406,7 +414,7 @@
 +#endif  // BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 --- /dev/null
 +++ b/chrome/common/importer/importer_constants.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,35 @@
 +/* Copyright (c) 2020 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -438,6 +446,7 @@
 +inline constexpr char kOperaBrowser[] = "Opera";
 +inline constexpr char kYandexBrowser[] = "Yandex";
 +inline constexpr char kWhaleBrowser[] = "NAVER Whale";
++inline constexpr char kArcBrowser[] = "Arc";
 +// End of browser names section
 +
 +#endif  // BRAVE_COMMON_IMPORTER_IMPORTER_CONSTANTS_H_
@@ -620,7 +629,7 @@
 +}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_mac.mm
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,67 @@
 +/* Copyright (c) 2018 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -683,9 +692,14 @@
 +  base::FilePath result = base::apple::GetUserLibraryPath();
 +  return result.Append("Application Support").Append("Naver").Append("Whale");
 +}
++
++base::FilePath GetArcUserDataFolder() {
++  base::FilePath result = base::apple::GetUserLibraryPath();
++  return result.Append("Application Support").Append("Arc").Append("User Data");
++}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_win.cc
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,135 @@
 +/* Copyright (c) 2021 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -807,6 +821,18 @@
 +
 +  return result.AppendASCII("Naver")
 +      .AppendASCII("Naver Whale")
++      .AppendASCII("User Data");
++}
++
++base::FilePath GetArcUserDataFolder() {
++  base::FilePath result;
++  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &result))
++    return base::FilePath();
++
++  return result.AppendASCII("Packages")
++      .AppendASCII("TheBrowserCompany.Arc_ttt1ap7aakyb4")
++      .AppendASCII("LocalCache")
++      .AppendASCII("Local")
 +      .AppendASCII("User Data");
 +}
 --- /dev/null
@@ -1236,7 +1262,7 @@
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORTER_OBSERVER_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.cc
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,109 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1260,6 +1286,7 @@
 +    case importer::TYPE_OPERA:
 +    case importer::TYPE_YANDEX:
 +    case importer::TYPE_WHALE:
++    case importer::TYPE_ARC:
 +      return true;
 +    default:
 +      return false;
@@ -1961,7 +1988,7 @@
 +#endif  // BRAVE_BROWSER_IMPORTER_EXTENSIONS_IMPORT_HELPERS_H_
 --- /dev/null
 +++ b/chrome/utility/importer/brave_profile_import_impl.cc
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,129 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2006,6 +2033,8 @@
 +      return new ChromeImporter();
 +    case importer::TYPE_WHALE:
 +      return new ChromeImporter();
++    case importer::TYPE_ARC:
++      return new ChromeImporter();
 +    default:
 +      break;
 +  }
@@ -2039,6 +2068,8 @@
 +    command_line->AppendSwitch("import-yandex");
 +  } else if (source_profile.importer_type == importer::TYPE_WHALE) {
 +    command_line->AppendSwitch("import-whale");
++  } else if (source_profile.importer_type == importer::TYPE_ARC) {
++    command_line->AppendSwitch("import-arc");
 +  } else if (source_profile.importer_type == importer::TYPE_VIVALDI) {
 +    command_line->AppendSwitch("import-vivaldi");
 +  }
