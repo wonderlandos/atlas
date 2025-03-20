@@ -107,6 +107,9 @@ extra/ungoogled-chromium/disable-chromelabs.patch
 extra/ungoogled-chromium/remove-pac-size-limit.patch
 extra/ungoogled-chromium/add-flag-to-spoof-webgl-renderer-info.patch
 
+extra/brave/chrome-importer-files.patch
+extra/brave/custom-importer.patch
+
 helium/add-extra-channel-info.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch
