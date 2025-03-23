@@ -6,8 +6,8 @@
    }
 -  return gfx::RoundedCornersF(GetPreferredSize().height() / 2);
 +
-+  // location bar rounding is 8px and padding is 4px, so inner rounding is 4px
-+  return gfx::RoundedCornersF(4.0f);
++  // location bar rounding is 8px and padding is 2px, so inner rounding is 6px
++  return gfx::RoundedCornersF(6.0f);
  }
  
  void IconLabelBubbleView::SetCornerRadii(const gfx::RoundedCornersF& radii) {

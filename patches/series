@@ -152,3 +152,4 @@ helium-ui/clean-app-menu-model.patch
 helium-ui/remove-dead-toolbar-actions.patch
 helium-ui/remove-dead-profile-actions.patch
 helium-ui/clean-up-installed-extension-bubble.patch
+helium-ui/transparent-location-icon.patch
