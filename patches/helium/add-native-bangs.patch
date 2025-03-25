@@ -43,6 +43,14 @@
      "template_url_data.cc",
      "template_url_data.h",
      "template_url_data_util.cc",
+@@ -77,6 +79,7 @@ static_library("search_engines") {
+     "//components/country_codes",
+     "//components/crash/core/common:crash_key",
+     "//components/database_utils",
++    "//components/helium_services",
+     "//components/infobars/core",
+     "//components/lens:lens",
+     "//components/lens/proto/server:proto",
 --- a/components/search_engines/template_url_data_util.cc
 +++ b/components/search_engines/template_url_data_util.cc
 @@ -13,6 +13,7 @@
@@ -139,7 +147,7 @@
  
    if (web_data_service_) {
      load_handle_ = web_data_service_->GetKeywords(this);
-+    bang_manager_->LoadBangs(url_loader_factory_,
++    bang_manager_->LoadBangs(url_loader_factory_, prefs_.get(),
 +      base::BindOnce(&TemplateURLService::BangsLoadedCallback, base::Unretained(this)));
    } else {
      ChangeToLoadedState();
@@ -214,7 +222,7 @@
    // This closure is run when the default search provider is set to Google.
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.cc
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,174 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -230,6 +238,7 @@
 +#include "base/memory/weak_ptr.h"
 +#include "base/memory/singleton.h"
 +#include "base/json/json_reader.h"
++#include "components/helium_services/helium_services_helpers.h"
 +#include "net/base/load_flags.h"
 +#include "net/http/http_status_code.h"
 +#include "services/network/public/cpp/resource_request.h"
@@ -268,10 +277,11 @@
 +
 +void BangManager::LoadBangs(
 +    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
++    PrefService& prefs,
 +    base::OnceClosure callback) {
 +    if (bangs_.empty() && !load_pending_) {
 +        load_pending_ = true;
-+        DoStartFileFetch(url_loader_factory);
++        DoStartFileFetch(url_loader_factory, prefs);
 +    } else if (!load_pending_) {
 +        std::move(callback).Run();
 +        return;
@@ -281,10 +291,16 @@
 +}
 +
 +void BangManager::DoStartFileFetch(
-+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
++    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
++    PrefService& prefs
++) {
 +    auto request = std::make_unique<network::ResourceRequest>();
-+    request->url = GURL(kBangsUrl);
-+    request->load_flags = net::LOAD_NORMAL;
++    request->url = helium::GetServicesBaseURL(prefs).Resolve(kBangsPrefix);
++
++    request->load_flags = helium::ShouldFetchBangs(prefs)
++                            ? net::LOAD_NORMAL
++                            : net::LOAD_ONLY_FROM_CACHE;
++
 +    request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 +    request->headers.SetHeader("Accept", "application/json");
 +
@@ -383,7 +399,7 @@
 +
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.h
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,65 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -397,14 +413,14 @@
 +
 +#include "base/memory/weak_ptr.h"
 +#include "base/functional/callback.h"
++#include "components/prefs/pref_service.h"
 +#include "services/network/public/cpp/simple_url_loader.h"
 +#include "services/network/public/cpp/shared_url_loader_factory.h"
 +#include "url/gurl.h"
 +
 +namespace Bangs {
 +    // Template URL where to fetch bangs data from.
-+    static constexpr char kBangsUrl[] =
-+        "https://services.helium.computer/bangs.json";
++    static constexpr char kBangsPrefix[] = "/bangs.json";
 +
 +    struct Bang {
 +        size_t id;
@@ -421,11 +437,18 @@
 +        BangManager(const BangManager&) = delete;
 +        BangManager& operator=(const BangManager&) = delete;
 +
-+        void LoadBangs(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory, base::OnceClosure callback);
++        void LoadBangs(
++            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
++            PrefService& prefs,
++            base::OnceClosure callback
++        );
 +        const std::vector<Bang>& GetBangs();
 +
 +    private:
-+        void DoStartFileFetch(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
++        void DoStartFileFetch(
++            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
++            PrefService& prefs
++        );
 +        void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 +        void LoadManifestFromString(const std::string& manifest);
 +
@@ -529,3 +552,99 @@
    const std::vector<TemplateURLRef>& url_refs() const { return url_refs_; }
    const TemplateURLRef& url_ref() const {
      // Sanity check for https://crbug.com/781703.
+--- a/components/helium_services/helium_services_helpers.cc
++++ b/components/helium_services/helium_services_helpers.cc
+@@ -22,4 +22,9 @@ GURL GetDummyURL() {
+     return GURL(kHeliumDummyOrigin);
+ }
+ 
++bool ShouldFetchBangs(PrefService& prefs) {
++    return prefs.GetBoolean(prefs::kHeliumServicesEnabled) &&
++           prefs.GetBoolean(prefs::kHeliumBangsEnabled);
++}
++
+ }  // namespace helium
+--- a/components/helium_services/helium_services_helpers.h
++++ b/components/helium_services/helium_services_helpers.h
+@@ -16,6 +16,7 @@ const char kHeliumDefaultOrigin[] =
+ const char kHeliumDummyOrigin[] =
+     "https://helium-services-are-disabled.qjz9zk";
+ 
++COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
+ 
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -1840,6 +1840,9 @@ void AddPrivacyStrings(content::WebUIDat
+       {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
+       {"heliumServicesToggleDescription",
+         IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
++      {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
++      {"heliumBangsToggleDescription",
++        IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},
+       {"heliumExtProxyToggle",
+         IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE},
+       {"heliumExtProxyToggleDescription",
+--- a/chrome/app/settings_strings.grdp
++++ b/chrome/app/settings_strings.grdp
+@@ -2088,6 +2088,12 @@
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
+     When enabled, Helium will handle downloading and updating extensions from webstores while preserving your privacy.
+   </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE" desc="Toggle for enabling/disabling of downloading bangs">
++    Allow downloading bangs list
++  </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
++    When enabled, Helium can fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
++  </message>
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
+     Use your own helium-services instance
+   </message>
+--- a/chrome/common/pref_names.h
++++ b/chrome/common/pref_names.h
+@@ -106,6 +106,9 @@ inline constexpr char kHeliumServicesEna
+ inline constexpr char kHeliumExtProxyEnabled[] =
+     "helium.services.ext_proxy";
+ 
++inline constexpr char kHeliumBangsEnabled[] =
++    "helium.services.bangs";
++
+ inline constexpr char kHeliumServicesOrigin[] =
+     "helium.services.origin_override";
+ 
+--- a/chrome/browser/resources/settings/privacy_page/services_page.html
++++ b/chrome/browser/resources/settings/privacy_page/services_page.html
+@@ -12,6 +12,11 @@
+     </settings-toggle-button>
+     <div class="cr-col">
+         <cr-collapse id="servicesCollapse" opened="[[prefs.helium.services.enabled.value]]">
++            <settings-toggle-button id="bangToggleButton"
++                pref="{{prefs.helium.services.bangs}}"
++                label="$i18n{heliumBangsToggle}"
++                sub-label="$i18n{heliumBangsToggleDescription}">
++            </settings-toggle-button>
+             <settings-toggle-button id="extProxyToggleButton"
+                 pref="{{prefs.helium.services.ext_proxy}}"
+                 label="$i18n{heliumExtProxyToggle}"
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -171,6 +171,7 @@ void RegisterBrowserUserPrefs(user_prefs
+ 
+   {
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumBangsEnabled, false);
+     registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
+     registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
+   }
+--- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
++++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
+@@ -340,6 +340,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+       settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kHeliumExtProxyEnabled] =
+       settings_api::PrefType::kBoolean;
++  (*s_allowlist)[::prefs::kHeliumBangsEnabled] =
++      settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kHeliumServicesOrigin] =
+       settings_api::PrefType::kString;
+ 
