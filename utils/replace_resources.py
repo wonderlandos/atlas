@@ -20,6 +20,11 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
                 continue
 
             line_parts = line.split()
+
+            if len(line_parts) != 2:
+                print(f"Line {line_number} is invalid. Skipping.")
+                continue
+
             source = os.path.join(resource_dir, line_parts[0])
             dest = os.path.join(chromium_dir, line_parts[1])
 
