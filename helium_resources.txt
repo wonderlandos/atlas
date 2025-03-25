@@ -1,2 +1,0 @@
-icons/macos/app.icns chrome/app/theme/chromium/mac/app.icns
-icons/macos/document.icns chrome/app/theme/chromium/mac/document.icns
