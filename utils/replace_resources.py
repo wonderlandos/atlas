@@ -4,8 +4,8 @@ import sys
 
 def copy_resources(resource_list, resource_dir, chromium_dir):
     if not os.path.isfile(resource_list):
-        print(f"Resource list '{resource_list}' does not exist.")
-        sys.exit(1)
+        print(f"Resource list '{resource_list}' does not exist, skipping")
+        return
     if not os.path.isdir(resource_dir):
         print(f"Resource dir '{resource_dir}' does not exist.")
         sys.exit(1)
