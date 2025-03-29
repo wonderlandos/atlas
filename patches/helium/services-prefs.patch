@@ -361,7 +361,7 @@
 +}
 --- /dev/null
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,65 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -419,24 +419,6 @@
 +    return prefs.GetBoolean(prefs::kHeliumServicesEnabled);
 +}
 +
-+bool ShouldAccessExtensionService(const PrefService& prefs) {
-+    return ShouldAccessServices(prefs) &&
-+            prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
-+}
-+
-+bool ShouldFetchBangs(const PrefService& prefs) {
-+    return ShouldAccessServices(prefs) &&
-+            prefs.GetBoolean(prefs::kHeliumBangsEnabled);
-+}
-+
-+GURL GetExtensionUpdateURL(const PrefService& prefs) {
-+    if (!ShouldAccessExtensionService(prefs)) {
-+        return GetDummyURL();
-+    }
-+
-+    return GetServicesBaseURL(prefs).Resolve("/ext");
-+}
-+
 +void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
 +    PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
 +  registrar.Add(prefs::kHeliumServicesEnabled, observer);
@@ -455,6 +437,8 @@
 +#ifndef COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
 +#define COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
 +
++#include "base/functional/bind.h"
++#include "components/prefs/pref_change_registrar.h"
 +#include "components/prefs/pref_service.h"
 +#include "url/gurl.h"
 +
@@ -466,10 +450,8 @@
 +const char kHeliumDummyOrigin[] =
 +    "https://helium-services-are-disabled.qjz9zk";
 +
-+COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(const PrefService& prefs);
 +COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
 +COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
-+COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
 +COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
 +COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
 +                            PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
