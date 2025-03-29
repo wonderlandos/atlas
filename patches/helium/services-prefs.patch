@@ -31,7 +31,7 @@
      Google Advanced Protection Program
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1835,6 +1835,16 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1837,6 +1837,16 @@ void AddPrivacyStrings(content::WebUIDat
        {"permissionsPageDescription", IDS_SETTINGS_PERMISSIONS_DESCRIPTION},
        {"securityPageTitle", IDS_SETTINGS_SECURITY},
        {"securityPageDescription", IDS_SETTINGS_SECURITY_DESCRIPTION},
@@ -293,7 +293,15 @@
  export {PrivacySandboxInterestItemElement} from './privacy_sandbox/privacy_sandbox_interest_item.js';
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -169,6 +169,11 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -13,6 +13,7 @@
+ #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+ #include "chrome/common/buildflags.h"
+ #include "chrome/common/pref_names.h"
++#include "components/helium_services/pref_names.h"
+ #include "components/policy/core/common/policy_pref_names.h"
+ #include "components/pref_registry/pref_registry_syncable.h"
+ #include "components/prefs/pref_registry_simple.h"
+@@ -169,6 +170,11 @@ void RegisterBrowserUserPrefs(user_prefs
                                  false);
  #endif
  
@@ -305,24 +313,17 @@
    registry->RegisterBooleanPref(
        prefs::kHttpsOnlyModeEnabled, false,
        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
---- a/chrome/common/pref_names.h
-+++ b/chrome/common/pref_names.h
-@@ -100,6 +100,12 @@ inline constexpr char kHttpsFirstModeInc
- inline constexpr char kHttpsOnlyModeAutoEnabled[] =
-     "https_only_mode_auto_enabled";
- 
-+inline constexpr char kHeliumServicesEnabled[] =
-+    "helium.services.enabled";
-+
-+inline constexpr char kHeliumServicesOrigin[] =
-+    "helium.services.origin_override";
-+
- // A dictionary containing information about HTTPS Upgrade failures in the
- // recent days. Failure entries are stored in a list with a timestamp. Old
- // entries are evicted from the list and new entries are added when a new HTTPS
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -335,6 +335,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -42,6 +42,7 @@
+ #include "components/dom_distiller/core/pref_names.h"
+ #include "components/drive/drive_pref_names.h"
+ #include "components/embedder_support/pref_names.h"
++#include "components/helium_services/pref_names.h"
+ #include "components/language/core/browser/pref_names.h"
+ #include "components/live_caption/pref_names.h"
+ #include "components/media_router/common/pref_names.h"
+@@ -335,6 +336,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
        settings_api::PrefType::kString;
  #endif
  
@@ -337,7 +338,7 @@
        settings_api::PrefType::kBoolean;
 --- /dev/null
 +++ b/components/helium_services/BUILD.gn
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,20 @@
 +# Copyright 2025 The Helium Authors
 +# Use of this source code is governed by a BSD-style license that can be
 +# found in the LICENSE file.
@@ -346,34 +347,65 @@
 +  sources = [
 +    "helium_services_helpers.cc",
 +    "helium_services_helpers.h",
++    "pref_names.h",
 +  ]
 +
 +  public_deps = [
 +    "//base",
 +    "//components/prefs",
 +    "//url",
++    "//net",
 +  ]
 +
 +  defines = [ "IS_HELIUM_IMPL" ]
 +}
 --- /dev/null
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,83 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
 +#include "components/helium_services/helium_services_helpers.h"
 +
-+#include "chrome/common/pref_names.h"
++#include <optional>
++
++#include "base/functional/bind.h"
++#include "components/helium_services/pref_names.h"
 +#include "components/prefs/pref_service.h"
++#include "net/base/url_util.h"
 +#include "url/gurl.h"
++#include "url/url_constants.h"
 +
 +namespace helium {
 +
-+GURL GetServicesBaseURL(PrefService& prefs) {
-+    GURL user_url = GURL(prefs.GetString(prefs::kHeliumServicesOrigin));
-+    if (user_url.is_valid()) {
-+        return user_url;
++std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_) {
++    if (user_url_.empty()) {
++        return std::nullopt;
++    }
++
++    GURL user_url = GURL(user_url_);
++    if (!user_url.is_valid()) {
++        return std::nullopt;
++    }
++
++    bool isSecure = user_url.SchemeIs(url::kHttpsScheme) || net::IsLocalhost(user_url);
++    if (!isSecure) {
++        return std::nullopt;
++    }
++
++    return user_url;
++}
++
++std::optional<GURL> GetValidUserOverridenURL(const PrefService& prefs) {
++    return GetValidUserOverridenURL(
++        prefs.GetString(prefs::kHeliumServicesOrigin)
++    );
++}
++
++GURL GetServicesBaseURL(const PrefService& prefs) {
++    std::optional<GURL> user_url = GetValidUserOverridenURL(prefs);
++    if (user_url) {
++        return *user_url;
 +    }
 +
 +    return GURL(kHeliumDefaultOrigin);
@@ -383,10 +415,39 @@
 +    return GURL(kHeliumDummyOrigin);
 +}
 +
++bool ShouldAccessServices(const PrefService& prefs) {
++    return prefs.GetBoolean(prefs::kHeliumServicesEnabled);
++}
++
++bool ShouldAccessExtensionService(const PrefService& prefs) {
++    return ShouldAccessServices(prefs) &&
++            prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
++}
++
++bool ShouldFetchBangs(const PrefService& prefs) {
++    return ShouldAccessServices(prefs) &&
++            prefs.GetBoolean(prefs::kHeliumBangsEnabled);
++}
++
++GURL GetExtensionUpdateURL(const PrefService& prefs) {
++    if (!ShouldAccessExtensionService(prefs)) {
++        return GetDummyURL();
++    }
++
++    return GetServicesBaseURL(prefs).Resolve("/ext");
++}
++
++void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
++    PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
++  registrar.Add(prefs::kHeliumServicesEnabled, observer);
++  registrar.Add(prefs::kHeliumServicesOrigin, observer);
++  registrar.Add(pref_name, observer);
++}
++
 +}  // namespace helium
 --- /dev/null
 +++ b/components/helium_services/helium_services_helpers.h
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,28 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -405,9 +466,34 @@
 +const char kHeliumDummyOrigin[] =
 +    "https://helium-services-are-disabled.qjz9zk";
 +
-+COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(PrefService& prefs);
++COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(const PrefService& prefs);
++COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
 +COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
-+
++COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
++COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
++COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
++                            PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 +}  // namespace helium
 +
 +#endif  // COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
+--- /dev/null
++++ b/components/helium_services/pref_names.h
+@@ -0,0 +1,18 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
++#define COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
++
++namespace prefs {
++
++inline constexpr char kHeliumServicesEnabled[] =
++    "helium.services.enabled";
++
++inline constexpr char kHeliumServicesOrigin[] =
++    "helium.services.origin_override";
++
++}  // namespace prefs
++
++#endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
