@@ -84,7 +84,16 @@
 +}
 --- a/components/search_engines/template_url_service.cc
 +++ b/components/search_engines/template_url_service.cc
-@@ -56,7 +56,9 @@
+@@ -43,6 +43,8 @@
+ #include "base/strings/utf_string_conversions.h"
+ #include "build/build_config.h"
+ #include "components/country_codes/country_codes.h"
++#include "components/helium_services/pref_names.h"
++#include "components/helium_services/helium_services_helpers.h"
+ #include "components/omnibox/common/omnibox_features.h"
+ #include "components/pref_registry/pref_registry_syncable.h"
+ #include "components/prefs/pref_service.h"
+@@ -56,7 +58,9 @@
  #include "components/search_engines/search_engines_switches.h"
  #include "components/search_engines/search_terms_data.h"
  #include "components/search_engines/template_url.h"
@@ -94,7 +103,7 @@
  #include "components/search_engines/template_url_prepopulate_data.h"
  #include "components/search_engines/template_url_service_client.h"
  #include "components/search_engines/template_url_service_observer.h"
-@@ -69,6 +71,7 @@
+@@ -69,6 +73,7 @@
  #include "components/sync/protocol/search_engine_specifics.pb.h"
  #include "components/url_formatter/url_fixer.h"
  #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -102,7 +111,7 @@
  #include "url/gurl.h"
  #include "url/origin.h"
  
-@@ -423,6 +426,7 @@ class TemplateURLService::PreLoadingProv
+@@ -423,6 +428,7 @@ class TemplateURLService::PreLoadingProv
  // TemplateURLService ---------------------------------------------------------
  TemplateURLService::TemplateURLService(
      PrefService& prefs,
@@ -110,7 +119,7 @@
      search_engines::SearchEngineChoiceService& search_engine_choice_service,
      std::unique_ptr<SearchTermsData> search_terms_data,
      const scoped_refptr<KeywordWebDataService>& web_data_service,
-@@ -433,6 +437,8 @@ TemplateURLService::TemplateURLService(
+@@ -433,6 +439,8 @@ TemplateURLService::TemplateURLService(
        search_engine_choice_service_(search_engine_choice_service),
        search_terms_data_(std::move(search_terms_data)),
        web_data_service_(web_data_service),
@@ -119,7 +128,7 @@
        client_(std::move(client)),
        dsp_change_callback_(dsp_change_callback),
        pre_loading_providers_(std::make_unique<PreLoadingProviders>()),
-@@ -448,10 +454,12 @@ TemplateURLService::TemplateURLService(
+@@ -448,10 +456,12 @@ TemplateURLService::TemplateURLService(
  
  TemplateURLService::TemplateURLService(
      PrefService& prefs,
@@ -132,7 +141,7 @@
            search_engine_choice_service,
            /*search_terms_data=*/std::make_unique<SearchTermsData>(),
            /*web_data_service=*/nullptr,
-@@ -551,6 +559,10 @@ bool TemplateURLService::ShowInActivesLi
+@@ -551,6 +561,10 @@ bool TemplateURLService::ShowInActivesLi
  }
  
  bool TemplateURLService::HiddenFromLists(const TemplateURL* t_url) const {
@@ -143,7 +152,7 @@
    switch (t_url->policy_origin()) {
      case TemplateURLData::PolicyOrigin::kNoPolicy:
        // Hide if the preferred search engine for the keyword is created by
-@@ -1390,11 +1402,37 @@ void TemplateURLService::Load() {
+@@ -1390,11 +1404,37 @@ void TemplateURLService::Load() {
  
    if (web_data_service_) {
      load_handle_ = web_data_service_->GetKeywords(this);
@@ -181,6 +190,20 @@
  base::CallbackListSubscription TemplateURLService::RegisterOnLoadedCallback(
      base::OnceClosure callback) {
    return loaded_ ? base::CallbackListSubscription()
+@@ -2172,6 +2212,13 @@ void TemplateURLService::Init() {
+             base::Unretained(this)));
+   }
+ 
++  helium::ConfigurePrefChangeRegistrarFor(
++    prefs::kHeliumBangsEnabled, pref_change_registrar_,
++    base::BindRepeating(
++        &TemplateURLService::LoadBangs,
++        base::Unretained(this))
++  );
++
+   DefaultSearchManager::Source source = DefaultSearchManager::FROM_USER;
+   const TemplateURLData* dse =
+       default_search_manager_.GetDefaultSearchEngine(&source);
 --- a/components/search_engines/template_url_service.h
 +++ b/components/search_engines/template_url_service.h
 @@ -34,10 +34,12 @@
@@ -575,26 +598,28 @@
      // Sanity check for https://crbug.com/781703.
 --- a/components/helium_services/helium_services_helpers.cc
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -22,4 +22,9 @@ GURL GetDummyURL() {
-     return GURL(kHeliumDummyOrigin);
+@@ -60,6 +60,11 @@ bool ShouldAccessExtensionService(const
+             prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
  }
  
 +bool ShouldFetchBangs(const PrefService& prefs) {
-+    return prefs.GetBoolean(prefs::kHeliumServicesEnabled) &&
-+           prefs.GetBoolean(prefs::kHeliumBangsEnabled);
++    return ShouldAccessServices(prefs) &&
++            prefs.GetBoolean(prefs::kHeliumBangsEnabled);
 +}
 +
- }  // namespace helium
+ GURL GetExtensionUpdateURL(const PrefService& prefs) {
+     if (!ShouldAccessExtensionService(prefs)) {
+         return GetDummyURL();
 --- a/components/helium_services/helium_services_helpers.h
 +++ b/components/helium_services/helium_services_helpers.h
-@@ -16,6 +16,7 @@ const char kHeliumDefaultOrigin[] =
+@@ -18,6 +18,7 @@ const char kHeliumDefaultOrigin[] =
  const char kHeliumDummyOrigin[] =
      "https://helium-services-are-disabled.qjz9zk";
  
 +COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(const PrefService& prefs);
- COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
- 
+ COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 @@ -1842,6 +1842,9 @@ void AddPrivacyStrings(content::WebUIDat
