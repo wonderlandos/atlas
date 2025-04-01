@@ -313,14 +313,6 @@
      result.push_back(it.first);
    }
  
-@@ -285,6 +298,7 @@ bool PendingExtensionManager::AddExtensi
-     return false;
-   }
- #endif  // BUILDFLAG(IS_CHROMEOS)
-+
-   PendingExtensionInfo info(id, install_parameter, update_url, version,
-                             should_allow_install, is_from_sync, install_source,
-                             creation_flags, mark_acknowledged, remote_install);
 --- a/chrome/browser/extensions/updater/extension_updater.cc
 +++ b/chrome/browser/extensions/updater/extension_updater.cc
 @@ -33,7 +33,10 @@
