@@ -1,6 +1,6 @@
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2070,6 +2070,28 @@
+@@ -2070,6 +2070,31 @@
    <message name="IDS_SETTINGS_SECURITY_DESCRIPTION" desc="Description of the controls available on the security settings page">
      Safe Browsing (protection from dangerous sites) and other security settings
    </message>
@@ -8,22 +8,25 @@
 +    Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_DESCRIPTION" desc="Description of the controls available on the Helium services settings page">
-+    Controls whether your browser can make requests towards Helium services
++    Control Helium services and whether your browser is allowed to use them
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE" desc="Global toggle for enabling/disabling of all Helium services">
 +    Allow connecting to Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
-+    When enabled, Helium can connect to services for providing additional functionality, such as native bangs or extension downloads.
++    When enabled, Helium will be able to connect to anonymous services for providing additional functionality, such as native !bangs or extension downloads.
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
-+    Use your own helium-services instance
++    Use your own instance of Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION" desc="Description of the text input for overriding the Helium services server">
-+    You can host your own instance of helium-services and specify it here to use it in place of the default services. HTTPS only.
++    You can host your own instance of Helium services and use it in your browser instead of the default services server. HTTPS only.
++  </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION_WARNING" desc="Warning section of description for overriding the Helium services server">
++    Do not use this field unless you know exactly what you're doing. Do not paste URLs from other people here, they're trying to steal your data. We are not responsible for any damages caused by using a custom server.
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_ARIA_LABEL" desc="ARIA label of the text input for overriding the Helium services server">
-+    Custom helium-services origin URL
++    Custom origin URL for Helium services
 +  </message>
 +
    <message name="IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM" desc="Name of the link which takes users
@@ -31,7 +34,7 @@
      Google Advanced Protection Program
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1837,6 +1837,16 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1837,6 +1837,18 @@ void AddPrivacyStrings(content::WebUIDat
        {"permissionsPageDescription", IDS_SETTINGS_PERMISSIONS_DESCRIPTION},
        {"securityPageTitle", IDS_SETTINGS_SECURITY},
        {"securityPageDescription", IDS_SETTINGS_SECURITY_DESCRIPTION},
@@ -43,6 +46,8 @@
 +      {"heliumOriginOverride", IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE},
 +      {"heliumOriginOverrideDescription",
 +        IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION},
++      {"heliumOriginOverrideDescriptionWarning",
++        IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION_WARNING},
 +      {"heliumOriginOverrideLabel",
 +        IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_ARIA_LABEL},
        {"advancedProtectionProgramTitle",
@@ -184,7 +189,7 @@
 +  <div class="flex">
 +    <div class="flex label-wrapper">
 +        <div class="label">$i18n{heliumOriginOverride}</div>
-+        <div class="cr-secondary-text label">$i18n{heliumOriginOverrideDescription}</div>
++        <div class="cr-secondary-text label">$i18n{heliumOriginOverrideDescription} <b>$i18n{heliumOriginOverrideDescriptionWarning}</b></div>
 +    </div>
 +    <cr-input
 +        id="heliumOriginOverride"
