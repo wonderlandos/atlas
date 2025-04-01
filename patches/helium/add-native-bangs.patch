@@ -617,9 +617,9 @@
      "https://helium-services-are-disabled.qjz9zk";
  
 +COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) bool ShouldAccessExtensionService(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
- COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 @@ -1842,6 +1842,9 @@ void AddPrivacyStrings(content::WebUIDat

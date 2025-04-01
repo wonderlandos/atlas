@@ -219,7 +219,7 @@
    </message>
 --- a/chrome/browser/extensions/extension_management.cc
 +++ b/chrome/browser/extensions/extension_management.cc
-@@ -587,7 +587,7 @@ void ExtensionManagement::Refresh() {
+@@ -595,7 +595,7 @@ void ExtensionManagement::Refresh() {
    const base::Value::List* denied_list_pref =
        LoadListPreference(pref_names::kInstallDenyList, false);
    const base::Value::Dict* forced_list_pref =
@@ -228,7 +228,7 @@
    const base::Value::List* install_sources_pref =
        LoadListPreference(pref_names::kAllowedInstallSites, true);
    const base::Value::List* allowed_types_pref =
-@@ -604,6 +604,8 @@ void ExtensionManagement::Refresh() {
+@@ -612,6 +612,8 @@ void ExtensionManagement::Refresh() {
        LoadPreference(pref_names::kExtensionUnpublishedAvailability,
                       /*force_managed=*/true, base::Value::Type::INTEGER);
  
@@ -237,7 +237,7 @@
    // Reset all settings.
    global_settings_ = std::make_unique<internal::GlobalSettings>();
    settings_by_id_.clear();
-@@ -652,7 +654,7 @@ void ExtensionManagement::Refresh() {
+@@ -660,7 +662,7 @@ void ExtensionManagement::Refresh() {
      }
    }
  
@@ -246,7 +246,7 @@
  
    if (install_sources_pref) {
      global_settings_->install_sources = URLPatternSet();
-@@ -848,6 +850,16 @@ void ExtensionManagement::LoadDeferredEx
+@@ -856,6 +858,16 @@ void ExtensionManagement::LoadDeferredEx
    DCHECK(found) << "Couldn't find dictionary for extension in deferred_ids_.";
  }
  
@@ -263,7 +263,7 @@
  const base::Value* ExtensionManagement::LoadPreference(
      const char* pref_name,
      bool force_managed,
-@@ -929,7 +941,7 @@ base::Value::Dict ExtensionManagement::G
+@@ -937,7 +949,7 @@ base::Value::Dict ExtensionManagement::G
  }
  
  void ExtensionManagement::UpdateForcedExtensions(
@@ -272,7 +272,7 @@
    if (!extension_dict)
      return;
  
-@@ -955,7 +967,7 @@ void ExtensionManagement::UpdateForcedEx
+@@ -963,7 +975,7 @@ void ExtensionManagement::UpdateForcedEx
        continue;
      }
      internal::IndividualSettings* by_id = AccessById(it.first);

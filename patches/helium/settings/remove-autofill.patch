@@ -27,7 +27,7 @@
                section="autofill">
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -228,29 +228,6 @@ function createRoutes(): SettingsRoutes
+@@ -230,29 +230,6 @@ function createRoutes(): SettingsRoutes
      r.FONTS = r.APPEARANCE.createChild('/fonts');
    }
  

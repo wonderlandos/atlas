@@ -16,7 +16,7 @@
  #include "components/signin/public/base/signin_buildflags.h"
  #include "components/signin/public/base/signin_switches.h"
  #include "components/strings/grit/components_branded_strings.h"
-@@ -2364,16 +2362,9 @@ void AddSearchStrings(content::WebUIData
+@@ -2381,16 +2379,9 @@ void AddSearchStrings(content::WebUIData
    html_source->AddString("searchExplanationLearnMoreURL",
                           chrome::kOmniboxLearnMoreURL);
  
