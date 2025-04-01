@@ -636,16 +636,16 @@
 +++ b/chrome/app/settings_strings.grdp
 @@ -2088,6 +2088,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
-     When enabled, Helium will handle downloading and updating extensions from webstores while preserving your privacy.
+     When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
    </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE" desc="Toggle for enabling/disabling of downloading bangs">
-+    Allow downloading bangs list
++    Allow downloading the !bang list
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
-+    When enabled, Helium can fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
++    When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
 +  </message>
    <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
-     Use your own helium-services instance
+     Use your own instance of Helium services
    </message>
 --- a/chrome/browser/resources/settings/privacy_page/services_page.html
 +++ b/chrome/browser/resources/settings/privacy_page/services_page.html
