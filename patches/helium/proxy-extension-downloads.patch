@@ -442,6 +442,29 @@
    // Note that both |global_settings_| and |default_settings_| will be null
    // before first call to Refresh(), so in order to resolve this, Refresh() must
    // be called in the initialization of ExtensionManagement.
+@@ -244,12 +252,20 @@ GURL ExtensionManagement::GetEffectiveUp
+         << "Update URL cannot be overridden to be the webstore URL!";
+     return update_url;
+   }
+-  return ManifestURL::GetUpdateURL(&extension);
++
++  const GURL& original_url = ManifestURL::GetUpdateURL(&extension);
++  const GURL& dummy_url = extension_urls::GetDefaultWebstoreUpdateUrl();
++
++  if (dummy_url.host_piece() == original_url.host_piece()) {
++    return helium::GetExtensionUpdateURL(*profile_->GetPrefs());
++  }
++
++  return original_url;
+ }
+ 
+ bool ExtensionManagement::UpdatesFromWebstore(const Extension& extension) {
+   const bool is_webstore_url = extension_urls::IsWebstoreUpdateUrl(
+-      GURL(GetEffectiveUpdateURL(extension)));
++      ManifestURL::GetUpdateURL(&extension));
+   if (is_webstore_url) {
+     DCHECK(!IsUpdateUrlOverridden(extension.id()))
+         << "An extension's update URL cannot be overridden to the webstore.";
 --- a/chrome/browser/extensions/updater/extension_updater.h
 +++ b/chrome/browser/extensions/updater/extension_updater.h
 @@ -20,6 +20,7 @@
