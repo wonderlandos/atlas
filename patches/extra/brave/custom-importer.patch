@@ -472,6 +472,16 @@
    ImporterTypeMetrics metrics_type = IMPORTER_METRICS_UNKNOWN;
    switch (type) {
      case TYPE_UNKNOWN:
+@@ -59,6 +60,9 @@ void LogImporterUseToMetrics(const std::
+     case TYPE_BOOKMARKS_FILE:
+       metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
+       break;
++    default:
++      metrics_type = IMPORTER_METRICS_UNKNOWN;
++      break;
+   }
+ 
+   // Note: This leaks memory, which is the expected behavior as the factory
 --- a/chrome/browser/importer/external_process_importer_client.h
 +++ b/chrome/browser/importer/external_process_importer_client.h
 @@ -51,10 +51,10 @@ class ExternalProcessImporterClient
