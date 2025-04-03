@@ -1,20 +1,20 @@
 --- a/extensions/common/extension_urls.cc
 +++ b/extensions/common/extension_urls.cc
-@@ -43,6 +43,8 @@ const char kChromeWebstoreBaseURL[] = "h
- const char kNewChromeWebstoreBaseURL[] = "https://chromewebstore.google.com/";
+@@ -39,10 +39,10 @@ const GURL* g_item_snippet_url_for_test_
+ 
+ }  // namespace
+ 
+-const char kChromeWebstoreBaseURL[] = "trk:09:https://chrome.google.com/webstore";
+-const char kNewChromeWebstoreBaseURL[] = "trk:08:https://chromewebstore.google.com/";
++const char kChromeWebstoreBaseURL[] = "https://chrome.google.com/webstore";
++const char kNewChromeWebstoreBaseURL[] = "https://chromewebstore.google.com/";
  const char kChromeWebstoreUpdateURL[] =
-     "https://clients2.google.com/service/update2/crx";
-+const char kHeliumProxyWebstoreUpdateURL[] =
-+    "https://services.helium.computer/ext/webstore";
+-    "trk:05:https://clients2.google.com/service/update2/crx";
++    "https://update-url-to-be-replaced.qjz9zk";
  
  const char kAppMenuUtmSource[] = "ext_app_menu";
  const char kExtensionsMenuUtmSource[] = "ext_extensions_menu";
-@@ -100,13 +102,10 @@ base::AutoReset<const GURL*> SetItemSnip
- }
- 
- GURL GetDefaultWebstoreUpdateUrl() {
--  return GURL(kChromeWebstoreUpdateURL);
-+  return GURL(kHeliumProxyWebstoreUpdateURL);
+@@ -104,9 +104,6 @@ GURL GetDefaultWebstoreUpdateUrl() {
  }
  
  GURL GetWebstoreUpdateUrl() {
@@ -24,30 +24,6 @@
    return GetDefaultWebstoreUpdateUrl();
  }
  
---- a/components/policy/core/common/policy_loader_common.cc
-+++ b/components/policy/core/common/policy_loader_common.cc
-@@ -24,9 +24,9 @@ namespace {
- // implementation. And the Chrome one can be moved to c/b/policy.
- // From extensions/common/extension_urls.cc
- const char kChromeWebstoreUpdateURL[] =
--    "https://clients2.google.com/service/update2/crx";
-+    "https://services.helium.computer/ext/webstore";
- const char16_t kChromeWebstoreUpdateURL16[] =
--    u"https://clients2.google.com/service/update2/crx";
-+    u"https://services.helium.computer/ext/webstore";
- 
- // From chrome/browser/extensions/extension_management_constants.cc
- const char kWildcard[] = "*";
---- a/extensions/common/extension_urls.h
-+++ b/extensions/common/extension_urls.h
-@@ -35,6 +35,7 @@ namespace extension_urls {
- extern const char kChromeWebstoreBaseURL[];
- extern const char kChromeWebstoreUpdateURL[];
- extern const char kNewChromeWebstoreBaseURL[];
-+extern const char kHeliumProxyWebstoreUpdateURL[];
- 
- // Various utm attribution sources for web store URLs.
- // From the sub-menu item in the extension menu inside the 3-dot menu.
 --- a/extensions/common/manifest_url_handlers.cc
 +++ b/extensions/common/manifest_url_handlers.cc
 @@ -17,6 +17,7 @@
@@ -158,20 +134,6 @@
  
    // Returns true if this extension's update URL is the extension gallery.
    static bool UpdatesFromGallery(const Extension* extension);
---- a/components/component_updater/component_updater_url_constants.cc
-+++ b/components/component_updater/component_updater_url_constants.cc
-@@ -15,9 +15,9 @@ namespace component_updater {
- // The value of |kDefaultUrlSource| can be overridden with
- // --component-updater=url-source=someurl.
- const char kUpdaterJSONDefaultUrl[] =
--    "https://update.googleapis.com/service/update2/json";
-+    "https://services.helium.computer/ext/webstore/update";
- 
- const char kUpdaterJSONFallbackUrl[] =
--    "http://update.googleapis.com/service/update2/json";
-+    "trk:http://update.googleapis.com/service/update2/json";
- 
- }  // namespace component_updater
 --- a/chrome/browser/extensions/updater/chrome_extension_downloader_factory.cc
 +++ b/chrome/browser/extensions/updater/chrome_extension_downloader_factory.cc
 @@ -50,7 +50,7 @@ ChromeExtensionDownloaderFactory::Create
@@ -183,14 +145,364 @@
    return downloader;
  }
  
---- a/chrome/browser/extensions/policy_handlers.cc
-+++ b/chrome/browser/extensions/policy_handlers.cc
-@@ -154,7 +154,7 @@ bool ExtensionInstallForceListPolicyHand
-     size_t pos = entry_string.find(';');
-     if (pos == std::string::npos) {
-       extension_id = entry_string;
--      update_url = extension_urls::kChromeWebstoreUpdateURL;
-+      update_url = extension_urls::kHeliumProxyWebstoreUpdateURL;
-     } else {
-       extension_id = entry_string.substr(0, pos);
-       update_url = entry_string.substr(pos + 1);
+--- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
++++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
+@@ -339,6 +339,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+   // Helium services page
+   (*s_allowlist)[::prefs::kHeliumServicesEnabled] =
+       settings_api::PrefType::kBoolean;
++  (*s_allowlist)[::prefs::kHeliumExtProxyEnabled] =
++      settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kHeliumServicesOrigin] =
+       settings_api::PrefType::kString;
+ 
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -172,6 +172,7 @@ void RegisterBrowserUserPrefs(user_prefs
+ 
+   {
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
+     registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
+   }
+ 
+--- a/chrome/browser/resources/settings/privacy_page/services_page.html
++++ b/chrome/browser/resources/settings/privacy_page/services_page.html
+@@ -12,6 +12,11 @@
+     </settings-toggle-button>
+     <div class="cr-col">
+         <cr-collapse id="servicesCollapse" opened="[[prefs.helium.services.enabled.value]]">
++            <settings-toggle-button id="extProxyToggleButton"
++                pref="{{prefs.helium.services.ext_proxy}}"
++                label="$i18n{heliumExtProxyToggle}"
++                sub-label="$i18n{heliumExtProxyToggleDescription}">
++            </settings-toggle-button>
+         </cr-collapse>
+     </div>
+ </div>
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -1842,6 +1842,10 @@ void AddPrivacyStrings(content::WebUIDat
+       {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
+       {"heliumServicesToggleDescription",
+         IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
++      {"heliumExtProxyToggle",
++        IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE},
++      {"heliumExtProxyToggleDescription",
++        IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION},
+       {"heliumOriginOverride", IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE},
+       {"heliumOriginOverrideDescription",
+         IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION},
+--- a/chrome/app/settings_strings.grdp
++++ b/chrome/app/settings_strings.grdp
+@@ -2082,6 +2082,12 @@
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
+     When enabled, Helium will be able to connect to anonymous services for providing additional functionality, such as native !bangs or extension downloads.
+   </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE" desc="Toggle for enabling/disabling of downloading and proxying extensions">
++    Proxy extension downloads and updates
++  </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
++    When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
++  </message>
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
+     Use your own instance of Helium services
+   </message>
+--- a/components/helium_services/pref_names.h
++++ b/components/helium_services/pref_names.h
+@@ -13,6 +13,9 @@ inline constexpr char kHeliumServicesEna
+ inline constexpr char kHeliumServicesOrigin[] =
+     "helium.services.origin_override";
+ 
++inline constexpr char kHeliumExtProxyEnabled[] =
++    "helium.services.ext_proxy";
++
+ }  // namespace prefs
+ 
+ #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
+--- a/components/helium_services/helium_services_helpers.cc
++++ b/components/helium_services/helium_services_helpers.cc
+@@ -55,6 +55,19 @@ bool ShouldAccessServices(const PrefServ
+     return prefs.GetBoolean(prefs::kHeliumServicesEnabled);
+ }
+ 
++bool ShouldAccessExtensionService(const PrefService& prefs) {
++    return ShouldAccessServices(prefs) &&
++            prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
++}
++
++GURL GetExtensionUpdateURL(const PrefService& prefs) {
++    if (!ShouldAccessExtensionService(prefs)) {
++        return GetDummyURL();
++    }
++
++    return GetServicesBaseURL(prefs).Resolve("/ext");
++}
++
+ void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
+     PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
+   registrar.Add(prefs::kHeliumServicesEnabled, observer);
+--- a/components/helium_services/helium_services_helpers.h
++++ b/components/helium_services/helium_services_helpers.h
+@@ -18,8 +18,10 @@ const char kHeliumDefaultOrigin[] =
+ const char kHeliumDummyOrigin[] =
+     "https://helium-services-are-disabled.qjz9zk";
+ 
++COMPONENT_EXPORT(HELIUM) bool ShouldAccessExtensionService(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
++COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
+ COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
+                             PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
+--- a/chrome/browser/extensions/BUILD.gn
++++ b/chrome/browser/extensions/BUILD.gn
+@@ -69,6 +69,7 @@ source_set("extensions") {
+     "//components/content_settings/core/browser:cookie_settings",
+     "//components/crx_file",
+     "//components/pref_registry",
++    "//components/helium_services",
+     "//content/public/browser",
+     "//extensions/browser",
+     "//extensions/buildflags",
+--- a/chrome/browser/extensions/pending_extension_manager.cc
++++ b/chrome/browser/extensions/pending_extension_manager.cc
+@@ -18,10 +18,12 @@
+ #include "chrome/common/chrome_features.h"
+ #include "chrome/common/extensions/extension_constants.h"
+ #include "content/public/browser/browser_thread.h"
++#include "components/helium_services/helium_services_helpers.h"
+ #include "extensions/browser/extension_prefs.h"
+ #include "extensions/browser/extension_registry.h"
+ #include "extensions/common/constants.h"
+ #include "extensions/common/extension.h"
++#include "extensions/common/extension_urls.h"
+ #include "url/gurl.h"
+ 
+ using content::BrowserThread;
+@@ -236,11 +238,11 @@ bool PendingExtensionManager::AddFromExt
+                           kRemoteInstall);
+ }
+ 
+-std::list<std::string> PendingExtensionManager::GetPendingIdsForUpdateCheck()
+-    const {
++std::list<std::string> PendingExtensionManager::GetPendingIdsForUpdateCheck() {
+   std::list<std::string> result;
++  const GURL baseUrl = extension_urls::GetWebstoreUpdateUrl();
+ 
+-  for (const auto& it : pending_extensions_) {
++  for (auto& it : pending_extensions_) {
+     ManifestLocation install_source = it.second.install_source();
+ 
+     // Some install sources read a CRX from the filesystem.  They can
+@@ -252,6 +254,17 @@ std::list<std::string> PendingExtensionM
+       continue;
+     }
+ 
++    if (it.second.update_url().host_piece() == baseUrl.host_piece()) {
++      Profile* profile = Profile::FromBrowserContext(context_.get());
++      PrefService* prefs = profile->GetPrefs();
++
++      if (prefs && helium::ShouldAccessExtensionService(*prefs)) {
++        it.second.OverrideURL(helium::GetExtensionUpdateURL(*prefs));
++      } else {
++        continue;
++      }
++    }
++
+     result.push_back(it.first);
+   }
+ 
+--- a/chrome/browser/extensions/updater/extension_updater.cc
++++ b/chrome/browser/extensions/updater/extension_updater.cc
+@@ -33,7 +33,10 @@
+ #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+ #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
+ #include "chrome/browser/profiles/profile.h"
++#include "components/helium_services/helium_services_helpers.h"
++#include "components/helium_services/pref_names.h"
+ #include "components/prefs/pref_service.h"
++#include "components/prefs/pref_change_registrar.h"
+ #include "components/update_client/update_query_params.h"
+ #include "content/public/browser/browser_task_traits.h"
+ #include "content/public/browser/browser_thread.h"
+@@ -187,9 +190,6 @@ void ExtensionUpdater::EnsureDownloaderC
+   if (!downloader_.get()) {
+     downloader_ = downloader_factory_.Run(this);
+   }
+-  if (!update_service_) {
+-    update_service_ = UpdateService::Get(profile_);
+-  }
+ }
+ 
+ void ExtensionUpdater::Start() {
+@@ -211,6 +211,15 @@ void ExtensionUpdater::Start() {
+       CheckSoon();
+     ScheduleNextCheck();
+   }
++
++  pref_change_registrar_.Init(prefs_);
++
++  helium::ConfigurePrefChangeRegistrarFor(
++    prefs::kHeliumExtProxyEnabled, pref_change_registrar_,
++    base::BindRepeating(
++        &ExtensionUpdater::CheckSoon,
++        base::Unretained(this))
++  );
+ }
+ 
+ void ExtensionUpdater::Stop() {
+@@ -315,7 +324,6 @@ void ExtensionUpdater::AddToDownloader(
+     int request_id,
+     DownloadFetchPriority fetch_priority,
+     ExtensionUpdateCheckParams* update_check_params) {
+-  DCHECK(update_service_);
+ 
+   // In Kiosk mode extensions are downloaded and updated by the ExternalCache.
+   // Therefore we skip updates here to avoid conflicts.
+@@ -414,7 +422,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+   // Add fetch records for extensions that should be fetched by an update URL.
+   // These extensions are not yet installed. They come from group policy
+   // and external install sources.
+-  const PendingExtensionManager* pending_extension_manager =
++  PendingExtensionManager* pending_extension_manager =
+       service_->pending_extension_manager();
+   const CorruptedExtensionReinstaller* corrupted_extension_reinstaller =
+       service_->corrupted_extension_reinstaller();
+@@ -552,7 +560,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+   // OnExtensionDownloadFinished for each extension that was checked.
+   downloader_->StartAllPending(extension_cache_);
+ 
+-  if (awaiting_update_service) {
++  if (awaiting_update_service && update_service_) {
+     update_check_params.priority =
+         params.fetch_priority == DownloadFetchPriority::kBackground
+             ? ExtensionUpdateCheckParams::UpdateCheckPriority::BACKGROUND
+@@ -768,6 +776,9 @@ void ExtensionUpdater::CleanUpCrxFileIfN
+ 
+ bool ExtensionUpdater::CanUseUpdateService(
+     const ExtensionId& extension_id) const {
++  if ((true))
++    return false;
++
+   if (g_force_use_update_service_for_tests)
+     return true;
+ 
+--- a/chrome/browser/extensions/webstore_installer.cc
++++ b/chrome/browser/extensions/webstore_installer.cc
+@@ -43,6 +43,7 @@
+ #include "components/crx_file/id_util.h"
+ #include "components/download/public/common/download_url_parameters.h"
+ #include "components/update_client/update_query_params.h"
++#include "components/helium_services/helium_services_helpers.h"
+ #include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/download_manager.h"
+ #include "content/public/browser/navigation_controller.h"
+@@ -199,7 +200,7 @@ GURL WebstoreInstaller::GetWebstoreInsta
+   if (!install_source.empty())
+     params.push_back(installsource_param);
+   params.push_back("uc");
+-  std::string url_string = extension_urls::GetWebstoreUpdateUrl().spec();
++  std::string url_string = helium::GetExtensionUpdateURL(*profile_->GetPrefs()).spec();
+ 
+   GURL url(
+       url_string + "?response=redirect&" +
+--- a/chrome/browser/extensions/webstore_installer.h
++++ b/chrome/browser/extensions/webstore_installer.h
+@@ -203,7 +203,7 @@ class WebstoreInstaller : public Extensi
+   friend class base::DeleteHelper<WebstoreInstaller>;
+ 
+   // Helper to get install URL.
+-  static GURL GetWebstoreInstallURL(const std::string& extension_id,
++  GURL GetWebstoreInstallURL(const std::string& extension_id,
+                                     InstallSource source);
+ 
+   // DownloadManager::DownloadUrl callback.
+--- a/chrome/browser/extensions/extension_management.cc
++++ b/chrome/browser/extensions/extension_management.cc
+@@ -46,6 +46,8 @@
+ #include "chrome/common/extensions/extension_constants.h"
+ #include "chrome/common/pref_names.h"
+ #include "components/crx_file/id_util.h"
++#include "components/helium_services/helium_services_helpers.h"
++#include "components/helium_services/pref_names.h"
+ #include "components/pref_registry/pref_registry_syncable.h"
+ #include "components/prefs/pref_service.h"
+ #include "content/public/common/content_switches.h"
+@@ -123,6 +125,12 @@ ExtensionManagement::ExtensionManagement
+                              pref_change_callback);
+   pref_change_registrar_.Add(pref_names::kExtensionUnpublishedAvailability,
+                              pref_change_callback);
++
++  helium::ConfigurePrefChangeRegistrarFor(
++    prefs::kHeliumExtProxyEnabled,
++    pref_change_registrar_,
++    pref_change_callback
++  );
+   // Note that both |global_settings_| and |default_settings_| will be null
+   // before first call to Refresh(), so in order to resolve this, Refresh() must
+   // be called in the initialization of ExtensionManagement.
+@@ -244,12 +252,20 @@ GURL ExtensionManagement::GetEffectiveUp
+         << "Update URL cannot be overridden to be the webstore URL!";
+     return update_url;
+   }
+-  return ManifestURL::GetUpdateURL(&extension);
++
++  const GURL& original_url = ManifestURL::GetUpdateURL(&extension);
++  const GURL& dummy_url = extension_urls::GetDefaultWebstoreUpdateUrl();
++
++  if (dummy_url.host_piece() == original_url.host_piece()) {
++    return helium::GetExtensionUpdateURL(*profile_->GetPrefs());
++  }
++
++  return original_url;
+ }
+ 
+ bool ExtensionManagement::UpdatesFromWebstore(const Extension& extension) {
+   const bool is_webstore_url = extension_urls::IsWebstoreUpdateUrl(
+-      GURL(GetEffectiveUpdateURL(extension)));
++      ManifestURL::GetUpdateURL(&extension));
+   if (is_webstore_url) {
+     DCHECK(!IsUpdateUrlOverridden(extension.id()))
+         << "An extension's update URL cannot be overridden to the webstore.";
+--- a/chrome/browser/extensions/updater/extension_updater.h
++++ b/chrome/browser/extensions/updater/extension_updater.h
+@@ -20,6 +20,7 @@
+ #include "base/memory/weak_ptr.h"
+ #include "base/time/time.h"
+ #include "base/unguessable_token.h"
++#include "components/prefs/pref_change_registrar.h"
+ #include "extensions/browser/extension_registry_observer.h"
+ #include "extensions/browser/extension_system.h"
+ #include "extensions/browser/updater/extension_downloader.h"
+@@ -337,6 +338,8 @@ class ExtensionUpdater : public Extensio
+   raw_ptr<PrefService, DanglingUntriaged> prefs_ = nullptr;
+   raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
+ 
++  PrefChangeRegistrar pref_change_registrar_;
++
+   raw_ptr<ExtensionRegistry, DanglingUntriaged> registry_ = nullptr;
+ 
+   std::map<int, InProgressCheck> requests_in_progress_;
+--- a/chrome/browser/extensions/pending_extension_info.h
++++ b/chrome/browser/extensions/pending_extension_info.h
+@@ -57,6 +57,8 @@ class PendingExtensionInfo {
+   const base::Version& version() const { return version_; }
+   const std::string& install_parameter() const { return install_parameter_; }
+ 
++  void OverrideURL(GURL new_url) { update_url_ = new_url; }
++
+   // ShouldAllowInstall() returns the result of running constructor argument
+   // |should_allow_install| on an extension. After an extension is unpacked,
+   // this function is run. If it returns true, the extension is installed.
+--- a/chrome/browser/extensions/pending_extension_manager.h
++++ b/chrome/browser/extensions/pending_extension_manager.h
+@@ -140,7 +140,7 @@ class PendingExtensionManager {
+   // Get the list of pending IDs that should be installed from an update URL.
+   // Pending extensions that will be installed from local files will not be
+   // included in the set.
+-  std::list<std::string> GetPendingIdsForUpdateCheck() const;
++  std::list<std::string> GetPendingIdsForUpdateCheck();
+ 
+   // Adds an observer to the observer list.
+   void AddObserver(Observer* observer);

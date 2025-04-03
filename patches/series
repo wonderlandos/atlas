@@ -110,6 +110,7 @@ extra/ungoogled-chromium/add-flag-to-spoof-webgl-renderer-info.patch
 extra/brave/chrome-importer-files.patch
 extra/brave/custom-importer.patch
 
+helium/services-prefs.patch
 helium/add-extra-channel-info.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch
@@ -118,16 +119,16 @@ helium/add-kagi-search.patch
 helium/copy-page-url-shortcut.patch
 
 helium/update-default-browser-prefs.patch
-helium/unbreak-chrome-webstore-url.patch
 helium/proxy-extension-downloads.patch
 helium/reenable-update-checks.patch
 helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
-helium/break-chrome-webstore-update-url.patch
 helium/add-native-bangs.patch
 helium/force-eu-search-features.patch
 helium/enable-tab-muting.patch
 helium/disable-bookmarks-bar.patch
+helium/reenable-spellcheck-downloads.patch
+helium/prefer-https-by-default.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch

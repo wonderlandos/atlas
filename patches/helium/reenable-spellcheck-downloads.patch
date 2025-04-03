@@ -1,0 +1,187 @@
+--- a/chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc
++++ b/chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc
+@@ -21,8 +21,10 @@
+ #include "base/task/thread_pool.h"
+ #include "base/threading/scoped_blocking_call.h"
+ #include "build/build_config.h"
++#include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/spellchecker/spellcheck_service.h"
+ #include "chrome/common/chrome_paths.h"
++#include "components/helium_services/helium_services_helpers.h"
+ #include "components/spellcheck/browser/spellcheck_platform.h"
+ #include "components/spellcheck/common/spellcheck_common.h"
+ #include "components/spellcheck/common/spellcheck_features.h"
+@@ -272,15 +274,26 @@ GURL SpellcheckHunspellDictionary::GetDi
+   std::string bdict_file = dictionary_file_.path.BaseName().MaybeAsASCII();
+   DCHECK(!bdict_file.empty());
+ 
+-  static const char kDownloadServerUrl[] =
+-      "trk:173:https://redirector.gvt1.com/edgedl/chrome/dict/";
++  if (browser_context_) {
++    const Profile* profile = Profile::FromBrowserContext(browser_context_);
++    if (!profile) {
++      goto fail;
++    }
++
++    const PrefService* prefs = profile->GetPrefs();
++    if (!prefs) {
++      goto fail;
++    }
++
++    return helium::GetSpellcheckURL(*prefs)
++            .Resolve(bdict_file);
++  }
+ 
+-  return GURL(std::string(kDownloadServerUrl) +
+-              base::ToLowerASCII(bdict_file));
++fail:
++  return GURL("https://failed-getting-spellcheck.qjz9zk/");
+ }
+ 
+ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
+-  return;
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+   DCHECK(browser_context_);
+ 
+--- a/components/helium_services/helium_services_helpers.cc
++++ b/components/helium_services/helium_services_helpers.cc
+@@ -60,6 +60,11 @@ bool ShouldAccessExtensionService(const
+             prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
+ }
+ 
++bool ShouldAccessDictionaryService(const PrefService& prefs) {
++    return ShouldAccessServices(prefs) &&
++            prefs.GetBoolean(prefs::kHeliumSpellcheckEnabled);
++}
++
+ bool ShouldFetchBangs(const PrefService& prefs) {
+     return ShouldAccessServices(prefs) &&
+             prefs.GetBoolean(prefs::kHeliumBangsEnabled);
+@@ -73,6 +78,14 @@ GURL GetExtensionUpdateURL(const PrefSer
+     return GetServicesBaseURL(prefs).Resolve("/ext");
+ }
+ 
++GURL GetSpellcheckURL(const PrefService& prefs) {
++    if (!ShouldAccessDictionaryService(prefs)) {
++        return GetDummyURL();
++    }
++
++    return GetServicesBaseURL(prefs).Resolve("/dict/");
++}
++
+ void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
+     PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
+   registrar.Add(prefs::kHeliumServicesEnabled, observer);
+--- a/components/helium_services/helium_services_helpers.h
++++ b/components/helium_services/helium_services_helpers.h
+@@ -23,6 +23,7 @@ COMPONENT_EXPORT(HELIUM) bool ShouldAcce
+ COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
+ COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
++COMPONENT_EXPORT(HELIUM) GURL GetSpellcheckURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
+ COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
+                             PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
+--- a/components/helium_services/pref_names.h
++++ b/components/helium_services/pref_names.h
+@@ -19,6 +19,9 @@ inline constexpr char kHeliumExtProxyEna
+ inline constexpr char kHeliumBangsEnabled[] =
+     "helium.services.bangs";
+ 
++inline constexpr char kHeliumSpellcheckEnabled[] =
++    "helium.services.spellcheck_files";
++
+ }  // namespace prefs
+ 
+ #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -7942,6 +7942,8 @@ static_library("browser") {
+     deps += [
+       "//components/spellcheck/browser",
+       "//components/spellcheck/common",
++      "//components/helium_services",
++      "//chrome/browser/profiles:profile",
+     ]
+ 
+     if (!is_android) {
+--- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
++++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
+@@ -343,6 +343,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+       settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kHeliumBangsEnabled] =
+       settings_api::PrefType::kBoolean;
++  (*s_allowlist)[::prefs::kHeliumSpellcheckEnabled] =
++      settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kHeliumServicesOrigin] =
+       settings_api::PrefType::kString;
+ 
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -174,6 +174,7 @@ void RegisterBrowserUserPrefs(user_prefs
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
+     registry->RegisterBooleanPref(prefs::kHeliumBangsEnabled, false);
+     registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumSpellcheckEnabled, false);
+     registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
+   }
+ 
+--- a/chrome/browser/resources/settings/privacy_page/services_page.html
++++ b/chrome/browser/resources/settings/privacy_page/services_page.html
+@@ -22,6 +22,13 @@
+                 label="$i18n{heliumExtProxyToggle}"
+                 sub-label="$i18n{heliumExtProxyToggleDescription}">
+             </settings-toggle-button>
++            <if expr="use_renderer_spellchecker">
++                <settings-toggle-button id="spellcheckToggleButton"
++                    pref="{{prefs.helium.services.spellcheck_files}}"
++                    label="$i18n{heliumSpellcheckToggle}"
++                    sub-label="$i18n{heliumSpellcheckToggleDescription}">
++                </settings-toggle-button>
++            </if>
+         </cr-collapse>
+     </div>
+ </div>
+--- a/chrome/app/settings_strings.grdp
++++ b/chrome/app/settings_strings.grdp
+@@ -2094,6 +2094,12 @@
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
+     When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
+   </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_SPELLCHECK_TOGGLE" desc="Toggle for enabling/disabling of downloading spellcheck files">
++    Allow downloading dictionary files for spell checking
++  </message>
++  <message name="IDS_SETTINGS_HELIUM_SERVICES_SPELLCHECK_TOGGLE_DESCRIPTION" desc="Description of the for enabling/disabling of downloading spellcheck files">
++    When enabled, Helium will fetch dictionary files used for spell checking when requested.
++  </message>
+   <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
+     Use your own instance of Helium services
+   </message>
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -1843,6 +1843,9 @@ void AddPrivacyStrings(content::WebUIDat
+       {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
+       {"heliumBangsToggleDescription",
+         IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},
++      {"heliumSpellcheckToggle", IDS_SETTINGS_HELIUM_SERVICES_SPELLCHECK_TOGGLE},
++      {"heliumSpellcheckToggleDescription",
++        IDS_SETTINGS_HELIUM_SERVICES_SPELLCHECK_TOGGLE_DESCRIPTION},
+       {"heliumExtProxyToggle",
+         IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE},
+       {"heliumExtProxyToggleDescription",
+--- a/chrome/common/features.gni
++++ b/chrome/common/features.gni
+@@ -12,6 +12,7 @@ import("//components/nacl/features.gni")
+ import("//components/safe_browsing/buildflags.gni")
+ import("//components/sharing_message/buildflags.gni")
+ import("//components/signin/features.gni")
++import("//components/spellcheck/spellcheck_build_features.gni")
+ import("//components/supervised_user/buildflags.gni")
+ import("//content/public/common/features.gni")
+ import("//crypto/features.gni")
+@@ -104,4 +105,5 @@ chrome_grit_defines = [
+   "optimize_webui=$optimize_webui",
+   "chrome_root_store_cert_management_ui=$chrome_root_store_cert_management_ui",
+   "use_nss_certs=$use_nss_certs",
++  "use_renderer_spellchecker=$use_renderer_spellchecker"
+ ]
