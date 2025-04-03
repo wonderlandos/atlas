@@ -11,7 +11,7 @@
        std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 --- a/chrome/browser/ui/views/toolbar/toolbar_button.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_button.cc
-@@ -157,7 +157,7 @@ void ToolbarButton::ClearHighlight() {
+@@ -164,7 +164,7 @@ void ToolbarButton::ClearHighlight() {
  
  int ToolbarButton::GetRoundedCornerRadius() const {
    return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(

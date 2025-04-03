@@ -219,25 +219,6 @@
  <if expr="_google_chrome">
        <cr-link-row class="hr" id="reportIssue" on-click="onReportIssueClick_"
            hidden="[[!prefs.feedback_allowed.value]]"
---- a/chrome/browser/resources/settings/appearance_page/appearance_page.ts
-+++ b/chrome/browser/resources/settings/appearance_page/appearance_page.ts
-@@ -503,15 +503,11 @@ export class SettingsAppearancePageEleme
-         i18nId = 'classicTheme';
-         break;
-     }
-+    this.themeSublabel_ = this.i18n(i18nId);
-     // </if>
-     // <if expr="not is_linux">
--    if (this.toolbarPinningEnabled_) {
-       this.themeSublabel_ = '';
--      return;
--    }
--    i18nId = 'chooseFromWebStore';
-     // </if>
--    this.themeSublabel_ = this.i18n(i18nId);
-   }
- 
-   /** @return Whether applied theme is set by policy. */
 --- a/chrome/browser/resources/settings/autofill_page/payments_section.html
 +++ b/chrome/browser/resources/settings/autofill_page/payments_section.html
 @@ -89,11 +89,6 @@

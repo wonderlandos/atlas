@@ -9,7 +9,7 @@
  
  class ImmersiveModeFocusSearchMac : public views::FocusSearch {
   public:
-@@ -229,11 +229,9 @@ void ImmersiveModeControllerMac::SetEnab
+@@ -233,11 +233,9 @@ void ImmersiveModeControllerMac::SetEnab
  gfx::Insets ImmersiveModeControllerMac::GetTabStripRegionViewInsets() {
    int right_left_inset = kTabAlignmentInset + kTrafficLightsWidth;
  

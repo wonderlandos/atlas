@@ -25,7 +25,7 @@
  
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
-@@ -199,6 +199,11 @@ bool PathProvider(int key, base::FilePat
+@@ -186,6 +186,11 @@ bool PathProvider(int key, base::FilePat
        }
        create_dir = true;
        break;
@@ -37,7 +37,7 @@
      case chrome::DIR_USER_DOCUMENTS:
        if (!GetUserDocumentsDirectory(&cur)) {
          return false;
-@@ -606,11 +611,28 @@ bool PathProvider(int key, base::FilePat
+@@ -575,11 +580,28 @@ bool PathProvider(int key, base::FilePat
  #endif  // !BUILDFLAG(IS_MAC)
        break;
  
@@ -68,7 +68,7 @@
  #if !BUILDFLAG(IS_ANDROID)
 --- a/chrome/common/chrome_paths.h
 +++ b/chrome/common/chrome_paths.h
-@@ -25,6 +25,7 @@ enum {
+@@ -24,6 +24,7 @@ enum {
  
    DIR_LOGS = PATH_START,  // Directory where logs should be written.
    DIR_USER_DATA,          // Directory where user data can be written.
@@ -76,7 +76,7 @@
    DIR_CRASH_METRICS,      // Directory where crash metrics are written.
    DIR_CRASH_DUMPS,        // Directory where crash dumps are written.
    DIR_LOCAL_TRACES,       // Directory where local traces are written.
-@@ -122,6 +123,9 @@ enum {
+@@ -117,6 +118,9 @@ enum {
                                // manifest files are stored.
    DIR_USER_NATIVE_MESSAGING,  // Directory with Native Messaging Hosts
                                // installed per-user.
@@ -114,7 +114,7 @@
  // DIR_ROAMING_USER_DATA has been overridden by a command-line option.
 --- a/chrome/common/chrome_paths_linux.cc
 +++ b/chrome/common/chrome_paths_linux.cc
-@@ -100,6 +100,23 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -99,6 +99,23 @@ bool GetDefaultUserDataDirectory(base::F
    return true;
  }
  

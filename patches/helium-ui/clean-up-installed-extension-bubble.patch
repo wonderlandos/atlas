@@ -1,12 +1,12 @@
 --- a/chrome/browser/ui/views/extensions/extension_installed_bubble_view.cc
 +++ b/chrome/browser/ui/views/extensions/extension_installed_bubble_view.cc
-@@ -201,22 +201,6 @@ void ExtensionInstalledBubbleView::Init(
+@@ -203,22 +203,6 @@ void ExtensionInstalledBubbleView::Init(
    layout->set_cross_axis_alignment(
        views::BoxLayout::CrossAxisAlignment::kStart);
    SetLayoutManager(std::move(layout));
 -
 -  if (model_->show_how_to_use()) {
--    AddChildView(CreateLabel(model_->GetHowToUseText()));
+-    AddChildViewRaw(CreateLabel(model_->GetHowToUseText()));
 -  }
 -
 -  if (model_->show_key_binding()) {
@@ -22,4 +22,4 @@
 -  }
  }
  
- void ExtensionInstalledBubbleView::OnSignIn(const AccountInfo& account) {
+ void ExtensionInstalledBubbleView::LinkClicked() {

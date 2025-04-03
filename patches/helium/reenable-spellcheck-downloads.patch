@@ -96,7 +96,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -7942,6 +7942,8 @@ static_library("browser") {
+@@ -7977,6 +7977,8 @@ static_library("browser") {
      deps += [
        "//components/spellcheck/browser",
        "//components/spellcheck/common",
@@ -107,7 +107,7 @@
      if (!is_android) {
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -343,6 +343,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -346,6 +346,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
        settings_api::PrefType::kBoolean;
    (*s_allowlist)[::prefs::kHeliumBangsEnabled] =
        settings_api::PrefType::kBoolean;
@@ -144,7 +144,7 @@
  </div>
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2094,6 +2094,12 @@
+@@ -2091,6 +2091,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
      When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
    </message>
@@ -159,7 +159,7 @@
    </message>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1843,6 +1843,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1851,6 +1851,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
        {"heliumBangsToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},
@@ -171,7 +171,7 @@
        {"heliumExtProxyToggleDescription",
 --- a/chrome/common/features.gni
 +++ b/chrome/common/features.gni
-@@ -12,6 +12,7 @@ import("//components/nacl/features.gni")
+@@ -11,6 +11,7 @@ import("//components/nacl/features.gni")
  import("//components/safe_browsing/buildflags.gni")
  import("//components/sharing_message/buildflags.gni")
  import("//components/signin/features.gni")
@@ -179,7 +179,7 @@
  import("//components/supervised_user/buildflags.gni")
  import("//content/public/common/features.gni")
  import("//crypto/features.gni")
-@@ -104,4 +105,5 @@ chrome_grit_defines = [
+@@ -103,4 +104,5 @@ chrome_grit_defines = [
    "optimize_webui=$optimize_webui",
    "chrome_root_store_cert_management_ui=$chrome_root_store_cert_management_ui",
    "use_nss_certs=$use_nss_certs",

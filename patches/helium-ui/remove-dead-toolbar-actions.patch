@@ -1,15 +1,15 @@
 --- a/chrome/browser/ui/browser_actions.cc
 +++ b/chrome/browser/ui/browser_actions.cc
-@@ -31,8 +31,6 @@
- #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+@@ -35,8 +35,6 @@
  #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+ #include "chrome/browser/ui/performance_controls/memory_saver_bubble_controller.h"
  #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 -#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 -#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_toolbar_icon_controller.h"
  #include "chrome/browser/ui/tabs/public/tab_features.h"
  #include "chrome/browser/ui/tabs/public/tab_interface.h"
- #include "chrome/browser/ui/toolbar/chrome_labs/chrome_labs_utils.h"
-@@ -41,7 +39,6 @@
+ #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
+@@ -46,7 +44,6 @@
  #include "chrome/browser/ui/views/frame/browser_view.h"
  #include "chrome/browser/ui/views/media_router/cast_browser_controller.h"
  #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
@@ -17,7 +17,7 @@
  #include "chrome/browser/ui/views/side_panel/history_clusters/history_clusters_side_panel_utils.h"
  #include "chrome/browser/ui/views/side_panel/side_panel_action_callback.h"
  #include "chrome/browser/ui/views/side_panel/side_panel_entry_id.h"
-@@ -162,10 +159,6 @@ void BrowserActions::InitializeBrowserAc
+@@ -178,10 +175,6 @@ void BrowserActions::InitializeBrowserAc
                    SidePanelEntryId::kBookmarks, IDS_BOOKMARK_MANAGER_TITLE,
                    IDS_BOOKMARK_MANAGER_TITLE, kBookmarksSidePanelRefreshIcon,
                    kActionSidePanelShowBookmarks, browser, true),
@@ -28,7 +28,7 @@
                SidePanelAction(SidePanelEntryId::kAboutThisSite,
                                IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE,
                                IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE,
-@@ -177,24 +170,11 @@ void BrowserActions::InitializeBrowserAc
+@@ -193,24 +186,11 @@ void BrowserActions::InitializeBrowserAc
                                IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE,
                                vector_icons::kEditChromeRefreshIcon,
                                kActionSidePanelShowCustomizeChrome, browser,
@@ -54,7 +54,7 @@
      root_action_item_->AddChild(
          SidePanelAction(SidePanelEntryId::kHistoryClusters, IDS_HISTORY_TITLE,
                          IDS_HISTORY_CLUSTERS_SHOW_SIDE_PANEL,
-@@ -203,13 +183,7 @@ void BrowserActions::InitializeBrowserAc
+@@ -219,13 +199,7 @@ void BrowserActions::InitializeBrowserAc
              .Build());
    }
  
@@ -69,114 +69,113 @@
      actions::ActionItem::InvokeActionCallback callback = base::BindRepeating(
          [](base::WeakPtr<Browser> browser, actions::ActionItem* item,
             actions::ActionInvocationContext context) {
-@@ -319,43 +293,6 @@ void BrowserActions::InitializeBrowserAc
-             kActionDevTools, IDS_DEV_TOOLS, IDS_DEV_TOOLS, kDeveloperToolsIcon)
-             .Build());
+@@ -372,43 +346,6 @@ void BrowserActions::InitializeBrowserAc
+                        kDeveloperToolsIcon)
+           .Build());
  
--    if (send_tab_to_self::SendTabToSelfToolbarIconController::CanShowOnBrowser(
--            browser)) {
--      root_action_item_->AddChild(
--          ChromeMenuAction(
--              base::BindRepeating(
--                  [](Browser* browser, actions::ActionItem* item,
--                     actions::ActionInvocationContext context) {
--                    auto* bubble_controller =
--                        browser->browser_window_features()
--                            ->send_tab_to_self_toolbar_bubble_controller();
--                    if (bubble_controller->IsBubbleShowing()) {
--                      bubble_controller->HideBubble();
--                    } else {
--                      send_tab_to_self::ShowBubble(
--                          browser->tab_strip_model()->GetActiveWebContents());
--                    }
--                  },
--                  base::Unretained(browser)),
--              kActionSendTabToSelf, IDS_SEND_TAB_TO_SELF, IDS_SEND_TAB_TO_SELF,
--              kDevicesChromeRefreshIcon)
--              .SetEnabled(chrome::CanSendTabToSelf(browser))
--              .SetVisible(
--                  !sharing_hub::SharingIsDisabledByPolicy(browser->profile()))
--              .Build());
--    }
--
--    root_action_item_->AddChild(
--        ChromeMenuAction(base::BindRepeating(
--                             [](Browser* browser, actions::ActionItem* item,
--                                actions::ActionInvocationContext context) {
--                               chrome::ShowTranslateBubble(browser);
--                             },
--                             base::Unretained(browser)),
--                         kActionShowTranslate, IDS_SHOW_TRANSLATE,
--                         IDS_TOOLTIP_TRANSLATE, kTranslateIcon)
--            .Build());
--
-     root_action_item_->AddChild(
-         ChromeMenuAction(base::BindRepeating(
-                              [](Browser* browser, actions::ActionItem* item,
-@@ -370,56 +307,6 @@ void BrowserActions::InitializeBrowserAc
-                 !sharing_hub::SharingIsDisabledByPolicy(browser->profile()))
-             .Build());
- 
+-  if (send_tab_to_self::SendTabToSelfToolbarIconController::CanShowOnBrowser(
+-          browser)) {
 -    root_action_item_->AddChild(
 -        ChromeMenuAction(
 -            base::BindRepeating(
 -                [](Browser* browser, actions::ActionItem* item,
 -                   actions::ActionInvocationContext context) {
--                  auto* controller =
--                      autofill::AddressBubblesIconController::Get(
--                          browser->tab_strip_model()->GetActiveWebContents());
--                  if (controller && controller->GetBubbleView()) {
--                    controller->GetBubbleView()->Hide();
+-                  auto* bubble_controller =
+-                      browser->browser_window_features()
+-                          ->send_tab_to_self_toolbar_bubble_controller();
+-                  if (bubble_controller->IsBubbleShowing()) {
+-                    bubble_controller->HideBubble();
 -                  } else {
--                    chrome::ShowAddresses(browser);
+-                    send_tab_to_self::ShowBubble(
+-                        browser->tab_strip_model()->GetActiveWebContents());
 -                  }
 -                },
 -                base::Unretained(browser)),
--            kActionShowAddressesBubbleOrPage,
--            IDS_ADDRESSES_AND_MORE_SUBMENU_OPTION,
--            IDS_ADDRESSES_AND_MORE_SUBMENU_OPTION,
--            vector_icons::kLocationOnChromeRefreshIcon)
--            .SetEnabled(!is_guest_session)
+-            kActionSendTabToSelf, IDS_SEND_TAB_TO_SELF, IDS_SEND_TAB_TO_SELF,
+-            kDevicesChromeRefreshIcon)
+-            .SetEnabled(chrome::CanSendTabToSelf(browser))
+-            .SetVisible(
+-                !sharing_hub::SharingIsDisabledByPolicy(browser->profile()))
 -            .Build());
+-  }
 -
--    root_action_item_->AddChild(
--        ChromeMenuAction(
--            base::BindRepeating(
--                [](Browser* browser, actions::ActionItem* item,
--                   actions::ActionInvocationContext context) {
--                  auto hide_bubble = [&browser](int command_id) -> bool {
--                    auto* controller = autofill::SavePaymentIconController::Get(
--                        browser->tab_strip_model()->GetActiveWebContents(),
--                        command_id);
--                    if (controller && controller->GetPaymentBubbleView()) {
--                      controller->GetPaymentBubbleView()->Hide();
--                      return true;
--                    }
--                    return false;
--                  };
--                  const bool bubble_hidden =
--                      hide_bubble(IDC_SAVE_CREDIT_CARD_FOR_PAGE) ||
--                      hide_bubble(IDC_SAVE_IBAN_FOR_PAGE);
--                  if (!bubble_hidden) {
--                    chrome::ShowPaymentMethods(browser);
--                  }
--                },
--                base::Unretained(browser)),
--            kActionShowPaymentsBubbleOrPage, IDS_PAYMENT_METHOD_SUBMENU_OPTION,
--            IDS_PAYMENT_METHOD_SUBMENU_OPTION, kCreditCardChromeRefreshIcon)
--            .SetEnabled(!is_guest_session)
--            .Build());
+-  root_action_item_->AddChild(
+-      ChromeMenuAction(base::BindRepeating(
+-                           [](Browser* browser, actions::ActionItem* item,
+-                              actions::ActionInvocationContext context) {
+-                             chrome::ShowTranslateBubble(browser);
+-                           },
+-                           base::Unretained(browser)),
+-                       kActionShowTranslate, IDS_SHOW_TRANSLATE,
+-                       IDS_TOOLTIP_TRANSLATE, kTranslateIcon)
+-          .Build());
 -
-     if (IsChromeLabsEnabled()) {
-       // TODO(b/354758327): Update `ShouldShowChromeLabsUI()` to not require
-       // `model` as a parameter, then use to set visibility of action item.
-@@ -462,7 +349,8 @@ void BrowserActions::InitializeBrowserAc
-                 base::Unretained(browser)),
-             kActionShowPasswordsBubbleOrPage, IDS_VIEW_PASSWORDS,
-             IDS_VIEW_PASSWORDS, vector_icons::kPasswordManagerIcon)
--            .SetEnabled(!is_guest_session)
-+            .SetEnabled(false)
-+            .SetVisible(false)
-             .Build());
+   root_action_item_->AddChild(
+       ChromeMenuAction(base::BindRepeating(
+                            [](Browser* browser, actions::ActionItem* item,
+@@ -423,55 +360,6 @@ void BrowserActions::InitializeBrowserAc
+               !sharing_hub::SharingIsDisabledByPolicy(browser->profile()))
+           .Build());
  
-     root_action_item_->AddChild(
+-  root_action_item_->AddChild(
+-      ChromeMenuAction(
+-          base::BindRepeating(
+-              [](Browser* browser, actions::ActionItem* item,
+-                 actions::ActionInvocationContext context) {
+-                auto* controller = autofill::AddressBubblesIconController::Get(
+-                    browser->tab_strip_model()->GetActiveWebContents());
+-                if (controller && controller->GetBubbleView()) {
+-                  controller->GetBubbleView()->Hide();
+-                } else {
+-                  chrome::ShowAddresses(browser);
+-                }
+-              },
+-              base::Unretained(browser)),
+-          kActionShowAddressesBubbleOrPage,
+-          IDS_ADDRESSES_AND_MORE_SUBMENU_OPTION,
+-          IDS_ADDRESSES_AND_MORE_SUBMENU_OPTION,
+-          vector_icons::kLocationOnChromeRefreshIcon)
+-          .SetEnabled(!is_guest_session)
+-          .Build());
+-
+-  root_action_item_->AddChild(
+-      ChromeMenuAction(
+-          base::BindRepeating(
+-              [](Browser* browser, actions::ActionItem* item,
+-                 actions::ActionInvocationContext context) {
+-                auto hide_bubble = [&browser](int command_id) -> bool {
+-                  auto* controller = autofill::SavePaymentIconController::Get(
+-                      browser->tab_strip_model()->GetActiveWebContents(),
+-                      command_id);
+-                  if (controller && controller->GetPaymentBubbleView()) {
+-                    controller->GetPaymentBubbleView()->Hide();
+-                    return true;
+-                  }
+-                  return false;
+-                };
+-                const bool bubble_hidden =
+-                    hide_bubble(IDC_SAVE_CREDIT_CARD_FOR_PAGE) ||
+-                    hide_bubble(IDC_SAVE_IBAN_FOR_PAGE);
+-                if (!bubble_hidden) {
+-                  chrome::ShowPaymentMethods(browser);
+-                }
+-              },
+-              base::Unretained(browser)),
+-          kActionShowPaymentsBubbleOrPage, IDS_PAYMENT_METHOD_SUBMENU_OPTION,
+-          IDS_PAYMENT_METHOD_SUBMENU_OPTION, kCreditCardChromeRefreshIcon)
+-          .SetEnabled(!is_guest_session)
+-          .Build());
+-
+   if (IsChromeLabsEnabled() &&
+       !web_app::AppBrowserController::IsWebApp(browser)) {
+     // TODO(354758327): Update `ShouldShowChromeLabsUI()` to not require
+@@ -514,7 +402,8 @@ void BrowserActions::InitializeBrowserAc
+               base::Unretained(browser)),
+           kActionShowPasswordsBubbleOrPage, IDS_VIEW_PASSWORDS,
+           IDS_VIEW_PASSWORDS, vector_icons::kPasswordManagerIcon)
+-          .SetEnabled(!is_guest_session)
++          .SetEnabled(false)
++          .SetVisible(false)
+           .Build());
+ 
+   root_action_item_->AddChild(
