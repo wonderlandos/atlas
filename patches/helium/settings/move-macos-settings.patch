@@ -1,6 +1,6 @@
 --- a/chrome/browser/resources/settings/appearance_page/appearance_page.html
 +++ b/chrome/browser/resources/settings/appearance_page/appearance_page.html
-@@ -276,16 +276,6 @@
+@@ -274,16 +274,6 @@
              </template>
            </select>
          </div>

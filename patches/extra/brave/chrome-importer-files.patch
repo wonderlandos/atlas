@@ -2835,7 +2835,7 @@
 +#endif  // BRAVE_UTILITY_IMPORTER_CHROME_IMPORTER_H_
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10755,6 +10755,9 @@ Check your passwords anytime in <ph name
+@@ -10785,6 +10785,9 @@ Check your passwords anytime in <ph name
              Microsoft Edge
            </message>
          </if>

@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/toolbar/app_menu_model.cc
 +++ b/chrome/browser/ui/toolbar/app_menu_model.cc
-@@ -741,9 +741,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
+@@ -738,9 +738,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
      if (!sharing_hub::SharingIsDisabledByPolicy(browser->profile())) {
        AddItemWithStringIdAndVectorIcon(
            this, IDC_COPY_URL, IDS_APP_MENU_COPY_LINK, kLinkChromeRefreshIcon);
@@ -10,7 +10,7 @@
        AddItemWithStringIdAndVectorIcon(this, IDC_QRCODE_GENERATOR,
                                         IDS_APP_MENU_CREATE_QR_CODE,
                                         kQrCodeChromeRefreshIcon);
-@@ -886,13 +883,6 @@ void ToolsMenuModel::Build(Browser* brow
+@@ -882,13 +879,6 @@ void ToolsMenuModel::Build(Browser* brow
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -24,7 +24,7 @@
    AddSeparator(ui::NORMAL_SEPARATOR);
    if (!features::IsExtensionMenuInRootAppMenu()) {
      AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-@@ -1769,32 +1759,6 @@ void AppMenuModel::Build() {
+@@ -1765,32 +1755,6 @@ void AppMenuModel::Build() {
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -57,7 +57,7 @@
    if (!browser_->profile()->IsOffTheRecord()) {
      auto recent_tabs_sub_menu =
          std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
-@@ -1833,15 +1797,11 @@ void AppMenuModel::Build() {
+@@ -1829,15 +1793,11 @@ void AppMenuModel::Build() {
          kTabGroupsMenuItem);
    }
  
@@ -78,9 +78,9 @@
    AddItemWithStringIdAndVectorIcon(this, IDC_CLEAR_BROWSING_DATA,
                                     IDS_CLEAR_BROWSING_DATA,
                                     kTrashCanRefreshIcon);
-@@ -1869,9 +1829,6 @@ void AppMenuModel::Build() {
+@@ -1868,9 +1828,6 @@ void AppMenuModel::Build() {
+                           lens::features::kLensOverlay));
    }
- #endif
  
 -  AddItemWithStringIdAndVectorIcon(this, IDC_SHOW_TRANSLATE, IDS_SHOW_TRANSLATE,
 -                                   kTranslateIcon);
@@ -88,16 +88,3 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
-@@ -1912,11 +1869,7 @@ void AppMenuModel::Build() {
-   AddSubMenuWithStringIdAndVectorIcon(this, IDC_HELP_MENU, IDS_HELP_MENU,
-                                       sub_menus_.back().get(), kHelpMenuIcon);
- #else
--#if BUILDFLAG(IS_CHROMEOS)
--  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
--#else
--  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
--#endif
-+  AddItemWithStringIdAndVectorIcon(this, IDC_ABOUT, IDS_ABOUT, kHelpMenuIcon);
- #endif
- 
-   AddItemWithStringIdAndVectorIcon(this, IDC_OPTIONS, IDS_SETTINGS,

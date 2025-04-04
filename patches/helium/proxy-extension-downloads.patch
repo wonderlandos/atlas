@@ -147,7 +147,7 @@
  
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -339,6 +339,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -342,6 +342,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
    // Helium services page
    (*s_allowlist)[::prefs::kHeliumServicesEnabled] =
        settings_api::PrefType::kBoolean;
@@ -182,7 +182,7 @@
  </div>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1842,6 +1842,10 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1850,6 +1850,10 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
@@ -195,7 +195,7 @@
          IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION},
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2082,6 +2082,12 @@
+@@ -2079,6 +2079,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
      When enabled, Helium will be able to connect to anonymous services for providing additional functionality, such as native !bangs or extension downloads.
    </message>
@@ -257,14 +257,14 @@
                              PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
-@@ -69,6 +69,7 @@ source_set("extensions") {
-     "//components/content_settings/core/browser:cookie_settings",
+@@ -300,6 +300,7 @@ source_set("extensions") {
+     "//components/cookie_config",
      "//components/crx_file",
-     "//components/pref_registry",
+     "//components/embedder_support",
 +    "//components/helium_services",
-     "//content/public/browser",
-     "//extensions/browser",
-     "//extensions/buildflags",
+     "//components/infobars/content",
+     "//components/infobars/core",
+     "//components/no_state_prefetch/browser",
 --- a/chrome/browser/extensions/pending_extension_manager.cc
 +++ b/chrome/browser/extensions/pending_extension_manager.cc
 @@ -18,10 +18,12 @@
@@ -279,8 +279,8 @@
 +#include "extensions/common/extension_urls.h"
  #include "url/gurl.h"
  
- using content::BrowserThread;
-@@ -236,11 +238,11 @@ bool PendingExtensionManager::AddFromExt
+ #if !BUILDFLAG(IS_ANDROID)
+@@ -248,11 +250,11 @@ bool PendingExtensionManager::AddFromExt
                            kRemoteInstall);
  }
  
@@ -295,7 +295,7 @@
      ManifestLocation install_source = it.second.install_source();
  
      // Some install sources read a CRX from the filesystem.  They can
-@@ -252,6 +254,17 @@ std::list<std::string> PendingExtensionM
+@@ -264,6 +266,17 @@ std::list<std::string> PendingExtensionM
        continue;
      }
  
@@ -326,7 +326,7 @@
  #include "components/update_client/update_query_params.h"
  #include "content/public/browser/browser_task_traits.h"
  #include "content/public/browser/browser_thread.h"
-@@ -187,9 +190,6 @@ void ExtensionUpdater::EnsureDownloaderC
+@@ -189,9 +192,6 @@ void ExtensionUpdater::EnsureDownloaderC
    if (!downloader_.get()) {
      downloader_ = downloader_factory_.Run(this);
    }
@@ -336,7 +336,7 @@
  }
  
  void ExtensionUpdater::Start() {
-@@ -211,6 +211,15 @@ void ExtensionUpdater::Start() {
+@@ -213,6 +213,15 @@ void ExtensionUpdater::Start() {
        CheckSoon();
      ScheduleNextCheck();
    }
@@ -352,7 +352,7 @@
  }
  
  void ExtensionUpdater::Stop() {
-@@ -315,7 +324,6 @@ void ExtensionUpdater::AddToDownloader(
+@@ -318,7 +327,6 @@ void ExtensionUpdater::AddToDownloader(
      int request_id,
      DownloadFetchPriority fetch_priority,
      ExtensionUpdateCheckParams* update_check_params) {
@@ -360,7 +360,7 @@
  
    // In Kiosk mode extensions are downloaded and updated by the ExternalCache.
    // Therefore we skip updates here to avoid conflicts.
-@@ -414,7 +422,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+@@ -417,7 +425,7 @@ void ExtensionUpdater::CheckNow(CheckPar
    // Add fetch records for extensions that should be fetched by an update URL.
    // These extensions are not yet installed. They come from group policy
    // and external install sources.
@@ -369,7 +369,7 @@
        service_->pending_extension_manager();
    const CorruptedExtensionReinstaller* corrupted_extension_reinstaller =
        service_->corrupted_extension_reinstaller();
-@@ -552,7 +560,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+@@ -555,7 +563,7 @@ void ExtensionUpdater::CheckNow(CheckPar
    // OnExtensionDownloadFinished for each extension that was checked.
    downloader_->StartAllPending(extension_cache_);
  
@@ -390,7 +390,7 @@
  
 --- a/chrome/browser/extensions/webstore_installer.cc
 +++ b/chrome/browser/extensions/webstore_installer.cc
-@@ -43,6 +43,7 @@
+@@ -45,6 +45,7 @@
  #include "components/crx_file/id_util.h"
  #include "components/download/public/common/download_url_parameters.h"
  #include "components/update_client/update_query_params.h"
@@ -398,7 +398,7 @@
  #include "content/public/browser/browser_thread.h"
  #include "content/public/browser/download_manager.h"
  #include "content/public/browser/navigation_controller.h"
-@@ -199,7 +200,7 @@ GURL WebstoreInstaller::GetWebstoreInsta
+@@ -201,7 +202,7 @@ GURL WebstoreInstaller::GetWebstoreInsta
    if (!install_source.empty())
      params.push_back(installsource_param);
    params.push_back("uc");
@@ -409,7 +409,7 @@
        url_string + "?response=redirect&" +
 --- a/chrome/browser/extensions/webstore_installer.h
 +++ b/chrome/browser/extensions/webstore_installer.h
-@@ -203,7 +203,7 @@ class WebstoreInstaller : public Extensi
+@@ -110,7 +110,7 @@ class WebstoreInstaller : public Extensi
    friend class base::DeleteHelper<WebstoreInstaller>;
  
    // Helper to get install URL.
@@ -475,17 +475,17 @@
  #include "extensions/browser/extension_registry_observer.h"
  #include "extensions/browser/extension_system.h"
  #include "extensions/browser/updater/extension_downloader.h"
-@@ -337,6 +338,8 @@ class ExtensionUpdater : public Extensio
+@@ -338,6 +339,8 @@ class ExtensionUpdater : public Extensio
    raw_ptr<PrefService, DanglingUntriaged> prefs_ = nullptr;
    raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
  
 +  PrefChangeRegistrar pref_change_registrar_;
 +
    raw_ptr<ExtensionRegistry, DanglingUntriaged> registry_ = nullptr;
+   raw_ptr<ExtensionRegistrar, DanglingUntriaged> registrar_ = nullptr;
  
-   std::map<int, InProgressCheck> requests_in_progress_;
---- a/chrome/browser/extensions/pending_extension_info.h
-+++ b/chrome/browser/extensions/pending_extension_info.h
+--- a/extensions/browser/pending_extension_info.h
++++ b/extensions/browser/pending_extension_info.h
 @@ -57,6 +57,8 @@ class PendingExtensionInfo {
    const base::Version& version() const { return version_; }
    const std::string& install_parameter() const { return install_parameter_; }
@@ -497,7 +497,7 @@
    // this function is run. If it returns true, the extension is installed.
 --- a/chrome/browser/extensions/pending_extension_manager.h
 +++ b/chrome/browser/extensions/pending_extension_manager.h
-@@ -140,7 +140,7 @@ class PendingExtensionManager {
+@@ -144,7 +144,7 @@ class PendingExtensionManager : public K
    // Get the list of pending IDs that should be installed from an update URL.
    // Pending extensions that will be installed from local files will not be
    // included in the set.

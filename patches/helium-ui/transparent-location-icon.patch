@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
 +++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
-@@ -46,7 +46,7 @@ constexpr int kIconLabelBubbleSeparatorW
+@@ -48,7 +48,7 @@ constexpr int kIconLabelBubbleSeparatorW
  
  // Amount of space on either side of the separator that appears after the icon
  // or label.
@@ -9,7 +9,7 @@
  
  // The length of the separator's fade animation. These values are empirical.
  constexpr int kIconLabelBubbleFadeInDurationMs = 250;
-@@ -82,9 +82,7 @@ void IconLabelBubbleView::SeparatorView:
+@@ -84,9 +84,7 @@ void IconLabelBubbleView::SeparatorView:
    const SkColor separator_color = SkColorSetA(
        owner_->delegate_->GetIconLabelBubbleSurroundingForegroundColor(),
        owner_->delegate_->GetIconLabelBubbleSeparatorAlpha());
@@ -20,7 +20,7 @@
    canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
                     gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
  }
-@@ -247,11 +245,10 @@ void IconLabelBubbleView::Layout(PassKey
+@@ -249,11 +247,10 @@ void IconLabelBubbleView::Layout(PassKey
    separator_bounds.Inset(
        gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
  
@@ -35,7 +35,7 @@
    separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                               separator_height);
  
-@@ -593,7 +590,7 @@ int IconLabelBubbleView::GetInternalSpac
+@@ -595,7 +592,7 @@ int IconLabelBubbleView::GetInternalSpac
    }
  
    constexpr int kDefaultInternalSpacingTouchUI = 10;
@@ -44,7 +44,7 @@
  
    return (ui::TouchUiController::Get()->touch_ui()
                ? kDefaultInternalSpacingTouchUI
-@@ -750,6 +747,10 @@ SkPath IconLabelBubbleView::GetHighlight
+@@ -751,6 +748,10 @@ SkPath IconLabelBubbleView::GetHighlight
        SkIntToScalar(radii.lower_right()), SkIntToScalar(radii.lower_right()),
        SkIntToScalar(radii.lower_left()),  SkIntToScalar(radii.lower_left())};
  
@@ -57,7 +57,7 @@
  
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -274,9 +274,9 @@ void LocationBarView::Init() {
+@@ -275,9 +275,9 @@ void LocationBarView::Init() {
        CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
  
    const gfx::FontList& omnibox_chip_font_list = typography_provider.GetFont(
@@ -69,7 +69,7 @@
  
    auto location_icon_view =
        std::make_unique<LocationIconView>(omnibox_chip_font_list, this, this);
-@@ -762,15 +762,15 @@ void LocationBarView::Layout(PassKey) {
+@@ -764,15 +764,15 @@ void LocationBarView::Layout(PassKey) {
    // The padding between the left edges of the location bar and the LHS icon
    // (e.g. the page info icon, the google G icon, the selected suggestion icon,
    // etc)
@@ -120,7 +120,7 @@
  BEGIN_METADATA(LocationIconView)
 --- a/chrome/browser/ui/views/location_bar/selected_keyword_view.cc
 +++ b/chrome/browser/ui/views/location_bar/selected_keyword_view.cc
-@@ -171,7 +171,7 @@ const std::u16string& SelectedKeywordVie
+@@ -178,7 +178,7 @@ const std::u16string& SelectedKeywordVie
  
  int SelectedKeywordView::GetExtraInternalSpacing() const {
    // Align the label text with the suggestion text.

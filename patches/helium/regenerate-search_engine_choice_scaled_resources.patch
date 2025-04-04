@@ -1,6 +1,6 @@
 --- a/components/resources/search_engine_choice_scaled_resources.grdp
 +++ b/components/resources/search_engine_choice_scaled_resources.grdp
-@@ -5,46 +5,10 @@
+@@ -5,47 +5,10 @@
    <if expr="_google_chrome">
      <structure type="chrome_scaled_image" name="IDR_GOOGLE_COM_PNG" file="google_chrome/google_search_logo.png" />
    </if>
@@ -41,6 +41,7 @@
 -  <structure type="chrome_scaled_image" name="IDR_SEZNAM_PNG" file="search_engine_choice/seznam.png" />
 -  <structure type="chrome_scaled_image" name="IDR_SE_YAHOO_COM_PNG" file="search_engine_choice/yahoo_com.png" />
 -  <structure type="chrome_scaled_image" name="IDR_SG_YAHOO_COM_PNG" file="search_engine_choice/yahoo_com.png" />
+-  <structure type="chrome_scaled_image" name="IDR_STARTPAGE_COM_PNG" file="search_engine_choice/startpage_com.png" />
 -  <structure type="chrome_scaled_image" name="IDR_TH_YAHOO_COM_PNG" file="search_engine_choice/yahoo_com.png" />
 -  <structure type="chrome_scaled_image" name="IDR_TR_YAHOO_COM_PNG" file="search_engine_choice/yahoo_com.png" />
 -  <structure type="chrome_scaled_image" name="IDR_TW_YAHOO_COM_PNG" file="search_engine_choice/yahoo_com.png" />
