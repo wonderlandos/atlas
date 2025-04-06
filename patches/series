@@ -125,7 +125,6 @@ helium/download-icons-from-source.patch
 helium/regenerate-search_engine_choice_scaled_resources.patch
 helium/add-native-bangs.patch
 helium/force-eu-search-features.patch
-helium/enable-tab-muting.patch
 helium/disable-bookmarks-bar.patch
 helium/reenable-spellcheck-downloads.patch
 helium/prefer-https-by-default.patch
