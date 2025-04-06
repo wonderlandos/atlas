@@ -88,3 +88,11 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
+@@ -2018,6 +1975,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
+ }
+ 
+ bool AppMenuModel::AddSafetyHubMenuItem() {
++  return false;
+   auto* safety_hub_menu_notification_service =
+       SafetyHubMenuNotificationServiceFactory::GetForProfile(
+           browser_->profile());
