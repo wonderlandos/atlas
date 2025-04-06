@@ -110,6 +110,7 @@ extra/brave/chrome-importer-files.patch
 extra/brave/custom-importer.patch
 
 helium/services-prefs.patch
+helium/onboarding-page.patch
 helium/add-extra-channel-info.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch
@@ -127,7 +128,6 @@ helium/force-eu-search-features.patch
 helium/disable-bookmarks-bar.patch
 helium/reenable-spellcheck-downloads.patch
 helium/prefer-https-by-default.patch
-helium/onboarding-page.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
