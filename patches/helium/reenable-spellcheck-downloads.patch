@@ -84,7 +84,7 @@
                              PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 --- a/components/helium_services/pref_names.h
 +++ b/components/helium_services/pref_names.h
-@@ -19,6 +19,9 @@ inline constexpr char kHeliumExtProxyEna
+@@ -24,6 +24,9 @@ inline constexpr char kHeliumExtProxyEna
  inline constexpr char kHeliumBangsEnabled[] =
      "helium.services.bangs";
  
@@ -124,8 +124,8 @@
      registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
 +    registry->RegisterBooleanPref(prefs::kHeliumSpellcheckEnabled, false);
      registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
+     registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
    }
- 
 --- a/chrome/browser/resources/settings/privacy_page/services_page.html
 +++ b/chrome/browser/resources/settings/privacy_page/services_page.html
 @@ -22,6 +22,13 @@

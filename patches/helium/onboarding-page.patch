@@ -1,3 +1,58 @@
+--- a/components/helium_services/pref_names.h
++++ b/components/helium_services/pref_names.h
+@@ -7,12 +7,17 @@
+ 
+ namespace prefs {
+ 
++inline constexpr char kHeliumPrefPrefix[] = "helium.";
++
+ inline constexpr char kHeliumServicesEnabled[] =
+     "helium.services.enabled";
+ 
+ inline constexpr char kHeliumServicesOrigin[] =
+     "helium.services.origin_override";
+ 
++inline constexpr char kHeliumDidOnboarding[] =
++    "helium.completed_onboarding";
++
+ }  // namespace prefs
+ 
+ #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -173,6 +173,7 @@ void RegisterBrowserUserPrefs(user_prefs
+   {
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
+     registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
++    registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
+   }
+ 
+   registry->RegisterBooleanPref(
+--- a/chrome/browser/ui/startup/startup_browser_creator_impl.cc
++++ b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
+@@ -49,6 +49,8 @@
+ #include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
+ #include "chrome/common/chrome_switches.h"
+ #include "chrome/common/pref_names.h"
++#include "chrome/common/webui_url_constants.h"
++#include "components/helium_services/pref_names.h"
+ #include "components/custom_handlers/protocol_handler_registry.h"
+ #include "components/prefs/pref_service.h"
+ #include "components/privacy_sandbox/privacy_sandbox_features.h"
+@@ -457,6 +459,13 @@ StartupBrowserCreatorImpl::DetermineStar
+   LaunchResult launch_result =
+       tabs.empty() ? LaunchResult::kNormally : LaunchResult::kWithGivenUrls;
+ 
++  if (!is_incognito_or_guest) {
++    if (!profile_->GetPrefs()->GetBoolean(prefs::kHeliumDidOnboarding)) {
++      UrlsToTabs({ GURL(chrome::kHeliumSetupURL) }, &tabs);
++      return { tabs, LaunchResult::kWithGivenUrls };
++    }
++  }
++
+   if (whats_new_enabled && (launch_result == LaunchResult::kWithGivenUrls ||
+                             is_incognito_or_guest || is_post_crash_launch)) {
+     whats_new::LogStartupType(whats_new::StartupType::kIneligible);
 --- a/tools/gritsettings/resource_ids.spec
 +++ b/tools/gritsettings/resource_ids.spec
 @@ -1103,6 +1103,10 @@
@@ -13,7 +68,7 @@
    # START ios/ section.
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -8409,6 +8409,7 @@ static_library("browser_generated_files"
+@@ -8407,6 +8407,7 @@ static_library("browser_generated_files"
      "//chrome/browser/ui/webui/user_education_internals:mojo_bindings",
      "//chrome/browser/v8_compile_hints/proto",
      "//chrome/browser/web_applications/mojom:mojom_web_apps_enum",
@@ -60,10 +115,12 @@
  #if ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && \
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -230,6 +230,8 @@ static_library("ui") {
+@@ -230,6 +230,10 @@ static_library("ui") {
      "webui/net_internals/net_internals_ui.h",
      "webui/ntp_tiles_internals_ui.cc",
      "webui/ntp_tiles_internals_ui.h",
++    "webui/onboarding/onboarding_handler.cc",
++    "webui/onboarding/onboarding_handler.h",
 +    "webui/onboarding/onboarding_page_ui.cc",
 +    "webui/onboarding/onboarding_page_ui.h",
      "webui/omnibox/omnibox_page_handler.cc",
@@ -87,21 +144,9 @@
    map.AddWebUIConfig(std::make_unique<ProfileCustomizationUIConfig>());
    map.AddWebUIConfig(std::make_unique<ProfilePickerUIConfig>());
    map.AddWebUIConfig(std::make_unique<SigninErrorUIConfig>());
---- a/chrome/browser/chrome_browser_main.cc
-+++ b/chrome/browser/chrome_browser_main.cc
-@@ -1013,6 +1013,9 @@ int ChromeBrowserMainParts::PreCreateThr
-   if (first_run::IsChromeFirstRun()) {
-     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kApp) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppId)) {
-+      // TODO: make this run for every single profile that hasn't seen it yet,
-+      // OR inherit preferences from the default profile
-+      browser_creator_->AddFirstRunTabs({GURL("chrome://setup")});
-       browser_creator_->AddFirstRunTabs(master_prefs_->new_tabs);
-     }
- 
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,33 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -109,6 +154,7 @@
 +#include "chrome/browser/ui/webui/onboarding/onboarding_page_ui.h"
 +
 +#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
 +#include "chrome/common/webui_url_constants.h"
 +#include "content/public/browser/web_ui_controller.h"
 +#include "content/public/browser/web_ui_data_source.h"
@@ -128,10 +174,15 @@
 +
 +    source->UseStringsJs();
 +    source->DisableTrustedTypesCSP();
++
++    web_ui->AddMessageHandler(
++        std::make_unique<OnboardingMessageHandler>(Profile::FromWebUI(web_ui)));
 +}
++
++HeliumOnboardingPage::~HeliumOnboardingPage() = default;
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.h
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,31 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -159,6 +210,163 @@
 +
 +    HeliumOnboardingPage(const HeliumOnboardingPage&) = delete;
 +    HeliumOnboardingPage& operator=(const HeliumOnboardingPage&) = delete;
++    ~HeliumOnboardingPage() override;
 +};
 +
 +#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_PAGE_H_
+--- /dev/null
++++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.cc
+@@ -0,0 +1,113 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
++
++#include "base/values.h"
++#include "components/prefs/pref_service.h"
++#include "components/helium_services/pref_names.h"
++
++OnboardingMessageHandler::OnboardingMessageHandler(Profile* profile)
++    : profile_(profile), pref_service_(profile->GetPrefs()) {}
++
++OnboardingMessageHandler::~OnboardingMessageHandler() = default;
++
++void OnboardingMessageHandler::RegisterMessages() {
++    web_ui()->RegisterMessageCallback(
++        "getPrefs",
++        base::BindRepeating(&OnboardingMessageHandler::HandleGetPreferences,
++                            base::Unretained(this)));
++
++    web_ui()->RegisterMessageCallback(
++        "setPref",
++        base::BindRepeating(&OnboardingMessageHandler::HandleSetPreference,
++                            base::Unretained(this)));
++
++    web_ui()->RegisterMessageCallback(
++        "markOnboardingComplete",
++        base::BindRepeating(&OnboardingMessageHandler::HandleCompletedOnboarding,
++                            base::Unretained(this)));
++}
++
++void OnboardingMessageHandler::HandleGetPreferences(const base::Value::List& args) {
++    CHECK_EQ(1U, args.size());
++
++    const auto& callback_id = args[0].GetString();
++    std::vector<PrefService::PreferenceValueAndStore> values =
++        pref_service_->GetPreferencesValueAndStore();
++    base::Value::Dict output;
++
++    for (const auto& [name, value, _] : values) {
++        if (!base::StartsWith(name, prefs::kHeliumPrefPrefix,
++                base::CompareCase::SENSITIVE)) {
++            continue;
++        }
++
++        output.Set(
++            name.substr(sizeof(prefs::kHeliumPrefPrefix) - 1),
++            value.Clone()
++        );
++    }
++
++    AllowJavascript();
++    ResolveJavascriptCallback(
++        base::Value(callback_id), base::Value(std::move(output)));
++}
++
++void OnboardingMessageHandler::HandleSetPreference(const base::Value::List& args) {
++    if (args.size() == 0) {
++        return;
++    }
++
++    const auto& callback_id = args[0].GetString();
++    if (args.size() != 3) {
++        return RejectJavascriptCallback(callback_id, "invalid arguments");
++    }
++
++    AllowJavascript();
++    if (!args[1].is_string()) {
++        return RejectJavascriptCallback(callback_id, "pref is not a string");
++    }
++
++    const auto& pref_name = prefs::kHeliumPrefPrefix + args[1].GetString();
++    auto* pref = pref_service_->FindPreference(pref_name);
++    if (!pref) {
++        return RejectJavascriptCallback(callback_id, pref_name + " does not exist");
++    }
++
++    if (args[2].type() != pref->GetType()) {
++        return RejectJavascriptCallback(callback_id, "invalid value type");
++    }
++
++    pref_service_->Set(pref_name, args[2].Clone());
++
++    ResolveJavascriptCallback(callback_id, {});
++}
++
++void OnboardingMessageHandler::HandleCompletedOnboarding(const base::Value::List& args) {
++    std::optional<std::string> callback_id;
++    if (args.size() == 1) {
++        callback_id = args[0].GetString();
++    }
++
++    if (!pref_service_->HasPrefPath(prefs::kHeliumDidOnboarding)) {
++        std::vector<PrefService::PreferenceValueAndStore> values =
++            pref_service_->GetPreferencesValueAndStore();
++
++        for (const auto& [name, value, _] : values) {
++            if (!base::StartsWith(name, prefs::kHeliumPrefPrefix,
++                    base::CompareCase::SENSITIVE)) {
++                continue;
++            }
++
++            if (value.is_bool() && !pref_service_->HasPrefPath(name)) {
++                pref_service_->Set(name, base::Value(true));
++            }
++        }
++    }
++
++    if (callback_id) {
++        ResolveJavascriptCallback(*callback_id, {});
++    }
++}
+--- /dev/null
++++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.h
+@@ -0,0 +1,37 @@
++// Copyright 2025 The Helium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_HANDLER_H_
++#define CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_HANDLER_H_
++
++#include <optional>
++#include <string>
++
++#include "base/memory/raw_ptr.h"
++#include "base/memory/weak_ptr.h"
++#include "base/values.h"
++#include "chrome/browser/profiles/profile.h"
++#include "components/prefs/pref_service.h"
++#include "content/public/browser/web_ui_message_handler.h"
++
++class OnboardingMessageHandler : public content::WebUIMessageHandler {
++ public:
++  explicit OnboardingMessageHandler(Profile* profile);
++  OnboardingMessageHandler(const OnboardingMessageHandler&) = delete;
++  OnboardingMessageHandler& operator=(const OnboardingMessageHandler&) = delete;
++  ~OnboardingMessageHandler() override;
++
++  void RegisterMessages() override;
++
++ private:
++  void HandleGetPreferences(const base::Value::List& args);
++  void HandleSetPreference(const base::Value::List& args);
++  void HandleCompletedOnboarding(const base::Value::List& args);
++
++  raw_ptr<Profile> profile_ = nullptr;
++  raw_ptr<PrefService> pref_service_ = nullptr;
++  base::WeakPtrFactory<OnboardingMessageHandler> weak_ptr_factory_{this};
++};
++
++#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_HANDLER_H_
