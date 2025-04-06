@@ -311,7 +311,7 @@
  #endif
  
 +  {
-+    registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
 +    registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
 +  }
 +

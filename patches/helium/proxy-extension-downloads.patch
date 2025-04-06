@@ -161,8 +161,8 @@
 @@ -172,6 +172,7 @@ void RegisterBrowserUserPrefs(user_prefs
  
    {
-     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
-+    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
++    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, true);
      registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
      registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
    }
@@ -222,8 +222,8 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/helium_services/helium_services_helpers.cc
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -55,6 +55,19 @@ bool ShouldAccessServices(const PrefServ
-     return prefs.GetBoolean(prefs::kHeliumServicesEnabled);
+@@ -60,6 +60,19 @@ bool ShouldAccessServices(const PrefServ
+            || prefs.HasPrefPath(prefs::kHeliumServicesEnabled));
  }
  
 +bool ShouldAccessExtensionService(const PrefService& prefs) {

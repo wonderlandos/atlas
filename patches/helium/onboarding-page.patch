@@ -22,7 +22,7 @@
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
 @@ -173,6 +173,7 @@ void RegisterBrowserUserPrefs(user_prefs
    {
-     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
+     registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
      registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
 +    registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
    }
@@ -216,7 +216,7 @@
 +#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_PAGE_H_
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.cc
-@@ -0,0 +1,113 @@
+@@ -0,0 +1,82 @@
 +// Copyright 2025 The Helium Authors
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -241,11 +241,6 @@
 +    web_ui()->RegisterMessageCallback(
 +        "setPref",
 +        base::BindRepeating(&OnboardingMessageHandler::HandleSetPreference,
-+                            base::Unretained(this)));
-+
-+    web_ui()->RegisterMessageCallback(
-+        "markOnboardingComplete",
-+        base::BindRepeating(&OnboardingMessageHandler::HandleCompletedOnboarding,
 +                            base::Unretained(this)));
 +}
 +
@@ -279,12 +274,13 @@
 +        return;
 +    }
 +
++    AllowJavascript();
++
 +    const auto& callback_id = args[0].GetString();
 +    if (args.size() != 3) {
 +        return RejectJavascriptCallback(callback_id, "invalid arguments");
 +    }
 +
-+    AllowJavascript();
 +    if (!args[1].is_string()) {
 +        return RejectJavascriptCallback(callback_id, "pref is not a string");
 +    }
@@ -302,33 +298,6 @@
 +    pref_service_->Set(pref_name, args[2].Clone());
 +
 +    ResolveJavascriptCallback(callback_id, {});
-+}
-+
-+void OnboardingMessageHandler::HandleCompletedOnboarding(const base::Value::List& args) {
-+    std::optional<std::string> callback_id;
-+    if (args.size() == 1) {
-+        callback_id = args[0].GetString();
-+    }
-+
-+    if (!pref_service_->HasPrefPath(prefs::kHeliumDidOnboarding)) {
-+        std::vector<PrefService::PreferenceValueAndStore> values =
-+            pref_service_->GetPreferencesValueAndStore();
-+
-+        for (const auto& [name, value, _] : values) {
-+            if (!base::StartsWith(name, prefs::kHeliumPrefPrefix,
-+                    base::CompareCase::SENSITIVE)) {
-+                continue;
-+            }
-+
-+            if (value.is_bool() && !pref_service_->HasPrefPath(name)) {
-+                pref_service_->Set(name, base::Value(true));
-+            }
-+        }
-+    }
-+
-+    if (callback_id) {
-+        ResolveJavascriptCallback(*callback_id, {});
-+    }
 +}
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.h
@@ -370,3 +339,25 @@
 +};
 +
 +#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_HANDLER_H_
+--- a/components/helium_services/helium_services_helpers.cc
++++ b/components/helium_services/helium_services_helpers.cc
+@@ -52,12 +52,18 @@ GURL GetDummyURL() {
+ }
+ 
+ bool ShouldAccessServices(const PrefService& prefs) {
+-    return prefs.GetBoolean(prefs::kHeliumServicesEnabled);
++    // onboarding was completed without touching kHeliumServicesEnabled,
++    // OR the user has explicitly enabled kHeliumServicesEnabled somewhere
++    // (either via onboarding, or user settings)
++    return prefs.GetBoolean(prefs::kHeliumServicesEnabled) &&
++           (prefs.GetBoolean(prefs::kHeliumDidOnboarding)
++           || prefs.HasPrefPath(prefs::kHeliumServicesEnabled));
+ }
+ 
+ void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
+     PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
+   registrar.Add(prefs::kHeliumServicesEnabled, observer);
++  registrar.Add(prefs::kHeliumDidOnboarding, observer);
+   registrar.Add(prefs::kHeliumServicesOrigin, observer);
+   registrar.Add(pref_name, observer);
+ }
