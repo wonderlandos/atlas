@@ -104,16 +104,32 @@
  BEGIN_METADATA(OmniboxRowView)
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
-@@ -599,7 +599,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -369,8 +369,7 @@ void OmniboxMatchCellView::SetIcon(const
+       match.type == AutocompleteMatchType::HISTORY_CLUSTER;
+   const bool is_instant_keyword_row =
+       AutocompleteMatch::IsFeaturedSearchType(match.type);
+-  if (is_pedal_suggestion_row || is_journeys_suggestion_row ||
+-      is_instant_keyword_row) {
++  if ((false)) {
+     // When a PEDAL suggestion has been split out to its own row, apply a square
+     // background with a distinctive color to the respective icon. Journeys
+     // suggestion rows should also receive the same treatment.
+@@ -599,7 +598,7 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
 -  int indent = 16 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
-+  int indent = 7 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
++  int indent = 6.5f + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
  
    return indent;
  }
-@@ -629,7 +629,7 @@ int OmniboxMatchCellView::GetTextIndent(
+@@ -624,12 +623,12 @@ int OmniboxMatchCellView::GetTextIndent(
+   // Answers don't have an icon, and their text needs to line up with the icons
+   // of other suggestions, so they need a smaller indent.
+   if (layout_style_ == LayoutStyle::HISTORY_EMBEDDING_ANSWER) {
+-    return 18;
++    return 35;
+   }
  
    // For normal matches, the gap between the left edge of this view and the
    // left edge of its favicon or answer image.
@@ -133,3 +149,25 @@
  
    // The width of icon, answer, and entity image bounds. These images are
    // smaller than this bounds; they'll be centered within the bounds.
+--- a/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
+@@ -569,7 +569,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
+   // This extra padding is not added if the results section has no height
+   // (result set is empty or all results are hidden).
+   if (popup_height != 0) {
+-    constexpr int kExtraBottomPadding = 8;
++    constexpr int kExtraBottomPadding = 6;
+     popup_height += kExtraBottomPadding;
+   }
+ 
+--- a/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
++++ b/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
+@@ -235,7 +235,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
+     OmniboxPopupViewViews* popup_view,
+     int model_index)
+     : popup_view_(popup_view), model_index_(model_index) {
+-  const auto insets = gfx::Insets::TLBR(6, 0, 6, 0);
++  const auto insets = gfx::Insets::TLBR(0, 0, 0, 0);
+   SetLayoutManager(std::make_unique<views::FlexLayout>())
+       ->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+       .SetCollapseMargins(true)
