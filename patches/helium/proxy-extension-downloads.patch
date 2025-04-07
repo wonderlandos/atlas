@@ -14,7 +14,22 @@
  
  const char kAppMenuUtmSource[] = "ext_app_menu";
  const char kExtensionsMenuUtmSource[] = "ext_extensions_menu";
-@@ -104,9 +104,6 @@ GURL GetDefaultWebstoreUpdateUrl() {
+@@ -76,11 +76,13 @@ std::string GetWebstoreItemDetailURLPref
+ }
+ 
+ GURL GetWebstoreItemJsonDataURL(const extensions::ExtensionId& extension_id) {
+-  return GURL(GetWebstoreLaunchURL().spec() + "/inlineinstall/detail/" +
++  return GURL(GetDefaultWebstoreUpdateUrl().spec() + "/inlineinstall/detail/" +
+               extension_id);
+ }
+ 
+ GURL GetWebstoreItemSnippetURL(const extensions::ExtensionId& extension_id) {
++  return GURL(kChromeWebstoreUpdateURL);
++
+   if (g_item_snippet_url_for_test_) {
+     // Return `<base URL><extension_id>`. There is no suffix if the URL is
+     // overridden by a test.
+@@ -104,9 +106,6 @@ GURL GetDefaultWebstoreUpdateUrl() {
  }
  
  GURL GetWebstoreUpdateUrl() {
