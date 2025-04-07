@@ -1,11 +1,14 @@
 --- a/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc
 +++ b/chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.cc
-@@ -60,7 +60,7 @@ PinnedActionToolbarButton::PinnedActionT
+@@ -58,9 +58,8 @@ PinnedActionToolbarButton::PinnedActionT
+               kPinnedActionToolbarButtonElementId);
+   ConfigureInkDropForToolbar(this);
    SetHorizontalAlignment(gfx::ALIGN_CENTER);
-   SetProperty(
-       views::kMarginsKey,
+-  SetProperty(
+-      views::kMarginsKey,
 -      gfx::Insets::VH(0, GetLayoutConstant(TOOLBAR_ICON_DEFAULT_MARGIN)));
-+      gfx::Insets::VH(0, 2));
++  SetProperty(views::kMarginsKey,
++              gfx::Insets::TLBR(0, 2, 0, 0));
    set_drag_controller(container);
    GetViewAccessibility().SetDescription(
        std::u16string(), ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
