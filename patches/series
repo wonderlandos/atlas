@@ -130,6 +130,7 @@ helium/reenable-spellcheck-downloads.patch
 helium/prefer-https-by-default.patch
 helium/enable-tab-hover-cards.patch
 helium/memory-saving-by-default.patch
+helium/disable-history-clusters.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
