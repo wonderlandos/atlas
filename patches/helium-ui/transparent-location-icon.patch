@@ -127,7 +127,7 @@
  int SelectedKeywordView::GetExtraInternalSpacing() const {
    // Align the label text with the suggestion text.
 -  return 14;
-+  return 4;
++  return 3.5f;
  }
  
  void SelectedKeywordView::SetLabelForCurrentWidth() {
