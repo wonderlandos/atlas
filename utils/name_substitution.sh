@@ -52,7 +52,7 @@ do_sub() {
             perl -pi -e "$regex" "$file_path.new"
         done
 
-        diff -Naur "$file_path" "$file_path.new"
+        diff -Naur "$file_path" "$file_path.new" || true
         mv "$file_path.new" "$file_path"
     done <<< "$FILE_LIST"
 }
