@@ -140,6 +140,7 @@ helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
 helium/hop/preinstall-ublock-origin.patch
 
+helium-ui/update-cr-components.patch
 helium-ui/always-use-better-ntp.patch
 helium-ui/clean-new-tab-page.patch
 helium-ui/remove-toolbar-corners.patch
@@ -160,3 +161,5 @@ helium-ui/remove-dead-profile-actions.patch
 helium-ui/clean-up-installed-extension-bubble.patch
 helium-ui/transparent-location-icon.patch
 helium-ui/bookmark-button-bg-fix.patch
+helium-ui/restyle-ntp-tiles.patch
+helium-ui/remove-preview-from-sidepanels.patch
