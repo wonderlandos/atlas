@@ -1,0 +1,48 @@
+--- a/chrome/browser/resources/side_panel/customize_chrome/customize_toolbar/toolbar.html.ts
++++ b/chrome/browser/resources/side_panel/customize_chrome/customize_toolbar/toolbar.html.ts
+@@ -14,11 +14,6 @@ export function getHtml(this: ToolbarEle
+       back-button-title="$i18n{backButton}">
+     <h2 slot="heading">$i18n{toolbarHeader}</h2>
+   </sp-heading>
+-  <div id="miniToolbarBackground">
+-    <svg id="miniToolbar" src="icons/mini_toolbar.svg">
+-      <use href="icons/mini_toolbar.svg#miniToolbar"></use>
+-    </svg>
+-  </div>
+   <div class="intro-text">$i18n{chooseToolbarIconsLabel}</div>
+   <cr-button id="resetToDefaultButton" class="floating-button"
+       @click="${this.onResetToDefaultClicked_}"
+--- a/chrome/browser/resources/side_panel/customize_chrome/theme_snapshot.html.ts
++++ b/chrome/browser/resources/side_panel/customize_chrome/theme_snapshot.html.ts
+@@ -13,15 +13,6 @@ export function getHtml(this: ThemeSnaps
+ ${this.themeType_ === CustomizeThemeType.CUSTOM_THEME ? html`
+   <div class="snapshot-container"
+       theme-type="${CustomizeThemeType.CUSTOM_THEME}">
+-    <div class="image-background" id="customThemeImageBackground"
+-        @click="${this.onThemeSnapshotClick_}">
+-      <img class="image" id="customThemeImage" is="cr-auto-img"
+-          .autoSrc="${this.theme_!.backgroundImage!.snapshotUrl.url}"
+-          draggable="false"
+-          aria-labelledby="customThemeTitle">
+-      <div class="overlay"></div>
+-      <cr-ripple></cr-ripple>
+-    </div>
+     <div id="customThemeTitle" class="theme-title">
+      ${this.theme_!.backgroundImage!.title}
+     </div>
+@@ -30,15 +21,6 @@ ${this.themeType_ === CustomizeThemeType
+ ${this.themeType_ === CustomizeThemeType.CLASSIC_CHROME ? html`
+   <div class="snapshot-container"
+       theme-type="${CustomizeThemeType.CLASSIC_CHROME}">
+-    <div class="image-background image" id="classicChromeBackground"
+-        @click="${this.onThemeSnapshotClick_}">
+-      <svg id="miniNewTabPage" aria-labelledby="classicChromeThemeTitle"
+-          viewBox="0 0 240 126" preserveAspectRatio="xMidYMid meet">
+-        <use href="icons/mini_new_tab_page.svg#miniNewTabPage"></use>
+-      </svg>
+-      <div class="overlay"></div>
+-      <cr-ripple></cr-ripple>
+-    </div>
+     <div id="classicChromeThemeTitle" class="theme-title">
+       $i18n{classicChrome}
+     </div>
