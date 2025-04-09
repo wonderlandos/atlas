@@ -1,6 +1,6 @@
 --- a/chrome/app/vector_icons/browser_logo.icon
 +++ b/chrome/app/vector_icons/browser_logo.icon
-@@ -1,46 +1,44 @@
+@@ -1,46 +1,26 @@
 -// Copyright 2023 The Chromium Authors
 +// Copyright 2025 The Helium Authors
  // Use of this source code is governed by a BSD-style license that can be
@@ -16,15 +16,12 @@
 -ARC_TO, 2.41, 2.41, 0, 0, 0, 8, 5.52,
 -R_CUBIC_TO, -0.69, 0, -1.28, 0.24, -1.77, 0.73,
 -R_ARC_TO, 2.41, 2.41, 0, 0, 0, -0.73, 1.77,
-+CANVAS_DIMENSIONS, 32,
++CANVAS_DIMENSIONS, 56,
 +FILL_RULE_NONZERO,
-+MOVE_TO, 14.82f, 2.88f,
-+CUBIC_TO, 14.82f, 2.23f, 15.35f, 1.7f, 16, 1.7f,
-+CUBIC_TO, 16.65f, 1.7f, 17.18f, 2.23f, 17.18f, 2.88f,
-+V_LINE_TO, 29.12f,
-+CUBIC_TO, 17.18f, 29.77f, 16.65f, 30.3f, 16, 30.3f,
-+CUBIC_TO, 15.35f, 30.3f, 14.82f, 29.77f, 14.82f, 29.12f,
-+V_LINE_TO, 2.88f,
++MOVE_TO, 26, 51,
++R_ARC_TO, 1, 1, 0, 0, 0, 4, 0,
++V_LINE_TO, 5,
++ARC_TO, 1, 1, 0, 0, 0, 26, 5,
  CLOSE,
 -MOVE_TO, 8, 11.77,
 -R_CUBIC_TO, 0.13, 0, 0.25, 0, 0.39, -0.01,
@@ -36,15 +33,10 @@
 -R_LINE_TO, 2.77, 4.73,
 -R_CUBIC_TO, 0.33, 0.59, 0.77, 1.05, 1.35, 1.38,
 -R_CUBIC_TO, 0.58, 0.33, 1.2, 0.5, 1.87, 0.5,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 29.12f, 14.82f,
-+CUBIC_TO, 29.77f, 14.82f, 30.3f, 15.35f, 30.3f, 16,
-+CUBIC_TO, 30.3f, 16.65f, 29.77f, 17.18f, 29.12f, 17.18f,
-+LINE_TO, 2.88f, 17.18f,
-+CUBIC_TO, 2.23f, 17.18f, 1.7f, 16.65f, 1.7f, 16,
-+CUBIC_TO, 1.7f, 15.35f, 2.23f, 14.82f, 2.88f, 14.82f,
-+LINE_TO, 29.12f, 14.82f,
++MOVE_TO, 9, 6,
++ARC_TO, 1, 1, 0, 0, 0, 6, 9,
++LINE_TO, 47, 50,
++R_ARC_TO, 1, 1, 0, 0, 0, 3, -3,
  CLOSE,
 -MOVE_TO, 8, 4.27,
 -R_CUBIC_TO, -0.82, 0, -1.55, 0.24, -2.19, 0.73,
@@ -54,15 +46,10 @@
 -ARC_TO, 6.64, 6.64, 0, 0, 1, 8, 1.38,
 -R_CUBIC_TO, 1.09, 0, 2.13, 0.26, 3.09, 0.77,
 -R_ARC_TO, 6.72, 6.72, 0, 0, 1, 2.38, 2.12,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 26.92f, 3.4f,
-+CUBIC_TO, 27.39f, 2.94f, 28.13f, 2.94f, 28.59f, 3.4f,
-+CUBIC_TO, 29.05f, 3.87f, 29.05f, 4.61f, 28.59f, 5.07f,
-+LINE_TO, 5.09f, 28.58f,
-+CUBIC_TO, 4.63f, 29.04f, 3.88f, 29.04f, 3.42f, 28.58f,
-+CUBIC_TO, 2.96f, 28.12f, 2.96f, 27.37f, 3.42f, 26.91f,
-+LINE_TO, 26.92f, 3.4f,
++MOVE_TO, 5, 26,
++R_ARC_TO, 1, 1, 0, 0, 0, 0, 4,
++H_LINE_TO, 51,
++R_ARC_TO, 1, 1, 0, 0, 0, 0, -4,
  CLOSE,
 -R_MOVE_TO, 6.16, 1.25,
 -R_CUBIC_TO, 0.17, 0.41, 0.3, 0.82, 0.37, 1.23,
@@ -74,19 +61,14 @@
 -R_ARC_TO, 3.34, 3.34, 0, 0, 0, 0.14, -0.97,
 -R_CUBIC_TO, 0, -0.46, -0.09, -0.91, -0.26, -1.34,
 -R_ARC_TO, 4.12, 4.12, 0, 0, 0, -0.71, -1.16,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 28.59f, 26.91f,
-+CUBIC_TO, 29.05f, 27.37f, 29.05f, 28.12f, 28.59f, 28.58f,
-+CUBIC_TO, 28.13f, 29.04f, 27.39f, 29.04f, 26.93f, 28.58f,
-+LINE_TO, 3.42f, 5.07f,
-+CUBIC_TO, 2.96f, 4.61f, 2.96f, 3.87f, 3.42f, 3.4f,
-+CUBIC_TO, 3.88f, 2.94f, 4.63f, 2.94f, 5.09f, 3.4f,
-+LINE_TO, 28.59f, 26.91f,
++MOVE_TO, 6, 47,
++R_ARC_TO, 1, 1, 0, 0, 0, 3, 3,
++LINE_TO, 50, 9,
++ARC_TO, 1, 1, 0, 0, 0, 47, 6,
  CLOSE
 --- a/components/omnibox/browser/vector_icons/product_chrome_refresh.icon
 +++ b/components/omnibox/browser/vector_icons/product_chrome_refresh.icon
-@@ -1,51 +1,44 @@
+@@ -1,51 +1,26 @@
 -// Copyright 2023 The Chromium Authors
 +// Copyright 2025 The Helium Authors
  // Use of this source code is governed by a BSD-style license that can be
@@ -102,15 +84,12 @@
 -R_ARC_TO, 2.49, 2.49, 0, 0, 0, -1.82, -0.76,
 -R_CUBIC_TO, -0.7, 0, -1.31, 0.25, -1.82, 0.76,
 -R_ARC_TO, 2.49, 2.49, 0, 0, 0, -0.76, 1.82,
-+CANVAS_DIMENSIONS, 32,
++CANVAS_DIMENSIONS, 56,
 +FILL_RULE_NONZERO,
-+MOVE_TO, 14.82f, 2.88f,
-+CUBIC_TO, 14.82f, 2.23f, 15.35f, 1.7f, 16, 1.7f,
-+CUBIC_TO, 16.65f, 1.7f, 17.18f, 2.23f, 17.18f, 2.88f,
-+V_LINE_TO, 29.12f,
-+CUBIC_TO, 17.18f, 29.77f, 16.65f, 30.3f, 16, 30.3f,
-+CUBIC_TO, 15.35f, 30.3f, 14.82f, 29.77f, 14.82f, 29.12f,
-+V_LINE_TO, 2.88f,
++MOVE_TO, 26, 51,
++R_ARC_TO, 1, 1, 0, 0, 0, 4, 0,
++V_LINE_TO, 5,
++ARC_TO, 1, 1, 0, 0, 0, 26, 5,
  CLOSE,
 -MOVE_TO, 7.5, 11.48,
 -R_CUBIC_TO, 0.14, 0, 0.28, 0, 0.41, -0.02,
@@ -123,15 +102,10 @@
 -R_LINE_TO, 2.63, 4.55,
 -R_CUBIC_TO, 0.34, 0.59, 0.81, 1.07, 1.41, 1.43,
 -R_CUBIC_TO, 0.6, 0.36, 1.26, 0.54, 2.01, 0.54,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 29.12f, 14.82f,
-+CUBIC_TO, 29.77f, 14.82f, 30.3f, 15.35f, 30.3f, 16,
-+CUBIC_TO, 30.3f, 16.65f, 29.77f, 17.18f, 29.12f, 17.18f,
-+LINE_TO, 2.88f, 17.18f,
-+CUBIC_TO, 2.23f, 17.18f, 1.7f, 16.65f, 1.7f, 16,
-+CUBIC_TO, 1.7f, 15.35f, 2.23f, 14.82f, 2.88f, 14.82f,
-+LINE_TO, 29.12f, 14.82f,
++MOVE_TO, 9, 6,
++ARC_TO, 1, 1, 0, 0, 0, 6, 9,
++LINE_TO, 47, 50,
++R_ARC_TO, 1, 1, 0, 0, 0, 3, -3,
  CLOSE,
 -R_MOVE_TO, 0, -7.87,
 -R_CUBIC_TO, -0.87, 0, -1.65, 0.25, -2.33, 0.77,
@@ -143,15 +117,10 @@
 -ARC_TO, 6.66, 6.66, 0, 0, 1, 12.76, 3.6,
 -H_LINE_TO, 7.51,
 -R_LINE_TO, -0.01, 0.01,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 26.92f, 3.4f,
-+CUBIC_TO, 27.39f, 2.94f, 28.13f, 2.94f, 28.59f, 3.4f,
-+CUBIC_TO, 29.05f, 3.87f, 29.05f, 4.61f, 28.59f, 5.07f,
-+LINE_TO, 5.09f, 28.58f,
-+CUBIC_TO, 4.63f, 29.04f, 3.88f, 29.04f, 3.42f, 28.58f,
-+CUBIC_TO, 2.96f, 28.12f, 2.96f, 27.37f, 3.42f, 26.91f,
-+LINE_TO, 26.92f, 3.4f,
++MOVE_TO, 5, 26,
++R_ARC_TO, 1, 1, 0, 0, 0, 0, 4,
++H_LINE_TO, 51,
++R_ARC_TO, 1, 1, 0, 0, 0, 0, -4,
  CLOSE,
 -R_MOVE_TO, 6.01, 1.31,
 -R_CUBIC_TO, 0.19, 0.4, 0.32, 0.83, 0.41, 1.27,
@@ -165,30 +134,22 @@
 -R_ARC_TO, 3.96, 3.96, 0, 0, 0, -0.74, -1.2,
 -R_H_LINE_TO, 3.08,
 -R_V_LINE_TO, 0.01,
-+NEW_PATH,
-+FILL_RULE_NONZERO,
-+MOVE_TO, 28.59f, 26.91f,
-+CUBIC_TO, 29.05f, 27.37f, 29.05f, 28.12f, 28.59f, 28.58f,
-+CUBIC_TO, 28.13f, 29.04f, 27.39f, 29.04f, 26.93f, 28.58f,
-+LINE_TO, 3.42f, 5.07f,
-+CUBIC_TO, 2.96f, 4.61f, 2.96f, 3.87f, 3.42f, 3.4f,
-+CUBIC_TO, 3.88f, 2.94f, 4.63f, 2.94f, 5.09f, 3.4f,
-+LINE_TO, 28.59f, 26.91f,
++MOVE_TO, 6, 47,
++R_ARC_TO, 1, 1, 0, 0, 0, 3, 3,
++LINE_TO, 50, 9,
++ARC_TO, 1, 1, 0, 0, 0, 47, 6,
  CLOSE
 --- a/ui/webui/resources/cr_elements/icons.html.ts
 +++ b/ui/webui/resources/cr_elements/icons.html.ts
-@@ -114,9 +114,11 @@ div.innerHTML = getTrustedHTML`
+@@ -114,9 +114,8 @@ div.innerHTML = getTrustedHTML`
            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z">
          </path>
        </g>
 -      <g id="chrome-product" viewBox="0 -960 960 960">
 -        <path d="M336-479q0 60 42 102t102 42q60 0 102-42t42-102q0-60-42-102t-102-42q-60 0-102 42t-42 102Zm144 216q11 0 22.5-.5T525-267L427-99q-144-16-237.5-125T96-479q0-43 9.5-84.5T134-645l160 274q28 51 78 79.5T480-263Zm0-432q-71 0-126.5 42T276-545l-98-170q53-71 132.5-109.5T480-863q95 0 179 45t138 123H480Zm356 72q15 35 21.5 71t6.5 73q0 155-100 260.5T509-96l157-275q14-25 22-52t8-56q0-40-15-77t-41-67h196Z">
 -        </path>
-+      <g id="chrome-product" viewBox="0 0 32 32">
-+        <path d="M14.8207 2.87922C14.8207 2.22752 15.349 1.69922 16.0007 1.69922C16.6524 1.69922 17.1807 2.22752 17.1807 2.87922V29.1192C17.1807 29.7709 16.6524 30.2992 16.0007 30.2992C15.349 30.2992 14.8207 29.7709 14.8207 29.1192V2.87922Z"/>
-+        <path d="M29.1212 14.8184C29.7729 14.8184 30.3012 15.3467 30.3012 15.9984C30.3012 16.6501 29.7729 17.1784 29.1212 17.1784L2.88117 17.1784C2.22948 17.1784 1.70117 16.6501 1.70117 15.9984C1.70117 15.3467 2.22948 14.8184 2.88117 14.8184L29.1212 14.8184Z"/>
-+        <path d="M26.9248 3.4047C27.3856 2.94388 28.1327 2.94388 28.5936 3.4047C29.0544 3.86552 29.0544 4.61265 28.5936 5.07347L5.08607 28.581C4.62525 29.0418 3.87812 29.0418 3.4173 28.581C2.95648 28.1201 2.95648 27.373 3.4173 26.9122L26.9248 3.4047Z"/>
-+        <path d="M28.5937 26.9117C29.0546 27.3725 29.0546 28.1197 28.5937 28.5805C28.1329 29.0413 27.3858 29.0413 26.925 28.5805L3.41747 5.07298C2.95665 4.61216 2.95665 3.86503 3.41747 3.40421C3.87829 2.94339 4.62542 2.94339 5.08624 3.40421L28.5937 26.9117Z"/>
++      <g id="chrome-product" viewBox="0 0 56 56">
++        <path d="M26 51a1 1 0 004 0V5A1 1 0 0026 5ZM9 6A1 1 0 006 9L47 50a1 1 0 003-3ZM5 26a1 1 0 000 4H51a1 1 0 000-4ZM6 47a1 1 0 003 3L50 9A1 1 0 0047 6Z"/>
        </g>
        <g id="close">
          <path
