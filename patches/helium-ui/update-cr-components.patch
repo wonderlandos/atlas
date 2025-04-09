@@ -1,6 +1,6 @@
 --- a/ui/webui/resources/cr_elements/cr_button/cr_button.css
 +++ b/ui/webui/resources/cr_elements/cr_button/cr_button.css
-@@ -74,7 +74,7 @@
+@@ -74,12 +74,13 @@
    user-select: none;
    -webkit-tap-highlight-color: transparent;
    border: var(--cr-button-border, 1px solid var(--cr-button-border-color));
@@ -9,6 +9,12 @@
    background: var(--cr-button-background-color);
    color: var(--cr-button-text-color);
    font-weight: 500;
+   line-height: 20px;
+   isolation: isolate;
++  white-space: nowrap;
+ }
+ 
+ @media (forced-colors: active) {
 --- a/ui/webui/resources/cr_elements/cr_drawer/cr_drawer.html.ts
 +++ b/ui/webui/resources/cr_elements/cr_drawer/cr_drawer.html.ts
 @@ -12,16 +12,6 @@ export function getHtml(this: CrDrawerEl
@@ -96,7 +102,15 @@
    width: var(--cr-toolbar-left-spacer-width, auto);
  }
  
-@@ -132,12 +132,6 @@ picture {
+@@ -76,6 +76,7 @@ cr-icon-button {
+ 
+ #rightSpacer {
+   padding-inline-end: 12px;
++  padding-inline-start: 12px;
+ }
+ 
+ :host([narrow]) #centeredContent {
+@@ -132,12 +133,6 @@ picture {
    margin-inline-end: 16px;
  }
  
@@ -135,7 +149,7 @@
    position: relative;
    width: var(--cr-toolbar-field-width, 680px);
 -  --cr-toolbar-search-field-border-radius: 100px;
-+  --cr-toolbar-search-field-border-radius: 8px;
++  --cr-toolbar-search-field-border-radius: 6px;
  }
  
  @media (prefers-color-scheme: dark) {
@@ -168,3 +182,54 @@
    --cr-separator-color: rgba(0, 0, 0, .06);
    --cr-title-text-color: rgb(90, 90, 90);
    --cr-scrollable-border-color: var(--google-grey-300);
+--- a/ui/webui/resources/cr_components/theme_color_picker/theme_color.css
++++ b/ui/webui/resources/cr_components/theme_color_picker/theme_color.css
+@@ -8,7 +8,7 @@
+  * #css_wrapper_metadata_end */
+ 
+ :host {
+-  --cr-theme-color-border-radius: 50%;
++  --cr-theme-color-border-radius: 8px;
+   box-sizing: border-box;
+   cursor: pointer;
+   display: block;
+--- a/ui/webui/resources/cr_components/theme_color_picker/theme_color_picker.css
++++ b/ui/webui/resources/cr_components/theme_color_picker/theme_color_picker.css
+@@ -50,6 +50,6 @@ cr-theme-color {
+   background-color: var(
+       --color-theme-color-picker-option-background,
+       var(--cr-fallback-color-neutral-container));
+-  border-radius: 12px;
++  border-radius: 16px;
+   padding: var(--cr-theme-color-padding);
+ }
+--- a/ui/webui/resources/cr_elements/cr_shared_style_lit.css
++++ b/ui/webui/resources/cr_elements/cr_shared_style_lit.css
+@@ -65,10 +65,10 @@ iron-list.cr-separators > *:not([first])
+ }
+ 
+ .cr-container-shadow {
+-  box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, .4);
+-  height: var(--cr-container-shadow-height);
++  box-shadow: var(--cr-elevation-0) inset;
++  height: 1px;
+   left: 0;
+-  margin: 0 0 var(--cr-container-shadow-margin);
++  margin: 0;
+   opacity: 0;
+   pointer-events: none;
+   position: relative;
+--- a/ui/webui/resources/cr_elements/cr_toast/cr_toast.css
++++ b/ui/webui/resources/cr_elements/cr_toast/cr_toast.css
+@@ -26,9 +26,9 @@
+   box-sizing: border-box;
+   display: flex;
+   line-height: 20px;
+-  margin: 24px;
++  margin: 18px;
+   max-width: var(--cr-toast-max-width, 568px);
+-  min-height: 52px;
++  min-height: 40px;
+   min-width: 288px;
+   opacity: 0;
+   padding: 0 16px;
