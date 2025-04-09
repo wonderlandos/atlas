@@ -361,3 +361,15 @@
    registrar.Add(prefs::kHeliumServicesOrigin, observer);
    registrar.Add(pref_name, observer);
  }
+--- a/chrome/browser/ui/browser_navigator.cc
++++ b/chrome/browser/ui/browser_navigator.cc
+@@ -583,7 +583,8 @@ bool IsHostAllowedInIncognito(const GURL
+          host != chrome::kChromeUIHistoryHost &&
+          host != chrome::kChromeUIExtensionsHost &&
+          host != chrome::kChromeUIBookmarksHost &&
+-         host != password_manager::kChromeUIPasswordManagerHost;
++         host != password_manager::kChromeUIPasswordManagerHost &&
++         host != chrome::kHeliumSetupHost;
+ }
+ 
+ }  // namespace
