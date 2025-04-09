@@ -53,49 +53,13 @@
        {"advancedProtectionProgramTitle",
         IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM},
        {"advancedProtectionProgramDesc",
---- a/chrome/browser/resources/settings/privacy_icons.html
-+++ b/chrome/browser/resources/settings/privacy_icons.html
-@@ -29,6 +29,33 @@
-       <g id="account-circle-off" viewBox="0 -960 960 960">
-         <path d="M527-535ZM420-420Zm59.96 252Q532-168 580-184.5q48-16.5 90-48.5-43-27-91-41t-99-14q-51 0-99.5 13.5T290-233q42 32 89.96 48.5 47.96 16.5 100 16.5ZM595-466l-52-52q5-8 7-16.67 2-8.66 2-17.33 0-30-21-51t-51-21q-8.67 0-17.33 2-8.67 2-16.67 7l-52-52q19-14 41-21.5t45-7.5q59.66 0 101.83 42.17T624-552q0 23-7.5 45T595-466Zm202 202-52-52q23-37 35-78.66 12-41.65 12-85.34 0-130-91-221t-221-91q-43.69 0-85.34 12Q353-768 316-745l-52-52q48-33 103.02-50 55.02-17 112.98-17 80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 57.96-17 112.98T797-264ZM480-96q-79.38 0-149.19-30T208.5-208.5Q156-261 126-330.81T96-480q0-57.62 17-112.31Q130-647 162-695l-72-73 51-51 678 678-51 51-554-553q-23 37-34.5 78T168-480q0 54 17 104t52 91q54-38 115.41-56.5Q413.83-360 479.66-360q37.34 0 73.34 6.5t71 18.5l127 127q-54 54-124.09 83Q556.81-96 480-96Z"></path>
-       </g>
-+      <!-- "balloon" is from Tabler Icons
-+       MIT License
-+
-+      Copyright (c) 2020-2024 Paweł Kuna
-+
-+      Permission is hereby granted, free of charge, to any person obtaining a copy
-+      of this software and associated documentation files (the "Software"), to deal
-+      in the Software without restriction, including without limitation the rights
-+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-+      copies of the Software, and to permit persons to whom the Software is
-+      furnished to do so, subject to the following conditions:
-+
-+      The above copyright notice and this permission notice shall be included in all
-+      copies or substantial portions of the Software.
-+
-+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-+      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-+      SOFTWARE.
-+       -->
-+      <g id="balloon" viewBox="0 0 24 24">
-+        <path d="M10 20a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zm2-4c3.314 0 6-4.686 6-8A6 6 0 1 0 6 8c0 3.314 2.686 8 6 8"/>
-+        <path d="M10 9a2 7 0 1 0 4 0a2 7 0 1 0-4 0"/>
-+      </g>
-       <g id="cardboard" viewBox="0 -960 960 960">
-         <path d="M216-336h153l29.75-58.35Q411-417 432.5-430.5t47.49-13.5q25.99 0 47.5 13T561-395.08L591-336h153v-288H216v288Zm96.21-72Q342-408 363-429.21t21-51Q384-510 362.79-531t-51-21Q282-552 261-530.79t-21 51Q240-450 261.21-429t51 21ZM144-336.06v-288.22Q144-654 165.15-675T216-696h528q29.7 0 50.85 21.17Q816-653.67 816-623.94v288.22Q816-306 794.85-285T744-264H591q-20 0-37.5-10.5T527-303l-30-58q-2.57-5.08-7.29-8.04Q485-372 480-372q-5 0-10 3t-7 8l-30 58q-9 18-26.5 28.5T369-264H216q-29.7 0-50.85-21.17Q144-306.33 144-336.06ZM648.21-408Q678-408 699-429.21t21-51Q720-510 698.79-531t-51-21Q618-552 597-530.79t-21 51Q576-450 597.21-429t51 21ZM480-480Z"></path>
-       </g>
 --- a/chrome/browser/resources/settings/privacy_page/privacy_page.html
 +++ b/chrome/browser/resources/settings/privacy_page/privacy_page.html
 @@ -83,6 +83,11 @@
              sub-label="$i18n{permissionsPageDescription}"
              on-click="onPermissionsPageClick_"
              role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-+        <cr-link-row id="heliumServicesLinkRow" start-icon="privacy:balloon"
++        <cr-link-row id="heliumServicesLinkRow" start-icon="cr:chrome-product"
 +            class="hr" label="$i18n{heliumServicesTitle}"
 +            sub-label="$i18n{heliumServicesDescription}"
 +            on-click="onHeliumServicesPageClick_"
