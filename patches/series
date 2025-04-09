@@ -110,6 +110,7 @@ extra/brave/chrome-importer-files.patch
 extra/brave/custom-importer.patch
 
 helium/services-prefs.patch
+helium/override-chrome-protocol.patch
 helium/onboarding-page.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch

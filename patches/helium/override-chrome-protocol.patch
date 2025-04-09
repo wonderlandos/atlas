@@ -1,0 +1,306 @@
+--- a/content/public/common/url_constants.h
++++ b/content/public/common/url_constants.h
+@@ -19,6 +19,7 @@ namespace content {
+ inline constexpr char kChromeDevToolsScheme[] = "devtools";
+ inline constexpr char kChromeErrorScheme[] = "chrome-error";
+ inline constexpr char kChromeUIScheme[] = "chrome";  // Used for WebUIs.
++inline constexpr char kHeliumUIScheme[] = "helium";  // also used for webuis :3
+ inline constexpr char kChromeNativeScheme[] = "chrome-native";
+ inline constexpr char kChromeUIUntrustedScheme[] = "chrome-untrusted";
+ inline constexpr char kViewSourceScheme[] = "view-source";
+--- a/chrome/browser/profiles/profile_io_data.cc
++++ b/chrome/browser/profiles/profile_io_data.cc
+@@ -39,6 +39,7 @@ bool ProfileIOData::IsHandledProtocol(co
+       extensions::kExtensionScheme,
+ #endif
+       content::kChromeUIScheme,
++      content::kHeliumUIScheme,
+       content::kChromeUIUntrustedScheme,
+       url::kDataScheme,
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+--- a/content/common/url_schemes.cc
++++ b/content/common/url_schemes.cc
+@@ -33,6 +33,7 @@ const char* const kDefaultSavableSchemes
+   url::kFileSystemScheme,
+   kChromeDevToolsScheme,
+   kChromeUIScheme,
++  kHeliumUIScheme,
+   url::kDataScheme,
+   url::kJavaScriptScheme,
+   url::kMailToScheme,
+@@ -68,6 +69,7 @@ void RegisterContentSchemes(bool should_
+ 
+   url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITH_HOST);
+   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
++  url::AddStandardScheme(kHeliumUIScheme, url::SCHEME_WITH_HOST);
+   url::AddStandardScheme(kChromeUIUntrustedScheme, url::SCHEME_WITH_HOST);
+   url::AddStandardScheme(kChromeErrorScheme, url::SCHEME_WITH_HOST);
+   for (auto& scheme : schemes.standard_schemes)
+@@ -78,6 +80,7 @@ void RegisterContentSchemes(bool should_
+ 
+   schemes.secure_schemes.push_back(kChromeDevToolsScheme);
+   schemes.secure_schemes.push_back(kChromeUIScheme);
++  schemes.secure_schemes.push_back(kHeliumUIScheme);
+   schemes.secure_schemes.push_back(kChromeUIUntrustedScheme);
+   schemes.secure_schemes.push_back(kChromeErrorScheme);
+   for (auto& scheme : schemes.secure_schemes)
+@@ -94,6 +97,7 @@ void RegisterContentSchemes(bool should_
+     url::AddNoAccessScheme(scheme.c_str());
+ 
+   schemes.cors_enabled_schemes.push_back(kChromeUIScheme);
++  schemes.cors_enabled_schemes.push_back(kHeliumUIScheme);
+   schemes.cors_enabled_schemes.push_back(kChromeUIUntrustedScheme);
+   for (auto& scheme : schemes.cors_enabled_schemes)
+     url::AddCorsEnabledScheme(scheme.c_str());
+@@ -122,6 +126,7 @@ void RegisterContentSchemes(bool should_
+   // service workers don't work for chrome[-untrusted]:// when the flag is not
+   // enabled.
+   schemes.service_worker_schemes.push_back(kChromeUIScheme);
++  schemes.service_worker_schemes.push_back(kHeliumUIScheme);
+   schemes.service_worker_schemes.push_back(kChromeUIUntrustedScheme);
+ 
+   // Prevent future modification of the scheme lists. This is to prevent
+--- a/content/renderer/render_thread_impl.cc
++++ b/content/renderer/render_thread_impl.cc
+@@ -938,10 +938,18 @@ void RenderThreadImpl::RegisterSchemes()
+       chrome_scheme);
+   WebSecurityPolicy::RegisterURLSchemeAsWebUI(chrome_scheme);
+ 
++  // helium:
++  WebString helium_scheme(WebString::FromASCII(kHeliumUIScheme));
++  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(helium_scheme);
++  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
++      helium_scheme);
++  WebSecurityPolicy::RegisterURLSchemeAsWebUI(helium_scheme);
++
+   // Service workers for chrome://
+   if (base::FeatureList::IsEnabled(
+           features::kEnableServiceWorkersForChromeScheme)) {
+     WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(chrome_scheme);
++    WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(helium_scheme);
+   }
+ 
+   WebString chrome_untrusted_scheme(
+--- a/chrome/browser/history/history_utils.cc
++++ b/chrome/browser/history/history_utils.cc
+@@ -20,6 +20,7 @@ bool CanAddURLToHistory(const GURL& url)
+       url.SchemeIs(url::kContentScheme) ||
+       url.SchemeIs(content::kChromeDevToolsScheme) ||
+       url.SchemeIs(content::kChromeUIScheme) ||
++      url.SchemeIs(content::kHeliumUIScheme) ||
+       url.SchemeIs(content::kChromeUIUntrustedScheme) ||
+       url.SchemeIs(content::kViewSourceScheme) ||
+       url.SchemeIs(url::kTraceScheme) ||
+--- a/chrome/browser/ui/browser_navigator.cc
++++ b/chrome/browser/ui/browser_navigator.cc
+@@ -553,7 +553,8 @@ std::unique_ptr<content::WebContents> Cr
+ bool IsHostAllowedInIncognito(const GURL& url) {
+   std::string scheme = url.scheme();
+   std::string_view host = url.host_piece();
+-  if (scheme != content::kChromeUIScheme) {
++  if (scheme != content::kChromeUIScheme
++      && scheme != content::kHeliumUIScheme) {
+     return true;
+   }
+ 
+@@ -638,6 +639,12 @@ base::WeakPtr<content::NavigationHandle>
+     }
+   }
+ 
++  if (params->url.scheme_piece() == content::kHeliumUIScheme) {
++    GURL::Replacements replacements;
++    replacements.SetSchemeStr(content::kChromeUIScheme);
++    params->url = params->url.ReplaceComponents(replacements);
++  }
++
+   // Open System Apps in their standalone window if necessary.
+   // TODO(crbug.com/40136163): Remove this code after we integrate with intent
+   // handling.
+--- a/chrome/browser/extensions/extension_tab_util.cc
++++ b/chrome/browser/extensions/extension_tab_util.cc
+@@ -1032,7 +1032,8 @@ bool ExtensionTabUtil::IsKillURL(const G
+     return true;
+   }
+ 
+-  if (!url.SchemeIs(content::kChromeUIScheme)) {
++  if (!url.SchemeIs(content::kChromeUIScheme)
++      && !url.SchemeIs(content::kHeliumUIScheme)) {
+     return false;
+   }
+ 
+--- a/chrome/browser/ui/browser.cc
++++ b/chrome/browser/ui/browser.cc
+@@ -2131,8 +2131,15 @@ void Browser::UpdateTargetURL(WebContent
+     return;
+   }
+ 
++  GURL patched_url = url;
++  if (patched_url.SchemeIs(content::kChromeUIScheme)) {
++    GURL::Replacements replacements;
++    replacements.SetSchemeStr(content::kHeliumUIScheme);
++    patched_url = patched_url.ReplaceComponents(replacements);
++  }
++
+   if (source == tab_strip_model_->GetActiveWebContents()) {
+-    GetStatusBubble()->SetURL(url);
++    GetStatusBubble()->SetURL(patched_url);
+   }
+ }
+ 
+--- a/components/omnibox/browser/omnibox_edit_model.cc
++++ b/components/omnibox/browser/omnibox_edit_model.cc
+@@ -65,6 +65,7 @@
+ #include "components/search_engines/template_url_service.h"
+ #include "components/search_engines/template_url_starter_pack_data.h"
+ #include "components/strings/grit/components_strings.h"
++#include "content/public/common/url_constants.h"
+ #include "net/cookies/cookie_util.h"
+ #include "third_party/icu/source/common/unicode/ubidi.h"
+ #include "third_party/metrics_proto/omnibox_event.pb.h"
+@@ -508,6 +509,12 @@ void OmniboxEditModel::AdjustTextForCopy
+     *url_from_text = controller_->client()->GetNavigationEntryURL();
+     *write_url = true;
+ 
++    if (url_from_text->scheme() == content::kChromeUIScheme) {
++      GURL::Replacements replacements;
++      replacements.SetSchemeStr(content::kHeliumUIScheme);
++      *url_from_text = url_from_text->ReplaceComponents(replacements);
++    }
++
+     // Don't let users copy Reader Mode page URLs.
+     // We display the original article's URL in the omnibox, so users will
+     // expect that to be what is copied to the clipboard.
+--- a/components/url_formatter/url_formatter.cc
++++ b/components/url_formatter/url_formatter.cc
+@@ -25,6 +25,7 @@
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/threading/thread_local_storage.h"
+ #include "build/build_config.h"
++#include "content/public/common/url_constants.h"
+ #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+ #include "third_party/icu/source/common/unicode/uidna.h"
+ #include "third_party/icu/source/common/unicode/utypes.h"
+@@ -563,6 +564,7 @@ const FormatUrlType kFormatUrlTrimAfterH
+ const FormatUrlType kFormatUrlOmitFileScheme = 1 << 7;
+ const FormatUrlType kFormatUrlOmitMailToScheme = 1 << 8;
+ const FormatUrlType kFormatUrlOmitMobilePrefix = 1 << 9;
++const FormatUrlType kFormatReplaceChromeProtocol = 1 << 10;
+ 
+ const FormatUrlType kFormatUrlOmitDefaults =
+     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
+@@ -625,6 +627,18 @@ std::u16string FormatUrlWithAdjustments(
+                                prefix_end, adjustments);
+   }
+ 
++  if ((format_types & kFormatReplaceChromeProtocol) != 0) {
++    if (url.SchemeIs(content::kChromeUIScheme)) {
++      GURL url_;
++      GURL::Replacements replacements;
++      replacements.SetSchemeStr(content::kHeliumUIScheme);
++      url_ = url.ReplaceComponents(replacements);
++
++      return FormatUrlWithAdjustments(url_, format_types, unescape_rules,
++                                      new_parsed, prefix_end, adjustments);
++    }
++  }
++
+   // We handle both valid and invalid URLs (this will give us the spec
+   // regardless of validity).
+   const std::string& spec = url.possibly_invalid_spec();
+--- a/components/url_formatter/url_formatter.h
++++ b/components/url_formatter/url_formatter.h
+@@ -101,6 +101,8 @@ extern const FormatUrlType kFormatUrlOmi
+ // removal, or experimental flags.
+ extern const FormatUrlType kFormatUrlOmitDefaults;
+ 
++// Replace chrome:// with our own protocol.
++extern const FormatUrlType kFormatReplaceChromeProtocol;
+ // Creates a string representation of |url|. The IDN host name is turned to
+ // Unicode if the Unicode representation is deemed safe. |format_type| is a
+ // bitmask of FormatUrlTypes, see it for details. |unescape_rules| defines how
+--- a/chrome/browser/ui/web_applications/app_browser_controller.cc
++++ b/chrome/browser/ui/web_applications/app_browser_controller.cc
+@@ -199,7 +199,8 @@ std::u16string AppBrowserController::For
+     url_formatter::FormatUrlTypes format_types) {
+   auto origin = url::Origin::Create(url);
+   return url_formatter::FormatUrl(origin.opaque() ? url : origin.GetURL(),
+-                                  format_types, base::UnescapeRule::SPACES,
++                                  format_types | url_formatter::kFormatReplaceChromeProtocol,
++                                  base::UnescapeRule::SPACES,
+                                   nullptr, nullptr, nullptr);
+ }
+ 
+--- a/components/omnibox/browser/location_bar_model_impl.cc
++++ b/components/omnibox/browser/location_bar_model_impl.cc
+@@ -125,7 +125,8 @@ std::u16string LocationBarModelImpl::Get
+   // the space.
+   const std::u16string formatted_text =
+       delegate_->FormattedStringWithEquivalentMeaning(
+-          url, url_formatter::FormatUrl(url, format_types,
++          url, url_formatter::FormatUrl(url,
++                                        format_types | url_formatter::kFormatReplaceChromeProtocol,
+                                         base::UnescapeRule::NORMAL, nullptr,
+                                         nullptr, nullptr));
+ 
+--- a/components/url_formatter/elide_url.cc
++++ b/components/url_formatter/elide_url.cc
+@@ -426,7 +426,8 @@ std::u16string FormatUrlForDisplayOmitSc
+       url_formatter::kFormatUrlOmitDefaults |
+           url_formatter::kFormatUrlTrimAfterHost |
+           url_formatter::kFormatUrlOmitHTTPS |
+-          url_formatter::kFormatUrlOmitTrivialSubdomains,
++          url_formatter::kFormatUrlOmitTrivialSubdomains |
++          url_formatter::kFormatReplaceChromeProtocol,
+       base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+ }
+ 
+--- a/components/url_formatter/url_fixer.cc
++++ b/components/url_formatter/url_fixer.cc
+@@ -44,6 +44,7 @@ namespace {
+ 
+ // Hardcode these constants to avoid dependences on //chrome and //content.
+ const char kChromeUIScheme[] = "chrome";
++const char kHeliumUIScheme[] = "helium";
+ const char kDevToolsScheme[] = "devtools";
+ const char kChromeUIDefaultHost[] = "version";
+ const char kViewSourceScheme[] = "view-source";
+@@ -486,7 +487,7 @@ std::string SegmentURLInternal(std::stri
+                scheme.c_str(),
+                url::Component(0, static_cast<int>(scheme.length()))) ||
+            scheme == url::kAboutScheme || scheme == kChromeUIScheme ||
+-           scheme == url::kFileScheme)) {
++           scheme == kHeliumUIScheme || scheme == url::kFileScheme)) {
+         found_scheme = true;
+       } else {
+         (*text)[semicolon] = ';';
+@@ -502,7 +503,7 @@ std::string SegmentURLInternal(std::stri
+   // Proceed with about, chrome, and devtools schemes,
+   // but not file or nonstandard schemes.
+   if ((scheme != url::kAboutScheme) && (scheme != kChromeUIScheme) &&
+-      (scheme != kDevToolsScheme) &&
++      (scheme != kHeliumUIScheme) && (scheme != kDevToolsScheme) &&
+       !url::IsStandard(scheme.c_str(),
+                        url::Component(0, static_cast<int>(scheme.length())))) {
+     return scheme;
+@@ -637,7 +638,9 @@ GURL FixupURLInternal(const std::string&
+ 
+   // For some schemes whose layouts we understand, we rebuild the URL.
+   bool chrome_url =
+-      (scheme == url::kAboutScheme) || (scheme == kChromeUIScheme);
++      (scheme == url::kAboutScheme)
++      || (scheme == kChromeUIScheme)
++      || (scheme == kHeliumUIScheme);
+   bool devtools_url = (scheme == kDevToolsScheme);
+   if (chrome_url || devtools_url ||
+       url::IsStandard(scheme.c_str(),
+@@ -765,7 +768,9 @@ bool IsEquivalentScheme(const std::strin
+                         const std::string& scheme2) {
+   return scheme1 == scheme2 ||
+          (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
+-         (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme);
++         (scheme1 == kChromeUIScheme && scheme2 == url::kAboutScheme) ||
++         (scheme1 == kHeliumUIScheme && scheme2 == url::kAboutScheme) ||
++         (scheme1 == url::kAboutScheme && scheme2 == kHeliumUIScheme);
+ }
+ 
+ }  // namespace url_formatter
