@@ -29,6 +29,15 @@
    box-sizing: border-box;
    cursor: pointer;
    display: flex;
+@@ -117,7 +117,7 @@
+ }
+ 
+ .tile a {
+-  border-radius: 4px;
++  border-radius: 10px;
+   display: inline-block;
+   height: 100%;
+   outline: none;
 @@ -157,7 +157,7 @@
  .tile-icon {
    align-items: center;
@@ -38,7 +47,7 @@
    display: flex;
    flex-shrink: 0;
    height: var(--icon-size);
-@@ -167,8 +167,8 @@
+@@ -167,13 +167,12 @@
  }
  
  .tile-icon img {
@@ -49,7 +58,12 @@
  }
  
  .tile-title {
-@@ -218,7 +218,7 @@ cr-icon-button {
+   align-items: center;
+-  border-radius: calc(var(--title-height) / 2 + 2px);
+   color: var(--most-visited-text-color);
+   display: flex;
+   height: var(--title-height);
+@@ -218,7 +217,7 @@ cr-icon-button {
    --cr-icon-button-fill-color: var(--icon-button-color);
    --cr-icon-button-size: 28px;
    --cr-icon-button-transition: none;
