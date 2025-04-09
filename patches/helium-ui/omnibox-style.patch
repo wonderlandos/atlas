@@ -162,7 +162,15 @@
  
 --- a/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
-@@ -235,7 +235,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
+@@ -152,6 +152,7 @@ class OmniboxSuggestionRowButton : publi
+       CHECK(v);
+       return v->GetVisible() && v->popup_view_->GetSelection() == v->selection_;
+     }));
++    focus_ring->SetOutsetFocusRingDisabled(true);
+     focus_ring->SetColorId(kColorOmniboxResultsFocusIndicator);
+ 
+     GetViewAccessibility().SetRole(ax::mojom::Role::kListBoxOption);
+@@ -235,7 +236,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
      OmniboxPopupViewViews* popup_view,
      int model_index)
      : popup_view_(popup_view), model_index_(model_index) {
