@@ -135,6 +135,7 @@ helium/disable-history-clusters.patch
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
 helium/settings/remove-autofill.patch
+helium/settings/replace-profile-page-name.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
