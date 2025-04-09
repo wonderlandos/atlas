@@ -111,7 +111,6 @@ extra/brave/custom-importer.patch
 
 helium/services-prefs.patch
 helium/onboarding-page.patch
-helium/add-extra-channel-info.patch
 helium/change-chromium-branding.patch
 helium/scan-chrome-native-messaging-hosts.patch
 helium/make-ddg-default.patch
