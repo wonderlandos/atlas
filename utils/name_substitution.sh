@@ -57,11 +57,15 @@ do_sub() {
             continue;
         fi
 
-        cp "$file_path" "$file_path.new"
-        perl -pi -e "$REGEX_CHAIN" "$file_path.new"
+        if [ "$DEBUG" = 1 ]; then
+            cp "$file_path" "$file_path.new"
+            perl -pi -e "$REGEX_CHAIN" "$file_path.new"
+            diff -Naur "$file_path" "$file_path.new" || true
+            mv "$file_path.new" "$file_path"
+        else
+            perl -pi -e "$REGEX_CHAIN" "$file_path"
+        fi
 
-        diff -Naur "$file_path" "$file_path.new" || true
-        mv "$file_path.new" "$file_path"
     done <<< "$FILE_LIST"
 }
 
