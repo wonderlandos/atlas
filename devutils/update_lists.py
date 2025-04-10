@@ -119,6 +119,8 @@ DOMAIN_EXCLUDE_PREFIXES = [
     'chrome/common/extensions/api/_api_features.json',
     'extensions/common/extension_urls.cc',
     'extensions/browser/updater/safe_manifest_parser.cc',
+    # License/credits stuff
+    'tools/licenses/licenses.py',
 ]
 
 # pylint: enable=line-too-long
@@ -248,6 +250,9 @@ def should_domain_substitute(path, relative_path, search_regex, used_dep_set, us
             for exclude_prefix in DOMAIN_EXCLUDE_PREFIXES:
                 if relative_path_posix.startswith(exclude_prefix):
                     used_dep_set.add(exclude_prefix)
+                    return False
+            for license_path in ['license', 'license.txt', 'license.html']:
+                if relative_path_posix.endswith('/' + license_path):
                     return False
             return _check_regex_match(path, search_regex)
     return False
