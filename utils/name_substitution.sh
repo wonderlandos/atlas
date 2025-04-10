@@ -63,10 +63,11 @@ do_sub() {
             diff -Naur "$file_path" "$file_path.new" || true
             mv "$file_path.new" "$file_path"
         else
-            perl -pi -e "$REGEX_CHAIN" "$file_path"
+            perl -pi -e "$REGEX_CHAIN" "$file_path" &
         fi
-
     done <<< "$FILE_LIST"
+
+    wait
 }
 
 do_unsub() {
