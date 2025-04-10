@@ -11,6 +11,8 @@ REGEXES=(
     's/(?:Google )?Chrom(e|ium)(?!\w)/Helium/g'
 )
 
+REGEX_CHAIN=$(IFS=';'; echo "${REGEXES[*]}")
+
 sanity_check() {
     if ! [ -f OWNERS ]; then
         echo "wrong src directory" >&2
@@ -47,10 +49,7 @@ do_sub() {
         fi
 
         cp "$file_path" "$file_path.new"
-
-        for regex in "${REGEXES[@]}"; do
-            perl -pi -e "$regex" "$file_path.new"
-        done
+        perl -pi -e "$REGEX_CHAIN" "$file_path.new"
 
         diff -Naur "$file_path" "$file_path.new" || true
         mv "$file_path.new" "$file_path"
@@ -70,13 +69,7 @@ do_unsub() {
 }
 
 do_str() {
-    STR="$1"
-
-    for regex in "${REGEXES[@]}"; do
-        STR="$(perl -ne "$regex; print;" <<< "$STR")"
-    done
-
-    echo "$STR"
+    perl -pe "$REGEX_CHAIN" <<< "$1"
 }
 
 case $ACTION in
