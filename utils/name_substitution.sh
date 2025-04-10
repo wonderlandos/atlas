@@ -45,7 +45,7 @@ do_sub() {
 
     cd "$SOURCE_DIR" && sanity_check
 
-    FILE_LIST="$(find . -type f -not -path '*/.*' -not -path '*/out/*' -name '*.grd*')"
+    FILE_LIST="$(find . -type f -not -path '*/.*' -not -path '*/out/*' -name '*.grd*' -o -name '*.xtb')"
 
     if [ "$BACKUP_TAR_PATH" != "" ]; then
         echo "$FILE_LIST" \
