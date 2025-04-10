@@ -6,9 +6,18 @@ SOURCE_DIR="$2"
 BACKUP_TAR_PATH="$3"
 
 REGEXES=(
-    's/Chrome Web( S|s)tore/Web Store/g'
-    's/Chrome Remote Desktop/Remote Desktop/g'
+    # stuff we don't want to replace
+    's/(\w+) Root Program/\1_unreplace Root Program/g'
+    's/(\w+) Web( S|s)tore/\1_unreplace Web Store/g'
+    's/(\w+) Remote Desktop/\1_unreplace Remote Desktop/g'
+    's/("BEGIN_LINK_CHROMIUM")(.*?Chromium)(.*?<ph name="END_LINK_CHROMIUM")/\1\2_unreplace\3/g'
+
+    # main replacement(s)
     's/(?:Google )?Chrom(e|ium)(?!\w)/Helium/g'
+
+    # post-replacement cleanup
+    's/((?:Google )?Chrom(e|ium))_unreplace/\1/g'
+    's/_unreplace//g'
 )
 
 REGEX_CHAIN=$(IFS=';'; echo "${REGEXES[*]}")
