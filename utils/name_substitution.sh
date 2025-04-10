@@ -69,9 +69,20 @@ do_unsub() {
     rm "$BACKUP_TAR_PATH"
 }
 
+do_str() {
+    STR="$1"
+
+    for regex in "${REGEXES[@]}"; do
+        STR="$(perl -ne "$regex; print;" <<< "$STR")"
+    done
+
+    echo "$STR"
+}
+
 case $ACTION in
     sub) do_sub;;
     unsub) do_unsub;;
+    str) do_str "$2";;
     *) echo "usage: $0 <sub | unsub> source_dir [backup_tarball_path]" >&2
        exit 1
 esac
