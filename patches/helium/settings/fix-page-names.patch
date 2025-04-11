@@ -1,3 +1,14 @@
+--- a/chrome/browser/ui/webui/history/history_ui.cc
++++ b/chrome/browser/ui/webui/history/history_ui.cc
+@@ -114,7 +114,7 @@ content::WebUIDataSource* CreateAndAddHi
+       {"expandSessionButton", IDS_HISTORY_OTHER_SESSIONS_EXPAND_SESSION},
+       {"foundSearchResults", IDS_HISTORY_FOUND_SEARCH_RESULTS},
+       {"historyMenuButton", IDS_HISTORY_HISTORY_MENU_DESCRIPTION},
+-      {"historyMenuItem", IDS_HISTORY_HISTORY_MENU_ITEM},
++      {"historyMenuItem", IDS_HISTORY_TITLE},
+       {"itemsSelected", IDS_HISTORY_ITEMS_SELECTED},
+       {"itemsUnselected", IDS_HISTORY_ITEMS_UNSELECTED},
+       {"loading", IDS_HISTORY_LOADING},
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 @@ -1711,7 +1711,7 @@ void AddPeopleStrings(content::WebUIData

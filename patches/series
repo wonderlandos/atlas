@@ -138,7 +138,7 @@ helium/disable-user-education-nags.patch
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
 helium/settings/remove-autofill.patch
-helium/settings/replace-profile-page-name.patch
+helium/settings/fix-page-names.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
