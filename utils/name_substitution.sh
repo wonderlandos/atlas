@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Copyright 2025 The Helium Authors
+# You can use, redistribute, and/or modify this source code under
+# the terms of the GPL-3.0 license that can be found in the LICENSE file.
+
 set -e
 
 ACTION="$1"
