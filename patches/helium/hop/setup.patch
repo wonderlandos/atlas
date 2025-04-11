@@ -72,8 +72,8 @@
 +++ b/components/policy/core/common/helium_opinionated_policy_provider.cc
 @@ -0,0 +1,32 @@
 +// Copyright 2025 The Helium Authors
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "components/policy/core/common/helium_opinionated_policy_provider.h"
 +
@@ -107,8 +107,8 @@
 +++ b/components/policy/core/common/helium_opinionated_policy_provider.h
 @@ -0,0 +1,25 @@
 +// Copyright 2025 The Helium Authors
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
 +#ifndef COMPONENTS_POLICY_CORE_COMMON_HELIUM_OPINIONATED_POLICY_PROVIDER_H_
 +#define COMPONENTS_POLICY_CORE_COMMON_HELIUM_OPINIONATED_POLICY_PROVIDER_H_

@@ -2,9 +2,11 @@
 +++ b/chrome/app/vector_icons/browser_logo.icon
 @@ -1,46 +1,26 @@
 -// Copyright 2023 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
 +// Copyright 2025 The Helium Authors
- // Use of this source code is governed by a BSD-style license that can be
- // found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
  
 -CANVAS_DIMENSIONS, 16,
 -MOVE_TO, 5.5, 8.02,
@@ -70,9 +72,11 @@
 +++ b/components/omnibox/browser/vector_icons/product_chrome_refresh.icon
 @@ -1,51 +1,26 @@
 -// Copyright 2023 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
 +// Copyright 2025 The Helium Authors
- // Use of this source code is governed by a BSD-style license that can be
- // found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
  
 -CANVAS_DIMENSIONS, 15,
 -MOVE_TO, 4.92, 7.5,

@@ -269,8 +269,8 @@
 +++ b/components/search_engines/template_url_bang_manager.cc
 @@ -0,0 +1,174 @@
 +// Copyright 2025 The Helium Authors
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
 +#include "components/search_engines/template_url_bang_manager.h"
 +
@@ -446,8 +446,8 @@
 +++ b/components/search_engines/template_url_bang_manager.h
 @@ -0,0 +1,65 @@
 +// Copyright 2025 The Helium Authors
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
 +#ifndef COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
 +#define COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
