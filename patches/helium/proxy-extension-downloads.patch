@@ -237,7 +237,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/helium_services/helium_services_helpers.cc
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -60,6 +60,19 @@ bool ShouldAccessServices(const PrefServ
+@@ -61,6 +61,19 @@ bool ShouldAccessServices(const PrefServ
             || prefs.HasPrefPath(prefs::kHeliumServicesEnabled));
  }
  

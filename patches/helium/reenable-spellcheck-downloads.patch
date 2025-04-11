@@ -45,7 +45,7 @@
  
 --- a/components/helium_services/helium_services_helpers.cc
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -65,6 +65,11 @@ bool ShouldAccessExtensionService(const
+@@ -66,6 +66,11 @@ bool ShouldAccessExtensionService(const
              prefs.GetBoolean(prefs::kHeliumExtProxyEnabled);
  }
  
@@ -57,7 +57,7 @@
  bool ShouldFetchBangs(const PrefService& prefs) {
      return ShouldAccessServices(prefs) &&
              prefs.GetBoolean(prefs::kHeliumBangsEnabled);
-@@ -78,6 +83,14 @@ GURL GetExtensionUpdateURL(const PrefSer
+@@ -79,6 +84,14 @@ GURL GetExtensionUpdateURL(const PrefSer
      return GetServicesBaseURL(prefs).Resolve("/ext");
  }
  
