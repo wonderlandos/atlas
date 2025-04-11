@@ -133,6 +133,7 @@ helium/memory-saving-by-default.patch
 helium/disable-history-clusters.patch
 helium/unbreak-chromium-link.patch
 helium/update-credits.patch
+helium/disable-user-education-nags.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/move-macos-settings.patch
