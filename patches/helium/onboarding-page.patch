@@ -1,6 +1,6 @@
 --- a/components/helium_services/pref_names.h
 +++ b/components/helium_services/pref_names.h
-@@ -7,12 +7,17 @@
+@@ -7,12 +7,20 @@
  
  namespace prefs {
  
@@ -12,6 +12,9 @@
  inline constexpr char kHeliumServicesOrigin[] =
      "helium.services.origin_override";
  
++inline constexpr char kHeliumServicesConsented[] =
++    "helium.services.user_consented";
++
 +inline constexpr char kHeliumDidOnboarding[] =
 +    "helium.completed_onboarding";
 +
@@ -20,11 +23,12 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -173,6 +173,7 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -173,6 +173,8 @@ void RegisterBrowserUserPrefs(user_prefs
    {
      registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
      registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
 +    registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
++    registry->RegisterBooleanPref(prefs::kHeliumServicesConsented, false);
    }
  
    registry->RegisterBooleanPref(
@@ -350,14 +354,14 @@
 +    // OR the user has explicitly enabled kHeliumServicesEnabled somewhere
 +    // (either via onboarding, or user settings)
 +    return prefs.GetBoolean(prefs::kHeliumServicesEnabled) &&
-+           (prefs.GetBoolean(prefs::kHeliumDidOnboarding)
++           (prefs.GetBoolean(prefs::kHeliumServicesConsented)
 +           || prefs.HasPrefPath(prefs::kHeliumServicesEnabled));
  }
  
  void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
      PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
    registrar.Add(prefs::kHeliumServicesEnabled, observer);
-+  registrar.Add(prefs::kHeliumDidOnboarding, observer);
++  registrar.Add(prefs::kHeliumServicesConsented, observer);
    registrar.Add(prefs::kHeliumServicesOrigin, observer);
    registrar.Add(pref_name, observer);
  }
