@@ -150,7 +150,7 @@
    map.AddWebUIConfig(std::make_unique<SigninErrorUIConfig>());
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,38 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -159,6 +159,8 @@
 +
 +#include "chrome/browser/profiles/profile.h"
 +#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
++#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
++#include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 +#include "chrome/common/webui_url_constants.h"
 +#include "content/public/browser/web_ui_controller.h"
 +#include "content/public/browser/web_ui_data_source.h"
@@ -167,10 +169,9 @@
 +#include "ui/webui/webui_util.h"
 +
 +HeliumOnboardingPage::HeliumOnboardingPage(content::WebUI* web_ui) : WebUIController(web_ui) {
++    Profile* profile = Profile::FromWebUI(web_ui);
 +    content::WebUIDataSource* source =
-+        content::WebUIDataSource::CreateAndAdd(
-+            Profile::FromWebUI(web_ui), chrome::kHeliumSetupHost
-+        );
++        content::WebUIDataSource::CreateAndAdd(profile, chrome::kHeliumSetupHost);
 +
 +    webui::SetupWebUIDataSource(
 +        source, kHeliumOnboardingGenerated,
@@ -180,7 +181,11 @@
 +    source->DisableTrustedTypesCSP();
 +
 +    web_ui->AddMessageHandler(
-+        std::make_unique<OnboardingMessageHandler>(Profile::FromWebUI(web_ui)));
++        std::make_unique<OnboardingMessageHandler>(profile));
++    web_ui->AddMessageHandler(
++        std::make_unique<settings::SearchEnginesHandler>(profile));
++    web_ui->AddMessageHandler(
++        std::make_unique<settings::DefaultBrowserHandler>());
 +}
 +
 +HeliumOnboardingPage::~HeliumOnboardingPage() = default;
@@ -377,3 +382,16 @@
  }
  
  }  // namespace
+--- a/chrome/browser/ui/webui/settings/search_engines_handler.cc
++++ b/chrome/browser/ui/webui/settings/search_engines_handler.cc
+@@ -313,7 +313,9 @@ void SearchEnginesHandler::HandleSetDefa
+   CHECK(choice_made_location ==
+             search_engines::ChoiceMadeLocation::kSearchSettings ||
+         choice_made_location ==
+-            search_engines::ChoiceMadeLocation::kSearchEngineSettings);
++            search_engines::ChoiceMadeLocation::kSearchEngineSettings ||
++        choice_made_location ==
++            search_engines::ChoiceMadeLocation::kChoiceScreen);
+   list_controller_.MakeDefaultTemplateURL(index, choice_made_location);
+   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
+ 
