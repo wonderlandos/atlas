@@ -180,7 +180,7 @@
 +    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, true);
      registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
      registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
-   }
+     registry->RegisterBooleanPref(prefs::kHeliumServicesConsented, false);
 --- a/chrome/browser/resources/settings/privacy_page/services_page.html
 +++ b/chrome/browser/resources/settings/privacy_page/services_page.html
 @@ -12,6 +12,11 @@
@@ -225,7 +225,7 @@
    </message>
 --- a/components/helium_services/pref_names.h
 +++ b/components/helium_services/pref_names.h
-@@ -18,6 +18,9 @@ inline constexpr char kHeliumServicesOri
+@@ -21,6 +21,9 @@ inline constexpr char kHeliumServicesCon
  inline constexpr char kHeliumDidOnboarding[] =
      "helium.completed_onboarding";
  

@@ -685,7 +685,7 @@
  
 --- a/components/helium_services/pref_names.h
 +++ b/components/helium_services/pref_names.h
-@@ -21,6 +21,9 @@ inline constexpr char kHeliumDidOnboardi
+@@ -24,6 +24,9 @@ inline constexpr char kHeliumDidOnboardi
  inline constexpr char kHeliumExtProxyEnabled[] =
      "helium.services.ext_proxy";
  
