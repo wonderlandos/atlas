@@ -150,7 +150,7 @@
    map.AddWebUIConfig(std::make_unique<SigninErrorUIConfig>());
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,41 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -161,6 +161,7 @@
 +#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
 +#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 +#include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
++#include "chrome/browser/ui/webui/settings/brave_import_data_handler.h"
 +#include "chrome/common/webui_url_constants.h"
 +#include "content/public/browser/web_ui_controller.h"
 +#include "content/public/browser/web_ui_data_source.h"
@@ -186,6 +187,8 @@
 +        std::make_unique<settings::SearchEnginesHandler>(profile));
 +    web_ui->AddMessageHandler(
 +        std::make_unique<settings::DefaultBrowserHandler>());
++    web_ui->AddMessageHandler(
++        std::make_unique<settings::BraveImportDataHandler>());
 +}
 +
 +HeliumOnboardingPage::~HeliumOnboardingPage() = default;
