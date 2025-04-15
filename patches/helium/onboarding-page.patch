@@ -225,7 +225,7 @@
 +#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_PAGE_H_
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.cc
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,153 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -234,9 +234,17 @@
 +
 +#include "base/functional/bind.h"
 +#include "base/values.h"
++#include "base/strings/string_util.h"
++#include "base/strings/utf_string_conversions.h"
++#include "chrome/browser/browser_process.h"
++#include "chrome/browser/profiles/profile_attributes_entry.h"
++#include "chrome/browser/profiles/profile_attributes_storage.h"
++#include "chrome/browser/profiles/profile_manager.h"
++#include "chrome/browser/profiles/profiles_state.h"
 +#include "components/prefs/pref_service.h"
 +#include "components/helium_services/pref_names.h"
 +#include "components/prefs/pref_change_registrar.h"
++#include "chrome/browser/browser_process.h"
 +
 +OnboardingMessageHandler::OnboardingMessageHandler(Profile* profile)
 +    : profile_(profile),
@@ -291,6 +299,16 @@
 +        "setPref",
 +        base::BindRepeating(&OnboardingMessageHandler::HandleSetPreference,
 +                            base::Unretained(this)));
++
++    web_ui()->RegisterMessageCallback(
++        "getProfileName",
++        base::BindRepeating(&OnboardingMessageHandler::HandleGetProfileName,
++                            base::Unretained(this)));
++
++    web_ui()->RegisterMessageCallback(
++        "setProfileName",
++        base::BindRepeating(&OnboardingMessageHandler::HandleSetProfileName,
++                            base::Unretained(this)));
 +}
 +
 +void OnboardingMessageHandler::HandleGetPreferences(const base::Value::List& args) {
@@ -300,6 +318,35 @@
 +    AllowJavascript();
 +    ResolveJavascriptCallback(
 +        base::Value(callback_id), base::Value(GetPreferencesDict()));
++}
++
++void OnboardingMessageHandler::HandleGetProfileName(const base::Value::List& args) {
++    CHECK_EQ(1U, args.size());
++    const auto& callback_id = args[0].GetString();
++
++    ProfileAttributesEntry* entry =
++        g_browser_process->profile_manager()
++            ->GetProfileAttributesStorage()
++            .GetProfileAttributesWithPath(profile_->GetPath());
++
++    if (!entry) {
++        return RejectJavascriptCallback(callback_id, "entry not found");
++    }
++
++    AllowJavascript();
++    ResolveJavascriptCallback(
++        base::Value(callback_id),
++        base::Value(entry->GetLocalProfileName()));
++}
++
++void OnboardingMessageHandler::HandleSetProfileName(const base::Value::List& args) {
++    CHECK_EQ(1U, args.size());
++    std::u16string new_name = base::UTF8ToUTF16(args[0].GetString());
++    base::TrimWhitespace(new_name, base::TRIM_ALL, &new_name);
++
++    if (!new_name.empty()) {
++        profiles::UpdateProfileName(profile_, new_name);
++    }
 +}
 +
 +void OnboardingMessageHandler::HandleSetPreference(const base::Value::List& args) {
@@ -334,7 +381,7 @@
 +}
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,43 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -366,6 +413,8 @@
 +  base::Value::Dict GetPreferencesDict();
 +  void HandleGetPreferences(const base::Value::List& args);
 +  void HandleSetPreference(const base::Value::List& args);
++  void HandleGetProfileName(const base::Value::List& args);
++  void HandleSetProfileName(const base::Value::List& args);
 +  void OnPreferencesChanged();
 +
 +  raw_ptr<Profile> profile_ = nullptr;
