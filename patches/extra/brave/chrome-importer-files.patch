@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,142 @@
+@@ -0,0 +1,143 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -46,11 +46,12 @@
 +    }
 +#endif
 +    importer::SourceProfile chrome;
-+    chrome.importer_name = base::UTF8ToUTF16(base::StrCat({brand, " ", *name}));
++    chrome.importer_name = base::UTF8ToUTF16(brand);
 +    chrome.importer_type = type;
-+    chrome.services_supported = items;
 +    chrome.source_path = user_data_folder.Append(
 +        base::FilePath::StringType(profile->begin(), profile->end()));
++    chrome.services_supported = items;
++    chrome.profile = base::UTF8ToUTF16(*name);
 +    profiles->push_back(chrome);
 +  }
 +}
