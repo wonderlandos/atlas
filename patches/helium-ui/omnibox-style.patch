@@ -114,7 +114,16 @@
      // When a PEDAL suggestion has been split out to its own row, apply a square
      // background with a distinctive color to the respective icon. Journeys
      // suggestion rows should also receive the same treatment.
-@@ -599,7 +598,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -588,7 +587,7 @@ int OmniboxMatchCellView::GetImageIndent
+   // align with any other UI; it's just arbitrarily chosen by UX. Hence, it's
+   // not derived from other matches' `indent` below.
+   if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
+-    return 2;
++    return 0;
+   }
+ 
+   // The entity, answer, and icon images are horizontally centered within their
+@@ -599,12 +598,13 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
@@ -123,21 +132,12 @@
  
    return indent;
  }
-@@ -624,12 +623,12 @@ int OmniboxMatchCellView::GetTextIndent(
-   // Answers don't have an icon, and their text needs to line up with the icons
-   // of other suggestions, so they need a smaller indent.
-   if (layout_style_ == LayoutStyle::HISTORY_EMBEDDING_ANSWER) {
--    return 18;
-+    return 35;
-   }
  
-   // For normal matches, the gap between the left edge of this view and the
-   // left edge of its favicon or answer image.
--  int indent = 52;
-+  int indent = 35;
+ int OmniboxMatchCellView::GetTextIndent() const {
++  return 35;
+   // Text indent is added to the `OmniboxMatchCellView::GetInsets()`. It is not
+   // added to the image position & size.
  
-   // The IPH row left inset is +`kIphOffset` from other suggestions, so the text
-   // indent should be -`kIphOffset` to keep the text aligned. IPH matches seem
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h
 @@ -36,7 +36,7 @@ class OmniboxMatchCellView : public view
