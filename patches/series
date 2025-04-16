@@ -171,3 +171,4 @@ helium-ui/remove-preview-from-sidepanels.patch
 helium-ui/helium-logo-icons.patch
 helium-ui/settings-page-icons.patch
 helium-ui/square-ntp-monograms.patch
+helium-ui/set-gray-as-default-theme.patch
