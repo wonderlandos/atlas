@@ -228,7 +228,7 @@
 +#endif // CHROME_BROWSER_UI_WEBUI_ONBOARDING_ONBOARDING_PAGE_H_
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.cc
-@@ -0,0 +1,153 @@
+@@ -0,0 +1,190 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -236,18 +236,22 @@
 +#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
 +
 +#include "base/functional/bind.h"
-+#include "base/values.h"
 +#include "base/strings/string_util.h"
 +#include "base/strings/utf_string_conversions.h"
++#include "base/values.h"
 +#include "chrome/browser/browser_process.h"
-+#include "chrome/browser/profiles/profile_attributes_entry.h"
 +#include "chrome/browser/profiles/profile_attributes_storage.h"
 +#include "chrome/browser/profiles/profile_manager.h"
 +#include "chrome/browser/profiles/profiles_state.h"
-+#include "components/prefs/pref_service.h"
++#include "chrome/browser/themes/theme_service.h"
++#include "chrome/browser/themes/theme_service_factory.h"
++#include "chrome/browser/ui/color/chrome_color_id.h"
 +#include "components/helium_services/pref_names.h"
 +#include "components/prefs/pref_change_registrar.h"
-+#include "chrome/browser/browser_process.h"
++#include "components/prefs/pref_service.h"
++#include "content/public/browser/web_contents.h"
++#include "ui/color/color_provider.h"
++#include "ui/gfx/color_utils.h"
 +
 +OnboardingMessageHandler::OnboardingMessageHandler(Profile* profile)
 +    : profile_(profile),
@@ -263,9 +267,13 @@
 +            )
 +        );
 +    }
++
++    ThemeServiceFactory::GetForProfile(profile_)->AddObserver(this);
 +}
 +
-+OnboardingMessageHandler::~OnboardingMessageHandler() = default;
++OnboardingMessageHandler::~OnboardingMessageHandler() {
++    ThemeServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
++}
 +
 +base::Value::Dict OnboardingMessageHandler::GetPreferencesDict() {
 +    std::vector<PrefService::PreferenceValueAndStore> values =
@@ -285,6 +293,11 @@
 +    }
 +
 +    return output;
++}
++
++void OnboardingMessageHandler::OnThemeChanged() {
++    AllowJavascript();
++    FireWebUIListener("ntp-background-changed", GetNTPBackgroundColor());
 +}
 +
 +void OnboardingMessageHandler::OnPreferencesChanged() {
@@ -312,6 +325,30 @@
 +        "setProfileName",
 +        base::BindRepeating(&OnboardingMessageHandler::HandleSetProfileName,
 +                            base::Unretained(this)));
++
++    web_ui()->RegisterMessageCallback(
++        "getBackgroundColor",
++        base::BindRepeating(&OnboardingMessageHandler::HandleGetBackgroundColor,
++                            base::Unretained(this)));
++}
++
++base::Value OnboardingMessageHandler::GetNTPBackgroundColor() {
++    return base::Value(
++        color_utils::SkColorToRgbaString(
++            web_ui()
++                ->GetWebContents()
++                ->GetColorProvider().GetColor(kColorNewTabPageBackground)
++        )
++    );
++}
++
++void OnboardingMessageHandler::HandleGetBackgroundColor(const base::Value::List& args) {
++    CHECK_EQ(1U, args.size());
++    const auto& callback_id = args[0].GetString();
++
++    AllowJavascript();
++    ResolveJavascriptCallback(
++        base::Value(callback_id), GetNTPBackgroundColor());
 +}
 +
 +void OnboardingMessageHandler::HandleGetPreferences(const base::Value::List& args) {
@@ -384,7 +421,7 @@
 +}
 --- /dev/null
 +++ b/chrome/browser/ui/webui/onboarding/onboarding_handler.h
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,51 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -402,8 +439,10 @@
 +#include "components/prefs/pref_service.h"
 +#include "components/prefs/pref_change_registrar.h"
 +#include "content/public/browser/web_ui_message_handler.h"
++#include "chrome/browser/themes/theme_service_observer.h"
 +
-+class OnboardingMessageHandler : public content::WebUIMessageHandler {
++class OnboardingMessageHandler : public content::WebUIMessageHandler,
++                                 public ThemeServiceObserver {
 + public:
 +  explicit OnboardingMessageHandler(Profile* profile);
 +  OnboardingMessageHandler(const OnboardingMessageHandler&) = delete;
@@ -418,7 +457,13 @@
 +  void HandleSetPreference(const base::Value::List& args);
 +  void HandleGetProfileName(const base::Value::List& args);
 +  void HandleSetProfileName(const base::Value::List& args);
++  void HandleGetBackgroundColor(const base::Value::List& args);
 +  void OnPreferencesChanged();
++
++  base::Value GetNTPBackgroundColor();
++
++  // ThemeServiceObserver:
++  void OnThemeChanged() override;
 +
 +  raw_ptr<Profile> profile_ = nullptr;
 +  raw_ptr<PrefService> pref_service_ = nullptr;
