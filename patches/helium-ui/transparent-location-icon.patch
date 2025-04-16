@@ -1,11 +1,16 @@
 --- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
 +++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
-@@ -48,7 +48,7 @@ constexpr int kIconLabelBubbleSeparatorW
+@@ -44,11 +44,11 @@ namespace {
+ 
+ // Amount of space reserved for the separator that appears after the icon or
+ // label.
+-constexpr int kIconLabelBubbleSeparatorWidth = 1;
++constexpr int kIconLabelBubbleSeparatorWidth = 2;
  
  // Amount of space on either side of the separator that appears after the icon
  // or label.
 -constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
-+constexpr int kIconLabelBubbleSpaceBesideSeparator = 6;
++constexpr int kIconLabelBubbleSpaceBesideSeparator = 5;
  
  // The length of the separator's fade animation. These values are empirical.
  constexpr int kIconLabelBubbleFadeInDurationMs = 250;
@@ -16,7 +21,7 @@
 -  const float x = GetLocalBounds().right() -
 -                  owner_->GetEndPaddingWithSeparator() -
 -                  1.0f / canvas->image_scale();
-+  const float x = 0;
++  const float x = 1.5f;
    canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
                     gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
  }
@@ -27,7 +32,7 @@
 -  float separator_width =
 -      GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
 -  int separator_x = label()->GetText().empty()
-+  float separator_width = 1;
++  float separator_width = 2;
 +  int separator_x = (label()->GetText().empty()
                          ? image_container_view()->bounds().right()
 -                        : label()->bounds().right();
@@ -40,7 +45,7 @@
  
    constexpr int kDefaultInternalSpacingTouchUI = 10;
 -  constexpr int kDefaultInternalSpacingChromeRefresh = 4;
-+  constexpr int kDefaultInternalSpacingChromeRefresh = 8;
++  constexpr int kDefaultInternalSpacingChromeRefresh = 7;
  
    return (ui::TouchUiController::Get()->touch_ui()
                ? kDefaultInternalSpacingTouchUI
