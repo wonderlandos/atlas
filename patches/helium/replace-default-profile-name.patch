@@ -1,0 +1,11 @@
+--- a/chrome/browser/profiles/profiles_state.cc
++++ b/chrome/browser/profiles/profiles_state.cc
+@@ -323,7 +323,7 @@ std::u16string GetDefaultNameForNewEnter
+     return hosted_domain_name;
+   }
+   std::u16string default_name = l10n_util::GetStringUTF16(
+-      IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_PROFILE_NAME);
++      IDS_SINGLE_PROFILE_DISPLAY_NAME);
+   CHECK(!default_name.empty());
+   return default_name;
+ }
