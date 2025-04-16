@@ -1,16 +1,11 @@
 --- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
 +++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
-@@ -44,11 +44,11 @@ namespace {
- 
- // Amount of space reserved for the separator that appears after the icon or
- // label.
--constexpr int kIconLabelBubbleSeparatorWidth = 1;
-+constexpr int kIconLabelBubbleSeparatorWidth = 2;
+@@ -48,7 +48,7 @@ constexpr int kIconLabelBubbleSeparatorW
  
  // Amount of space on either side of the separator that appears after the icon
  // or label.
 -constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
-+constexpr int kIconLabelBubbleSpaceBesideSeparator = 5;
++constexpr int kIconLabelBubbleSpaceBesideSeparator = 6;
  
  // The length of the separator's fade animation. These values are empirical.
  constexpr int kIconLabelBubbleFadeInDurationMs = 250;
@@ -21,11 +16,21 @@
 -  const float x = GetLocalBounds().right() -
 -                  owner_->GetEndPaddingWithSeparator() -
 -                  1.0f / canvas->image_scale();
-+  const float x = 1.5f;
++  const float x = 0.5f;
    canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
                     gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
  }
-@@ -249,11 +247,10 @@ void IconLabelBubbleView::Layout(PassKey
+@@ -239,8 +237,7 @@ void IconLabelBubbleView::Layout(PassKey
+   // value to be, since it won't be visible.
+   const int label_x =
+       image_container_view()->bounds().right() + GetInternalSpacing();
+-  int label_width = std::max(0, width() - label_x - bubble_trailing_padding -
+-                                    GetWidthBetweenIconAndSeparator());
++  int label_width = std::max(0, width() - label_x - bubble_trailing_padding);
+   label()->SetBounds(label_x, 0, label_width, height());
+ 
+   // The separator should be the same height as the icons.
+@@ -249,11 +246,10 @@ void IconLabelBubbleView::Layout(PassKey
    separator_bounds.Inset(
        gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
  
@@ -36,11 +41,11 @@
 +  int separator_x = (label()->GetText().empty()
                          ? image_container_view()->bounds().right()
 -                        : label()->bounds().right();
-+                        : label()->bounds().right()) + GetEndPaddingWithSeparator();
++                        : label()->bounds().right()) + 2;
    separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                               separator_height);
  
-@@ -595,7 +592,7 @@ int IconLabelBubbleView::GetInternalSpac
+@@ -595,7 +591,7 @@ int IconLabelBubbleView::GetInternalSpac
    }
  
    constexpr int kDefaultInternalSpacingTouchUI = 10;
@@ -49,7 +54,7 @@
  
    return (ui::TouchUiController::Get()->touch_ui()
                ? kDefaultInternalSpacingTouchUI
-@@ -751,6 +748,10 @@ SkPath IconLabelBubbleView::GetHighlight
+@@ -751,6 +747,10 @@ SkPath IconLabelBubbleView::GetHighlight
        SkIntToScalar(radii.lower_right()), SkIntToScalar(radii.lower_right()),
        SkIntToScalar(radii.lower_left()),  SkIntToScalar(radii.lower_left())};
  
