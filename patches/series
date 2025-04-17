@@ -135,6 +135,7 @@ helium/unbreak-chromium-link.patch
 helium/update-credits.patch
 helium/disable-user-education-nags.patch
 helium/replace-default-profile-name.patch
+helium/disable-live-caption-completely.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
