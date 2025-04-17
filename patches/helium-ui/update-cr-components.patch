@@ -144,6 +144,15 @@
  </div>
 --- a/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.css
 +++ b/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.css
+@@ -53,7 +53,7 @@ cr-icon-button {
+       var(--color-toolbar-search-field-icon,
+       var(--cr-secondary-text-color)));
+   --cr-icon-button-size: var(--cr-toolbar-icon-container-size, 28px);
+-  --cr-icon-button-icon-size: 20px;
++  --cr-icon-button-icon-size: 16px;
+   margin: var(--cr-toolbar-icon-margin, 0);
+ }
+ 
 @@ -174,7 +174,7 @@ input[type='search']::-webkit-search-can
    padding: 0 6px;
    position: relative;
@@ -153,6 +162,20 @@
  }
  
  @media (prefers-color-scheme: dark) {
+@@ -203,7 +203,6 @@ input[type='search']::-webkit-search-can
+ 
+ :host([search-focused_]:not([narrow])) {
+   outline: 2px solid var(--cr-focus-outline-color);
+-  outline-offset: 2px;
+ }
+ 
+ :host(:not([narrow])) #stateBackground {
+@@ -257,4 +256,5 @@ input[type='search']::-webkit-search-can
+   height: 100%;
+   position: relative;
+   z-index: 2;
++  gap: 6px;
+ }
 --- a/ui/webui/resources/cr_elements/cr_shared_vars.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_vars.css
 @@ -112,6 +112,8 @@ html {
