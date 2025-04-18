@@ -19,7 +19,7 @@
    auto location_bar = std::make_unique<LocationBarView>(
        browser_, browser_->profile(), browser_->command_controller(), this,
        display_mode_ != DisplayMode::NORMAL);
-@@ -835,13 +823,6 @@ void ToolbarView::Layout(PassKey) {
+@@ -840,13 +828,6 @@ void ToolbarView::Layout(PassKey) {
    // The container view should be the exact same size/position as ToolbarView.
    container_view_->SetSize(size());
  
@@ -33,7 +33,7 @@
    if (display_mode_ == DisplayMode::CUSTOM_TAB) {
      custom_tab_bar_->SetBounds(0, 0, width(),
                                 custom_tab_bar_->GetPreferredSize().height());
-@@ -851,7 +832,6 @@ void ToolbarView::Layout(PassKey) {
+@@ -856,7 +837,6 @@ void ToolbarView::Layout(PassKey) {
  
    if (display_mode_ == DisplayMode::NORMAL) {
      LayoutCommon();
@@ -41,7 +41,7 @@
    }
  
    if (toolbar_controller_) {
-@@ -889,37 +869,6 @@ void ToolbarView::OnThemeChanged() {
+@@ -894,37 +874,6 @@ void ToolbarView::OnThemeChanged() {
    SchedulePaint();
  }
  
