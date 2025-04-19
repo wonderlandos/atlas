@@ -1,0 +1,12 @@
+--- a/chrome/browser/renderer_context_menu/render_view_context_menu.cc
++++ b/chrome/browser/renderer_context_menu/render_view_context_menu.cc
+@@ -2327,8 +2327,7 @@ void RenderViewContextMenu::AppendMediaR
+ 
+ void RenderViewContextMenu::AppendReadingModeItem() {
+   // Show Read Anything option if it's not already open in the side panel.
+-  if (GetBrowser() && GetBrowser()->is_type_normal() &&
+-      !IsReadAnythingEntryShowing(GetBrowser())) {
++  if ((false)) {
+     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
+                                     IDS_CONTENT_CONTEXT_READING_MODE);
+   }
