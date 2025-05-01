@@ -157,7 +157,7 @@
 +    </div>
 +    <cr-input
 +        id="heliumOriginOverride"
-+        placeholder="https://services.helium.computer"
++        placeholder="https://services.helium.imput.net"
 +        value="[[prefs.helium.services.origin_override.value]]"
 +        pattern="https://.*"
 +        on-keydown="onOriginOverrideKeydown_"
@@ -415,7 +415,7 @@
 +namespace helium {
 +
 +const char kHeliumDefaultOrigin[] =
-+    "https://services.helium.computer";
++    "https://services.helium.imput.net";
 +
 +const char kHeliumDummyOrigin[] =
 +    "https://helium-services-are-disabled.qjz9zk";
