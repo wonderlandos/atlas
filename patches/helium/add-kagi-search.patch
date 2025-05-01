@@ -1,51 +1,12 @@
---- a/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
-+++ b/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
-@@ -177,6 +177,17 @@
-       "id": 1
-     },
- 
-+    "kagi": {
-+      "name": "Kagi",
-+      "keyword": "kagi.com",
-+      "favicon_url": "https://kagi.com/favicon.ico",
-+      "search_url": "https://kagi.com/search?q={searchTerms}",
-+      "suggest_url": "https://kagisuggest.com/api/autosuggest?q={searchTerms}",
-+      "new_tab_url": "https://kagi.com/",
-+      "type": "SEARCH_ENGINE_KAGI",
-+      "id": 255
-+    },
-+
-     "karma": {
-       "name": "Karma Search",
-       "keyword": "karmasearch.org",
---- a/components/search_engines/search_engine_type.h
-+++ b/components/search_engines/search_engine_type.h
-@@ -95,6 +95,8 @@ enum SearchEngineType {
-   SEARCH_ENGINE_STARTER_PACK_PAGE = 76,
-   SEARCH_ENGINE_MCAFEE = 77,
- 
-+  SEARCH_ENGINE_KAGI = 150,
-+
-   SEARCH_ENGINE_MAX  // Bounding value needed for UMA histogram macro.
- };
- 
---- a/tools/metrics/histograms/enums.xml
-+++ b/tools/metrics/histograms/enums.xml
-@@ -21195,6 +21195,7 @@ Called by update_net_error_codes.py.-->
-   <int value="75" label="Startpage"/>
-   <int value="76" label="StarterPackPage"/>
-   <int value="77" label="McAfee"/>
-+  <int value="150" label="Kagi"/>
- </enum>
- 
- <enum name="OnboardingStartupState">
---- a/components/search_engines/search_engine_countries-inc.cc
-+++ b/components/search_engines/search_engine_countries-inc.cc
-@@ -43,6 +43,7 @@ constexpr EngineAndTier engines_default[
-     {SearchEngineTier::kTopEngines, &bing},
-     {SearchEngineTier::kTopEngines, &break_stuff_google},
-     {SearchEngineTier::kTopEngines, &qwant},
-+    {SearchEngineTier::kTopEngines, &kagi},
- };
- 
- // clang-format on
+--- a/third_party/search_engines_data/resources/definitions/regional_settings.json
++++ b/third_party/search_engines_data/resources/definitions/regional_settings.json
+@@ -9,7 +9,8 @@
+           "&ecosia",
+           "&bing",
+           "&break_stuff_google",
+-          "&qwant"
++          "&qwant",
++          "&kagi"
+       ]
+     }
+   },

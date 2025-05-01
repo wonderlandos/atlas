@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/profiles/profile_menu_view.cc
 +++ b/chrome/browser/ui/views/profiles/profile_menu_view.cc
-@@ -185,7 +185,7 @@ void ProfileMenuView::BuildMenu() {
+@@ -186,7 +186,7 @@ void ProfileMenuView::BuildMenu() {
      BuildIdentity();
  
      // Users should not be able to open chrome settings from WebApps.

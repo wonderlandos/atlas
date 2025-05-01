@@ -1,6 +1,6 @@
 --- a/chrome/common/chrome_features.cc
 +++ b/chrome/common/chrome_features.cc
-@@ -665,7 +665,7 @@ BASE_FEATURE(kHttpsFirstBalancedMode,
+@@ -725,7 +725,7 @@ BASE_FEATURE(kHttpsFirstBalancedMode,
  // possible.
  BASE_FEATURE(kHttpsFirstBalancedModeAutoEnable,
               "HttpsFirstBalancedModeAutoEnable",

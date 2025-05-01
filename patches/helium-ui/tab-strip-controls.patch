@@ -1,35 +1,27 @@
 --- a/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
 +++ b/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
-@@ -25,8 +25,6 @@
- using std::make_unique;
- 
- namespace {
--constexpr int kTabstripComboButtonCornerRadius = 10;
--constexpr int kTabstripComboButtonFlatCornerRadius = 0;
- 
- class ControlButtonHighlightPathGenerator
-     : public views::HighlightPathGenerator {
-@@ -234,15 +232,11 @@ void TabStripControlButton::UpdateBackgr
+@@ -235,12 +235,18 @@ void TabStripControlButton::UpdateBackgr
  }
  
  int TabStripControlButton::GetCornerRadius() const {
--  return features::IsTabstripComboButtonEnabled()
--             ? kTabstripComboButtonCornerRadius
--             : TabStripControlButton::kButtonSize.width() / 2;
-+  return 8;
++  if ((true))
++    return 8;
++
+   return features::IsTabSearchMoving() && !features::HasTabSearchToolbarButton()
+              ? kTabstripComboButtonCornerRadius
+              : TabStripControlButton::kButtonSize.width() / 2;
  }
  
  int TabStripControlButton::GetFlatCornerRadius() const {
--  return features::IsTabstripComboButtonEnabled()
--             ? kTabstripComboButtonFlatCornerRadius
--             : 0;
-+  return 0;
- }
- 
- float TabStripControlButton::GetScaledCornerRadius(float initial_radius,
++  if ((true))
++    return 0;
++
+   return features::IsTabSearchMoving() && !features::HasTabSearchToolbarButton()
+              ? kTabstripComboButtonFlatCornerRadius
+              : 0;
 --- a/chrome/browser/ui/views/tabs/tab_search_button.cc
 +++ b/chrome/browser/ui/views/tabs/tab_search_button.cc
-@@ -22,7 +22,7 @@
+@@ -23,7 +23,7 @@
  #include "ui/views/view_class_properties.h"
  
  namespace {
@@ -38,22 +30,13 @@
  constexpr int kCRTabSearchFlatCornerRadius = 4;
  constexpr int kComboButtonFlatCornerRadius = 0;
  }  // namespace
-@@ -49,18 +49,6 @@ TabSearchButton::TabSearchButton(
-   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_SEARCH));
+@@ -45,8 +45,7 @@ TabSearchButton::TabSearchButton(
    GetViewAccessibility().SetName(
        l10n_util::GetStringUTF16(IDS_ACCNAME_TAB_SEARCH));
--
--  if (!features::IsTabstripComboButtonEnabled() ||
--      features::HasTabstripComboButtonWithBackground()) {
--    SetForegroundFrameActiveColorId(kColorNewTabButtonForegroundFrameActive);
--    SetForegroundFrameInactiveColorId(
--        kColorNewTabButtonForegroundFrameInactive);
--    SetBackgroundFrameActiveColorId(kColorNewTabButtonCRBackgroundFrameActive);
--    SetBackgroundFrameInactiveColorId(
--        kColorNewTabButtonCRBackgroundFrameInactive);
--
--    UpdateColors();
--  }
- }
  
- TabSearchButton::~TabSearchButton() = default;
+-  if (!features::IsTabSearchMoving() ||
+-      features::HasTabstripComboButtonWithBackground()) {
++  if ((false)) {
+     SetForegroundFrameActiveColorId(kColorNewTabButtonForegroundFrameActive);
+     SetForegroundFrameInactiveColorId(
+         kColorNewTabButtonForegroundFrameInactive);

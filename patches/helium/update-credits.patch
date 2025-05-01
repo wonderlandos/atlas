@@ -9,7 +9,7 @@
  </div>
 --- a/tools/licenses/licenses.py
 +++ b/tools/licenses/licenses.py
-@@ -1013,6 +1013,16 @@ def GenerateCredits(file_template_file,
+@@ -1014,6 +1014,16 @@ def GenerateCredits(file_template_file,
    entries.append(
        MetadataToTemplateEntry(chromium_license_metadata, entry_template))
  
@@ -26,7 +26,7 @@
    entries_by_name = {}
    for path in third_party_dirs:
      try:
-@@ -1057,8 +1067,8 @@ def GenerateCredits(file_template_file,
+@@ -1058,8 +1068,8 @@ def GenerateCredits(file_template_file,
    reciprocal_template = codecs.open(reciprocal_template_file,
                                      encoding='utf-8').read()
    reciprocal_contents = EvaluateTemplate(reciprocal_template, {

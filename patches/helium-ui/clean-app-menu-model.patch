@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/toolbar/app_menu_model.cc
 +++ b/chrome/browser/ui/toolbar/app_menu_model.cc
-@@ -738,9 +738,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
+@@ -744,9 +744,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
      if (!sharing_hub::SharingIsDisabledByPolicy(browser->profile())) {
        AddItemWithStringIdAndVectorIcon(
            this, IDC_COPY_URL, IDS_APP_MENU_COPY_LINK, kLinkChromeRefreshIcon);
@@ -10,7 +10,7 @@
        AddItemWithStringIdAndVectorIcon(this, IDC_QRCODE_GENERATOR,
                                         IDS_APP_MENU_CREATE_QR_CODE,
                                         kQrCodeChromeRefreshIcon);
-@@ -882,13 +879,6 @@ void ToolsMenuModel::Build(Browser* brow
+@@ -894,13 +891,6 @@ void ToolsMenuModel::Build(Browser* brow
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -24,7 +24,7 @@
    AddSeparator(ui::NORMAL_SEPARATOR);
    if (!features::IsExtensionMenuInRootAppMenu()) {
      AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-@@ -1765,32 +1755,6 @@ void AppMenuModel::Build() {
+@@ -1786,32 +1776,6 @@ void AppMenuModel::Build() {
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -57,7 +57,7 @@
    if (!browser_->profile()->IsOffTheRecord()) {
      auto recent_tabs_sub_menu =
          std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
-@@ -1829,15 +1793,11 @@ void AppMenuModel::Build() {
+@@ -1850,15 +1814,11 @@ void AppMenuModel::Build() {
          kTabGroupsMenuItem);
    }
  
@@ -78,7 +78,7 @@
    AddItemWithStringIdAndVectorIcon(this, IDC_CLEAR_BROWSING_DATA,
                                     IDS_CLEAR_BROWSING_DATA,
                                     kTrashCanRefreshIcon);
-@@ -1868,9 +1828,6 @@ void AppMenuModel::Build() {
+@@ -1898,9 +1858,6 @@ void AppMenuModel::Build() {
                            lens::features::kLensOverlay));
    }
  
@@ -88,7 +88,7 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
-@@ -2018,6 +1975,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
+@@ -2048,6 +2005,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
  }
  
  bool AppMenuModel::AddSafetyHubMenuItem() {

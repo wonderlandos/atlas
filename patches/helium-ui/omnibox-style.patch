@@ -64,7 +64,7 @@
  
 -  const float half_row_height = OmniboxMatchCellView::kRowHeight / 2;
 -  gfx::RoundedCornersF radii = {0, half_row_height, half_row_height, 0};
-   return views::CreateThemedRoundedRectBackground(
+   return views::CreateRoundedRectBackground(
 -      GetOmniboxBackgroundColorId(part_state), radii);
 +      GetOmniboxBackgroundColorId(part_state),
 +      kIPHBackgroundBorderRadius);
@@ -151,7 +151,7 @@
    // smaller than this bounds; they'll be centered within the bounds.
 --- a/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
-@@ -569,7 +569,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
+@@ -572,7 +572,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
    // This extra padding is not added if the results section has no height
    // (result set is empty or all results are hidden).
    if (popup_height != 0) {

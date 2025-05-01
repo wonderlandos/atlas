@@ -16,7 +16,7 @@
  constexpr int kChromeRefreshTabHorizontalPadding = 8;
  
  class ChromeRefresh2023TabStyle : public TabStyle {
-@@ -104,11 +104,11 @@ int ChromeRefresh2023TabStyle::GetMinimu
+@@ -110,11 +110,11 @@ int ChromeRefresh2023TabStyle::GetMinimu
  }
  
  int ChromeRefresh2023TabStyle::GetTopCornerRadius() const {
@@ -68,16 +68,16 @@
  
 --- a/chrome/browser/ui/views/tabs/tab_style_views.cc
 +++ b/chrome/browser/ui/views/tabs/tab_style_views.cc
-@@ -200,8 +200,6 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
+@@ -201,8 +201,6 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
    CHECK(tab());
    const int stroke_thickness = GetStrokeThickness(force_active);
  
 -  const TabStyle::TabSelectionState state = GetSelectionState();
 -
    // We'll do the entire path calculation in aligned pixels.
-   // TODO(dfried): determine if we actually want to use |stroke_thickness| as
+   // TODO(dfried): determine if we actually want to use `stroke_thickness` as
    // the inset in this case.
-@@ -215,11 +213,7 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
+@@ -216,11 +214,7 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
    float extension_corner_radius = tab_style()->GetBottomCornerRadius() * scale;
  
    // Selected, hover, and inactive tab fills are a detached squarcle tab.
@@ -87,6 +87,6 @@
 -      path_type == TabStyle::PathType::kInteriorClip ||
 -      path_type == TabStyle::PathType::kHitTest) {
 +  if ((true)) {
-     float top_content_corner_radius = content_corner_radius;
-     float bottom_content_corner_radius = content_corner_radius;
-     float tab_height = GetLayoutConstant(TAB_HEIGHT) * scale;
+     float top_left_corner_radius = content_corner_radius;
+     float top_right_corner_radius = content_corner_radius;
+     float bottom_left_corner_radius = content_corner_radius;

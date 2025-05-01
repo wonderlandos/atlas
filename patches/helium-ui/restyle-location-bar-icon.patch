@@ -45,7 +45,7 @@
    separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                               separator_height);
  
-@@ -595,7 +591,7 @@ int IconLabelBubbleView::GetInternalSpac
+@@ -601,7 +597,7 @@ int IconLabelBubbleView::GetInternalSpac
    }
  
    constexpr int kDefaultInternalSpacingTouchUI = 10;
@@ -54,7 +54,7 @@
  
    return (ui::TouchUiController::Get()->touch_ui()
                ? kDefaultInternalSpacingTouchUI
-@@ -751,6 +747,10 @@ SkPath IconLabelBubbleView::GetHighlight
+@@ -752,6 +748,10 @@ SkPath IconLabelBubbleView::GetHighlight
        SkIntToScalar(radii.lower_right()), SkIntToScalar(radii.lower_right()),
        SkIntToScalar(radii.lower_left()),  SkIntToScalar(radii.lower_left())};
  
@@ -67,7 +67,7 @@
  
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -275,9 +275,9 @@ void LocationBarView::Init() {
+@@ -267,9 +267,9 @@ void LocationBarView::Init() {
        CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
  
    const gfx::FontList& omnibox_chip_font_list = typography_provider.GetFont(
@@ -79,7 +79,7 @@
  
    auto location_icon_view =
        std::make_unique<LocationIconView>(omnibox_chip_font_list, this, this);
-@@ -764,15 +764,15 @@ void LocationBarView::Layout(PassKey) {
+@@ -725,15 +725,15 @@ void LocationBarView::Layout(PassKey) {
    // The padding between the left edges of the location bar and the LHS icon
    // (e.g. the page info icon, the google G icon, the selected suggestion icon,
    // etc)

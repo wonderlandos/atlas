@@ -1,12 +1,11 @@
 --- a/chrome/browser/ui/views/extensions/extension_installed_bubble_view.cc
 +++ b/chrome/browser/ui/views/extensions/extension_installed_bubble_view.cc
-@@ -203,22 +203,6 @@ void ExtensionInstalledBubbleView::Init(
-   layout->set_cross_axis_alignment(
+@@ -216,21 +216,6 @@ void ExtensionInstalledBubbleView::Init(
        views::BoxLayout::CrossAxisAlignment::kStart);
    SetLayoutManager(std::move(layout));
--
+ 
 -  if (model_->show_how_to_use()) {
--    AddChildViewRaw(CreateLabel(model_->GetHowToUseText()));
+-    AddChildView(CreateLabel(model_->GetHowToUseText()));
 -  }
 -
 -  if (model_->show_key_binding()) {

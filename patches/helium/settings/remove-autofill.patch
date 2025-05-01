@@ -27,25 +27,12 @@
                section="autofill">
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -238,21 +238,6 @@ function createRoutes(): SettingsRoutes
+@@ -242,7 +242,7 @@ function createRoutes(): SettingsRoutes
      r.FONTS = r.APPEARANCE.createChild('/fonts');
    }
  
 -  if (visibility.autofill !== false) {
--    r.AUTOFILL = r.BASIC.createSection(
--        '/autofill', 'autofill', loadTimeData.getString('autofillPageTitle'));
--    r.PAYMENTS = r.AUTOFILL.createChild('/payments');
--    r.ADDRESSES = r.AUTOFILL.createChild('/addresses');
--
--    if (loadTimeData.getBoolean('autofillAiFeatureEnabled')) {
--      r.AUTOFILL_AI = r.AUTOFILL.createChild('/autofillAi');
--    }
--
--    // <if expr="is_win or is_macosx">
--    r.PASSKEYS = r.AUTOFILL.createChild('/passkeys');
--    // </if>
--  }
--
-   if (visibility.privacy !== false) {
-     r.PRIVACY = r.BASIC.createSection(
-         '/privacy', 'privacy', loadTimeData.getString('privacyPageTitle'));
++  if (visibility.autofill = false) {
+     r.AUTOFILL = r.BASIC.createSection(
+         '/autofill', 'autofill', loadTimeData.getString('autofillPageTitle'));
+     r.PAYMENTS = r.AUTOFILL.createChild('/payments');

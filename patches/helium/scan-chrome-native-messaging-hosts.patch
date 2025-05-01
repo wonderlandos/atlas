@@ -25,7 +25,7 @@
  
 --- a/chrome/common/chrome_paths.cc
 +++ b/chrome/common/chrome_paths.cc
-@@ -186,6 +186,11 @@ bool PathProvider(int key, base::FilePat
+@@ -190,6 +190,11 @@ bool PathProvider(int key, base::FilePat
        }
        create_dir = true;
        break;
@@ -37,7 +37,7 @@
      case chrome::DIR_USER_DOCUMENTS:
        if (!GetUserDocumentsDirectory(&cur)) {
          return false;
-@@ -575,11 +580,28 @@ bool PathProvider(int key, base::FilePat
+@@ -579,11 +584,28 @@ bool PathProvider(int key, base::FilePat
  #endif  // !BUILDFLAG(IS_MAC)
        break;
  
@@ -102,9 +102,9 @@
      return false;
 --- a/chrome/common/chrome_paths_internal.h
 +++ b/chrome/common/chrome_paths_internal.h
-@@ -25,6 +25,9 @@ namespace chrome {
- // DIR_USER_DATA has been overridden by a command-line option.
- bool GetDefaultUserDataDirectory(base::FilePath* result);
+@@ -35,6 +35,9 @@ std::optional<bool> IsUsingDefaultDataDi
+ // value for testing. Set to `std::nullopt` to restore the default behavior.
+ void SetUsingDefaultUserDataDirectoryForTesting(std::optional<bool> is_default);
  
 +// Get the path to where Chrome would make a user data directory.
 +bool GetChromeUserDataDirectory(base::FilePath* result);
@@ -157,7 +157,7 @@
      return false;
 --- a/chrome/common/chrome_paths_mac.mm
 +++ b/chrome/common/chrome_paths_mac.mm
-@@ -110,6 +110,10 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -111,6 +111,10 @@ bool GetDefaultUserDataDirectory(base::F
    return GetDefaultUserDataDirectoryForProduct(ProductDirName(), result);
  }
  
