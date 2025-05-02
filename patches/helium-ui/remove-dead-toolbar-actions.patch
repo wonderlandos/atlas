@@ -180,3 +180,17 @@
            .Build());
  
    root_action_item_->AddChild(
+--- a/chrome/browser/ui/views/translate/translate_bubble_controller.cc
++++ b/chrome/browser/ui/views/translate/translate_bubble_controller.cc
+@@ -43,8 +43,9 @@ base::WeakPtr<actions::ActionItem> GetTr
+   actions::ActionItem* translate_action_item =
+       actions::ActionManager::Get().FindAction(kActionShowTranslate,
+                                                root_action_item);
+-  CHECK(translate_action_item);
+-  return translate_action_item->GetAsWeakPtr();
++  if (translate_action_item)
++    return translate_action_item->GetAsWeakPtr();
++  return nullptr;
+ }
+ 
+ }  // namespace
