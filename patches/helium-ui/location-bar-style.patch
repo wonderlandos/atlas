@@ -1,6 +1,51 @@
 --- a/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
 +++ b/chrome/browser/ui/views/location_bar/icon_label_bubble_view.cc
-@@ -552,7 +552,9 @@ gfx::RoundedCornersF IconLabelBubbleView
+@@ -48,7 +48,7 @@ constexpr int kIconLabelBubbleSeparatorW
+ 
+ // Amount of space on either side of the separator that appears after the icon
+ // or label.
+-constexpr int kIconLabelBubbleSpaceBesideSeparator = 8;
++constexpr int kIconLabelBubbleSpaceBesideSeparator = 6;
+ 
+ // The length of the separator's fade animation. These values are empirical.
+ constexpr int kIconLabelBubbleFadeInDurationMs = 250;
+@@ -84,9 +84,7 @@ void IconLabelBubbleView::SeparatorView:
+   const SkColor separator_color = SkColorSetA(
+       owner_->delegate_->GetIconLabelBubbleSurroundingForegroundColor(),
+       owner_->delegate_->GetIconLabelBubbleSeparatorAlpha());
+-  const float x = GetLocalBounds().right() -
+-                  owner_->GetEndPaddingWithSeparator() -
+-                  1.0f / canvas->image_scale();
++  const float x = 0.5f;
+   canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
+                    gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
+ }
+@@ -239,8 +237,7 @@ void IconLabelBubbleView::Layout(PassKey
+   // value to be, since it won't be visible.
+   const int label_x =
+       image_container_view()->bounds().right() + GetInternalSpacing();
+-  int label_width = std::max(0, width() - label_x - bubble_trailing_padding -
+-                                    GetWidthBetweenIconAndSeparator());
++  int label_width = std::max(0, width() - label_x - bubble_trailing_padding);
+   label()->SetBounds(label_x, 0, label_width, height());
+ 
+   // The separator should be the same height as the icons.
+@@ -249,11 +246,10 @@ void IconLabelBubbleView::Layout(PassKey
+   separator_bounds.Inset(
+       gfx::Insets::VH((separator_bounds.height() - separator_height) / 2, 0));
+ 
+-  float separator_width =
+-      GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
+-  int separator_x = label()->GetText().empty()
++  float separator_width = 2;
++  int separator_x = (label()->GetText().empty()
+                         ? image_container_view()->bounds().right()
+-                        : label()->bounds().right();
++                        : label()->bounds().right()) + 2;
+   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
+                              separator_height);
+ 
+@@ -552,7 +548,9 @@ gfx::RoundedCornersF IconLabelBubbleView
    if (radii_.has_value()) {
      return radii_.value();
    }
@@ -11,6 +56,26 @@
  }
  
  void IconLabelBubbleView::SetCornerRadii(const gfx::RoundedCornersF& radii) {
+@@ -599,7 +597,7 @@ int IconLabelBubbleView::GetInternalSpac
+   }
+ 
+   constexpr int kDefaultInternalSpacingTouchUI = 10;
+-  constexpr int kDefaultInternalSpacingChromeRefresh = 4;
++  constexpr int kDefaultInternalSpacingChromeRefresh = 7;
+ 
+   return (ui::TouchUiController::Get()->touch_ui()
+               ? kDefaultInternalSpacingTouchUI
+@@ -750,6 +748,10 @@ SkPath IconLabelBubbleView::GetHighlight
+       SkIntToScalar(radii.lower_right()), SkIntToScalar(radii.lower_right()),
+       SkIntToScalar(radii.lower_left()),  SkIntToScalar(radii.lower_left())};
+ 
++  const SkRect new_rect = RectToSkRect(highlight_bounds);
++  const int layout_radius = GetLayoutConstant(LOCATION_BAR_CHILD_CORNER_RADIUS);
++  return SkPath().addRoundRect(new_rect, layout_radius, layout_radius);
++
+   return SkPath().addRoundRect(rect, sk_radii);
+ }
+ 
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
 @@ -215,7 +215,10 @@ LocationBarView::LocationBarView(Browser
@@ -25,6 +90,18 @@
  
  #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
      if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
+@@ -264,9 +267,9 @@ void LocationBarView::Init() {
+       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+ 
+   const gfx::FontList& omnibox_chip_font_list = typography_provider.GetFont(
+-      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_BODY_4_EMPHASIS);
++      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+   const gfx::FontList& page_action_font_list = typography_provider.GetFont(
+-      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_BODY_3_EMPHASIS);
++      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+ 
+   auto location_icon_view =
+       std::make_unique<LocationIconView>(omnibox_chip_font_list, this, this);
 @@ -478,7 +481,7 @@ bool LocationBarView::IsInitialized() co
  
  int LocationBarView::GetBorderRadius() const {
@@ -34,15 +111,28 @@
  }
  
  std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
-@@ -722,7 +725,7 @@ void LocationBarView::Layout(PassKey) {
+@@ -722,15 +725,15 @@ void LocationBarView::Layout(PassKey) {
    // The padding between the left edges of the location bar and the LHS icon
    // (e.g. the page info icon, the google G icon, the selected suggestion icon,
    // etc)
 -  int icon_left = 5;
-+  int icon_left = 4;
++  int icon_left = 2;
    // The padding between the LHS icon and the text.
-   int text_left = 8;
+-  int text_left = 8;
++  int text_left = 5;
    // Indentation to match the suggestion icons & texts.
+-  int icon_indent = 7;
+-  int text_indent = 6;
++  int icon_indent = 0;
++  int text_indent = 0;
+   // Indentation to match the suggestion icons & texts when in keyword mode.
+-  int icon_keyword_indent = 9;
+-  int text_keyword_indent = -9;
++  int icon_keyword_indent = 4;
++  int text_keyword_indent = -2;
+   // Indentation add padding when the permission chip is visible and replacing
+   // the LHS icon.
+   int text_overriding_permission_chip_indent = 0;
 @@ -1198,7 +1201,7 @@ int LocationBarView::GetMinimumTrailingW
  }
  
@@ -52,3 +142,32 @@
    gfx::Rect bounds_without_endcaps(GetLocalBounds());
    bounds_without_endcaps.Inset(gfx::Insets::VH(0, border_radius));
    return bounds_without_endcaps;
+--- a/chrome/browser/ui/views/location_bar/location_icon_view.cc
++++ b/chrome/browser/ui/views/location_bar/location_icon_view.cc
+@@ -110,7 +110,7 @@ SkColor LocationIconView::GetForegroundC
+ }
+ 
+ bool LocationIconView::ShouldShowSeparator() const {
+-  return false;
++  return ShouldShowLabel();
+ }
+ 
+ bool LocationIconView::ShouldShowLabelAfterAnimation() const {
+@@ -367,7 +367,7 @@ void LocationIconView::Update(bool suppr
+   // level.
+   UpdateLabelColors();
+ 
+-  if (force_hide_background) {
++  if (true) {
+     SetBackgroundColor(SK_ColorTRANSPARENT);
+   }
+ 
+@@ -453,7 +453,7 @@ gfx::Size LocationIconView::GetMinimumSi
+ }
+ 
+ void LocationIconView::SetBackgroundColor(SkColor color) {
+-  SetBackground(views::CreateRoundedRectBackground(color, GetCornerRadii()));
++  SetBackground(views::CreateRoundedRectBackground(SK_ColorTRANSPARENT, GetCornerRadii()));
+ }
+ 
+ BEGIN_METADATA(LocationIconView)
