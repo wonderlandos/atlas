@@ -66,6 +66,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #endif
    if (include_interactive_profiles) {
      importer::SourceProfile bookmarks_profile;
+@@ -227,5 +239,11 @@ void ImporterList::SourceProfilesLoaded(
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+ 
+   source_profiles_.assign(profiles.begin(), profiles.end());
++
++  for (auto& profile : source_profiles_) {
++    if (profile.services_supported & importer::PASSWORDS)
++      profile.services_supported ^= importer::PASSWORDS;
++  }
++
+   std::move(profiles_loaded_callback).Run();
+ }
 --- a/chrome/common/importer/BUILD.gn
 +++ b/chrome/common/importer/BUILD.gn
 @@ -3,11 +3,15 @@
