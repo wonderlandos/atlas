@@ -138,6 +138,7 @@ helium/core/disable-user-education-nags.patch
 helium/core/replace-default-profile-name.patch
 helium/core/disable-live-caption-completely.patch
 helium/core/remove-read-anything-context-menu-entry.patch
+helium/core/unthemify-onboarding-favicon.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch

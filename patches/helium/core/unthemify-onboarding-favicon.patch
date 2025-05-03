@@ -1,0 +1,10 @@
+--- a/chrome/browser/favicon/favicon_utils.cc
++++ b/chrome/browser/favicon/favicon_utils.cc
+@@ -192,6 +192,7 @@ bool ShouldThemifyFavicon(GURL url) {
+          url.host_piece() != chrome::kChromeUIVersionHost &&
+          url.host_piece() != chrome::kChromeUINetExportHost &&
+          url.host_piece() != chrome::kChromeUINewTabHost &&
++         url.host_piece() != chrome::kHeliumSetupHost &&
+          url.host_piece() != password_manager::kChromeUIPasswordManagerHost;
+ }
+ 
