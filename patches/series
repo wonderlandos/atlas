@@ -142,6 +142,7 @@ helium/remove-read-anything-context-menu-entry.patch
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
 helium/settings/fix-page-names.patch
+helium/settings/disable-safety-hub-page.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
