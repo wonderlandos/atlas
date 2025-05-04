@@ -5,7 +5,7 @@
      (stdout, retval) = _GetOutput([
          VERSION_TOOL, '-f', VERSION_FILE, '-t',
 -        '@MAJOR@.@MINOR@.@BUILD@.@PATCH@'
-+        '@HELIUM_MAJOR@.@HELIUM_MINOR@.@HELIUM_PLATFORM@.@HELIUM_PATCH@'
++        '@HELIUM_MAJOR@.@HELIUM_MINOR@.@HELIUM_PATCH@.@HELIUM_PLATFORM@'
      ])
  
      # If the command finished with a non-zero return code, then report the
@@ -14,7 +14,7 @@
          # BUILD will always be an increasing value, so BUILD_PATH gives us
          # something unique that meetings what LS wants.
 -        'CFBundleVersion': '@BUILD@.@PATCH@',
-+        'CFBundleVersion': '@MAJOR@.@BUILD@',
++        'CFBundleVersion': '@MAJOR@.@PATCH@',
      }
    else:
      version_format_for_key = {
@@ -24,7 +24,7 @@
  
  #define PRODUCT_NAME "@PRODUCT_FULLNAME@"
  #define PRODUCT_VERSION "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
-+#define HELIUM_PRODUCT_VERSION "@HELIUM_MAJOR@.@HELIUM_MINOR@.@HELIUM_PLATFORM@.@HELIUM_PATCH@"
++#define HELIUM_PRODUCT_VERSION "@HELIUM_MAJOR@.@HELIUM_MINOR@.@HELIUM_PATCH@.@HELIUM_PLATFORM@"
  #define LAST_CHANGE "@LASTCHANGE@"
  #define IS_OFFICIAL_BUILD @OFFICIAL_BUILD@
  
