@@ -1,5 +1,14 @@
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
+@@ -29,7 +29,7 @@ int GetLayoutConstant(LayoutConstant con
+     case BOOKMARK_BAR_HEIGHT: {
+       // The fixed margin ensures the bookmark buttons appear centered relative
+       // to the white space above and below.
+-      const int bookmark_bar_attached_vertical_margin = 6;
++      const int bookmark_bar_attached_vertical_margin = 3;
+       return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) +
+              bookmark_bar_attached_vertical_margin;
+     }
 @@ -52,7 +52,7 @@ int GetLayoutConstant(LayoutConstant con
      case LOCATION_BAR_CHILD_INTERIOR_PADDING:
        return 3;

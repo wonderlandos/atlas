@@ -1,3 +1,4 @@
+--- a/chrome/browser/ui/views/profiles/profile_menu_view.cc
 +++ b/chrome/browser/ui/views/profiles/profile_menu_view.cc
 @@ -186,7 +186,7 @@ void ProfileMenuView::BuildMenu() {
      BuildIdentity();

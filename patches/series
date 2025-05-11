@@ -184,3 +184,4 @@ helium/ui/square-interstitial-buttons.patch
 helium/ui/remove-reading-list-from-app-menu.patch
 helium/ui/center-window-on-launch.patch
 helium/ui/remove-devtools-annoyances.patch
+helium/ui/bookmarks-bar-padding.patch
