@@ -43,7 +43,7 @@ mkdir -p build/download_cache
 ```sh
 ./utils/domain_substitution.py apply -r domain_regex.list -f domain_substitution.list -c build/domsubcache.tar.gz build/src
 
-./utils/name_substitution.sh" sub build/src
+python3 ./utils/name_substitution.py" --sub -t build/src
 ```
 
 5. Build GN. If you are using `depot_tools` to checkout Chromium or you already have a GN binary, you should skip this step.
