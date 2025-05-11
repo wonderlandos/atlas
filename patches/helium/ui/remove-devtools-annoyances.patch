@@ -1,0 +1,37 @@
+--- a/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
++++ b/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
+@@ -1449,9 +1449,11 @@ export class RecorderController extends
+               }
+             ></devtools-button>
+             <div class="feedback">
++              <!--
+               <x-link class="x-link" href=${
+                 FEEDBACK_URL
+               } jslog=${VisualLogging.link('feedback').track({click: true})}>${i18nString(UIStrings.sendFeedback)}</x-link>
++              -->
+             </div>
+             <div class="separator"></div>
+             <devtools-shortcut-dialog
+--- a/third_party/devtools-frontend/src/front_end/entrypoints/devtools_app/devtools_app.ts
++++ b/third_party/devtools-frontend/src/front_end/entrypoints/devtools_app/devtools_app.ts
+@@ -26,7 +26,6 @@ import '../../panels/web_audio/web_audio
+ import '../../panels/webauthn/webauthn-meta.js';
+ import '../../panels/layer_viewer/layer_viewer-meta.js';
+ import '../../panels/recorder/recorder-meta.js';
+-import '../../panels/whats_new/whats_new-meta.js';
+ 
+ import * as Root from '../../core/root/root.js';
+ import * as Main from '../main/main.js';
+--- a/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
++++ b/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
+@@ -959,8 +959,10 @@ export class MainMenuItem implements UI.
+       }, {jslogContext: id});
+     }
+ 
++    /*
+     const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.help), false, 'help');
+     helpSubMenu.appendItemsAtLocation('mainMenuHelp');
++    */
+   }
+ }
+ 
