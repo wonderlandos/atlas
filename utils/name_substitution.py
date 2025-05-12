@@ -16,7 +16,7 @@ REPLACEMENT_REGEXES_STR = [
     (r'(\w+) Web( S|s)tore',  r'\1_unreplace Web Store'),
     (r'(\w+) Remote Desktop', r'\1_unreplace Remote Desktop'),
     (r'("BEGIN_LINK_CHROMIUM")(.*?Chromium)(.*?<ph name="END_LINK_CHROMIUM")', r'\1\2_unreplace\3'),
-    
+
     # main replacement(s)
     (r'(?:Google )?Chrom(e|ium)(?!\w)', r'Helium'),
 
@@ -85,7 +85,7 @@ def get_substitutable_files(tree):
             )
         )
 
-async def substitute_file(tree, path, tarball):
+async def substitute_file(tree, path, tarball = None):
     arcname = str(path.relative_to(tree))
     text = None
 
@@ -95,7 +95,8 @@ async def substitute_file(tree, path, tarball):
     replaced = replace(text)
     if text != replaced:
         print(f"Replaced strings in {arcname}")
-        tarball.add(path, arcname=arcname, recursive=False)
+        if tarball:
+            tarball.add(path, arcname=arcname, recursive=False)
         with open(path, 'w') as f:
             f.write(replaced)
 
@@ -107,11 +108,10 @@ def do_unsubstitution(tree, tarpath):
 async def do_substitution(tree, tarpath):
     with tarfile.open(str(tarpath), 'w:gz') if tarpath else open(os.devnull, 'w') as cache_tar:
         pending_substitutions = map(
-            lambda path: substitute_file(tree, path, cache_tar),
+            lambda path: substitute_file(tree, path, cache_tar if tarpath else None),
             get_substitutable_files(tree)
         )
         await asyncio.gather(*pending_substitutions)
-
 
 async def main():
     replacement_sanity()
