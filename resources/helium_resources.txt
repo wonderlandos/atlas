@@ -53,3 +53,5 @@ branding/product_icon/256x256.png chrome/app/theme/chromium/linux/product_logo_2
 
 branding/product_icon/16x16.png chrome/app/theme/default_100_percent/chromium/linux/product_logo_16.png
 branding/product_icon/32x32.png chrome/app/theme/default_100_percent/chromium/linux/product_logo_32.png
+
+branding/product_logo.svg chrome/app/theme/chromium/product_logo.svg
