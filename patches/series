@@ -147,6 +147,7 @@ helium/settings/remove-autofill.patch
 helium/settings/fix-page-names.patch
 helium/settings/disable-safety-hub-page.patch
 helium/settings/remove-results-help-link.patch
+helium/settings/remove-about-page-easter-egg.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
