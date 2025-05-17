@@ -188,3 +188,4 @@ helium/ui/remove-devtools-annoyances.patch
 helium/ui/bookmarks-bar-padding.patch
 helium/ui/profile-picker-cleanup.patch
 helium/ui/disable-tab-group-editor-footer.patch
+helium/ui/profile-customization-cleanup.patch
