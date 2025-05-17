@@ -37,7 +37,7 @@
        return touch_ui ? 3 : 8;
      case LOCATION_BAR_HEIGHT:
 -      return touch_ui ? 36 : 34;
-+      return touch_ui ? 36 : 32;
++      return touch_ui ? 36 : 30;
      case LOCATION_BAR_ICON_SIZE:
        return touch_ui ? 20 : 16;
      case LOCATION_BAR_LEADING_ICON_SIZE:
@@ -46,13 +46,13 @@
        return touch_ui ? 24 : 16;
      case TAB_HEIGHT:
 -      return 34 + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
-+      return 34;
++      return 33;
      case TAB_STRIP_HEIGHT:
        return GetLayoutConstant(TAB_HEIGHT) +
               GetLayoutConstant(TAB_STRIP_PADDING);
      case TAB_STRIP_PADDING:
 -      return 6;
-+      return 4;
++      return 3;
      case TAB_SEPARATOR_HEIGHT:
        return touch_ui ? 24 : 20;
      case TAB_PRE_TITLE_PADDING:
@@ -69,7 +69,7 @@
 +      return 0;
      case TOOLBAR_BUTTON_HEIGHT:
 -      return touch_ui ? 48 : 34;
-+      return touch_ui ? 48 : 32;
++      return touch_ui ? 48 : 28;
      case TOOLBAR_DIVIDER_CORNER_RADIUS:
        return 1;
      case TOOLBAR_DIVIDER_HEIGHT:
@@ -95,11 +95,11 @@
  
      case LOCATION_BAR_PAGE_INFO_ICON_PADDING:
 -      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(4, 4);
-+      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(4, 6);
++      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(4, 5);
  
      case LOCATION_BAR_PAGE_ACTION_ICON_PADDING:
 -      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(2, 2);
-+      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(2, 4);
++      return touch_ui ? gfx::Insets::VH(5, 10) : gfx::Insets::VH(2, 3);
  
      case TOOLBAR_ACTION_VIEW: {
        // TODO(afakhry): Unify all toolbar button sizes on all platforms.
@@ -108,7 +108,7 @@
  
      case TOOLBAR_BUTTON:
 -      return gfx::Insets(touch_ui ? 12 : 7);
-+      return gfx::Insets(touch_ui ? 12 : 5);
++      return gfx::Insets(touch_ui ? 12 : 4);
  
      case BROWSER_APP_MENU_CHIP_PADDING:
        if (touch_ui) {
