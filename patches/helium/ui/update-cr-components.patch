@@ -256,3 +256,34 @@
    min-width: 288px;
    opacity: 0;
    padding: 0 16px;
+--- a/ui/webui/resources/cr_components/customize_color_scheme_mode/segmented_button.css
++++ b/ui/webui/resources/cr_components/customize_color_scheme_mode/segmented_button.css
+@@ -9,15 +9,17 @@
+  * #css_wrapper_metadata_end */
+ 
+ :host {
+-  --segmented-button-height: 44px;
++  --segmented-button-height: 38px;
+   --segmented-button-width: 100%;
+   --segmented-button-padding: 2px;
++  --segmented-button-radius: 10px;
++  --segmented-button-child-radius: 8px;
+ }
+ 
+ cr-radio-group {
+-  border: 1px var(--color-segmented-button-border,
++  outline: 1px var(--color-segmented-button-border,
+       var(--cr-fallback-color-tonal-outline)) solid;
+-  border-radius: var(--segmented-button-height);
++  border-radius: var(--segmented-button-radius);
+   box-sizing: border-box;
+   display: grid;
+   grid-auto-columns: 1fr;
+@@ -25,6 +27,7 @@ cr-radio-group {
+   height: var(--segmented-button-height);
+   padding: var(--segmented-button-padding);
+   width: var(--segmented-button-width);
++  gap: var(--segmented-button-padding);
+ }
+ 
+ :host ::slotted(*) {
