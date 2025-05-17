@@ -267,7 +267,7 @@
    // This closure is run when the default search provider is set to Google.
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.cc
-@@ -0,0 +1,174 @@
+@@ -0,0 +1,197 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -277,6 +277,7 @@
 +#include <memory>
 +#include <string>
 +#include <vector>
++#include <map>
 +
 +#include "base/functional/bind.h"
 +#include "base/functional/callback.h"
@@ -316,8 +317,25 @@
 +
 +BangManager* BangManager::GetInstance() {
 +    return base::Singleton<
-+    BangManager,
-+        base::DefaultSingletonTraits<BangManager>>::get();
++        BangManager,
++        base::DefaultSingletonTraits<BangManager>
++    >::get();
++}
++
++BangCategory BangManager::GetCategoryForBang(size_t index) const {
++    if (auto category = category_map_.find(index - 1); category != category_map_.end()) {
++        return category->second;
++    }
++
++    return BANG_CATEGORY_OTHER;
++}
++
++BangCategory BangManager::GetCategoryFromJSONObject(std::string_view sc) const {
++    if (sc == "ai") {
++        return BANG_CATEGORY_AI;
++    }
++
++    return BANG_CATEGORY_OTHER;
 +}
 +
 +void BangManager::LoadBangs(
@@ -421,6 +439,11 @@
 +            continue;
 +        }
 +
++        auto bcategory = dict.FindString("sc");
++        if (bcategory) {
++            category_map_[index] = GetCategoryFromJSONObject(*bcategory);
++        }
++
 +        // We need to pass the URL here as-is, because otherwise URLs
 +        // which have the template in the path will have it %-encoded,
 +        // which will break everything.
@@ -444,7 +467,7 @@
 +
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.h
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,75 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -455,6 +478,7 @@
 +#include <memory>
 +#include <string>
 +#include <vector>
++#include <map>
 +
 +#include "base/memory/weak_ptr.h"
 +#include "base/functional/callback.h"
@@ -474,6 +498,11 @@
 +        std::string template_url;
 +    };
 +
++    enum BangCategory {
++        BANG_CATEGORY_OTHER = 0,
++        BANG_CATEGORY_AI,
++    };
++
 +    class BangManager {
 +    public:
 +        static BangManager* GetInstance();
@@ -481,6 +510,8 @@
 +        BangManager() = default;
 +        BangManager(const BangManager&) = delete;
 +        BangManager& operator=(const BangManager&) = delete;
++
++        BangCategory GetCategoryForBang(size_t index) const;
 +
 +        void LoadBangs(
 +            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -496,6 +527,7 @@
 +        );
 +        void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 +        void LoadManifestFromString(const std::string& manifest);
++        BangCategory GetCategoryFromJSONObject(std::string_view sc) const;
 +
 +        // Weak factory for callbacks.
 +        base::WeakPtrFactory<BangManager> weak_ptr_factory_{this};
@@ -505,6 +537,7 @@
 +        std::vector<Bang> bangs_;
 +        bool load_pending_;
 +        std::vector<base::OnceClosure> callbacks_;
++        std::map<size_t, BangCategory> category_map_;
 +    };
 +}
 +
