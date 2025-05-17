@@ -19,8 +19,12 @@
    contents_host_->layer()->SetRoundedCornerRadius(
        gfx::RoundedCornersF(corner_radius));
    contents_host_->layer()->SetIsFastRoundedCorner(true);
-@@ -287,7 +286,7 @@ gfx::Insets RoundedOmniboxResultsFrame::
-   if (ui::TouchUiController::Get()->touch_ui()) {
+@@ -284,10 +283,10 @@ int RoundedOmniboxResultsFrame::GetNonRe
+ 
+ // static
+ gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
+-  if (ui::TouchUiController::Get()->touch_ui()) {
++  if ((false)) {
      return gfx::Insets::TLBR(6, 1, 5, 1);
    }
 -  return gfx::Insets::VH(5, 6);
@@ -54,7 +58,7 @@
                OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION)));
    remove_suggestion_button_->SetProperty(views::kMarginsKey,
 -                                         gfx::Insets::TLBR(0, 0, 0, 16));
-+                                         gfx::Insets::TLBR(0, 0, 0, 8));
++                                         gfx::Insets::TLBR(0, 0, 0, 4));
    views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
    auto* const remove_focus_ring =
        views::FocusRing::Get(remove_suggestion_button_);
@@ -128,13 +132,13 @@
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
 -  int indent = 16 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
-+  int indent = 6.5f + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
++  int indent = 5 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
  
    return indent;
  }
  
  int OmniboxMatchCellView::GetTextIndent() const {
-+  return 35;
++  return 33;
    // Text indent is added to the `OmniboxMatchCellView::GetInsets()`. It is not
    // added to the image position & size.
  
@@ -145,7 +149,7 @@
    // The height of the standard 1-line match row. Multiline & IPH matches have
    // larger heights.
 -  static constexpr int kRowHeight = 40;
-+  static constexpr int kRowHeight = 32;
++  static constexpr int kRowHeight = 30;
  
    // The width of icon, answer, and entity image bounds. These images are
    // smaller than this bounds; they'll be centered within the bounds.
@@ -162,7 +166,28 @@
  
 --- a/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.cc
-@@ -152,6 +152,7 @@ class OmniboxSuggestionRowButton : publi
+@@ -70,7 +70,7 @@ class OmniboxSuggestionRowChip : public
+                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+ 
+     SetImageLabelSpacing(5);
+-    SetCustomPadding(gfx::Insets::VH(0, 7));
++    SetCustomPadding(gfx::Insets::VH(0, 6));
+     SetCornerRadius(100);  // Large number to ensure 100% rounded.
+ 
+     views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnHover(false);
+@@ -137,9 +137,8 @@ class OmniboxSuggestionRowButton : publi
+                              ui::EF_MIDDLE_MOUSE_BUTTON);
+     views::InstallPillHighlightPathGenerator(this);
+ 
+-    SetImageLabelSpacing(8);
+-    SetCustomPadding(ChromeLayoutProvider::Get()->GetInsetsMetric(
+-        INSETS_OMNIBOX_PILL_BUTTON));
++    SetImageLabelSpacing(6);
++    SetCustomPadding(gfx::Insets::VH(3, 8));
+     SetCornerRadius(GetLayoutConstant(TOOLBAR_CORNER_RADIUS));
+ 
+     auto* const ink_drop = views::InkDrop::Get(this);
+@@ -152,6 +151,7 @@ class OmniboxSuggestionRowButton : publi
        CHECK(v);
        return v->GetVisible() && v->popup_view_->GetSelection() == v->selection_;
      }));
@@ -170,7 +195,7 @@
      focus_ring->SetColorId(kColorOmniboxResultsFocusIndicator);
  
      GetViewAccessibility().SetRole(ax::mojom::Role::kListBoxOption);
-@@ -235,7 +236,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
+@@ -235,7 +235,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
      OmniboxPopupViewViews* popup_view,
      int model_index)
      : popup_view_(popup_view), model_index_(model_index) {
