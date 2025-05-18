@@ -22,7 +22,7 @@
            {ShapeContextTokens::kTextfieldRadius, ShapeSysTokens::kSmall},
            {ShapeContextTokens::kSidePanelContentRadius,
 -           ShapeSysTokens::kMedium},
-+           ShapeSysTokens::kXSmall},
++           ShapeSysTokens::kMediumSmall},
            {ShapeContextTokens::kSidePanelPageContentRadius,
             ShapeSysTokens::kSmall},
        });
