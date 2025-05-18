@@ -287,3 +287,23 @@
  }
  
  :host ::slotted(*) {
+--- a/ui/webui/resources/cr_components/customize_color_scheme_mode/segmented_button_option.css
++++ b/ui/webui/resources/cr_components/customize_color_scheme_mode/segmented_button_option.css
+@@ -9,7 +9,7 @@
+  * #css_wrapper_metadata_end */
+ 
+ #button {
+-  border-radius: var(--segmented-button-height);
++  border-radius: var(--segmented-button-child-radius);
+   box-sizing: border-box;
+   color: var(--color-segmented-button-foreground-unchecked,
+       var(--cr-fallback-color-on-surface-subtle));
+@@ -32,7 +32,7 @@
+ }
+ 
+ #button #overlay {
+-  border-radius: var(--segmented-button-height);
++  border-radius: var(--segmented-button-child-radius);
+   box-sizing: border-box;
+   height: 100%;
+   left: 0;
