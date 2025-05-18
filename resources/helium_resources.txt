@@ -55,3 +55,6 @@ branding/product_icon/16x16.png chrome/app/theme/default_100_percent/chromium/li
 branding/product_icon/32x32.png chrome/app/theme/default_100_percent/chromium/linux/product_logo_32.png
 
 branding/product_logo.svg chrome/app/theme/chromium/product_logo.svg
+
+branding/product_logo.icon chrome/app/vector_icons/browser_logo.icon
+branding/product_logo.icon components/omnibox/browser/vector_icons/product_chrome_refresh.icon
