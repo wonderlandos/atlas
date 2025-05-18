@@ -84,7 +84,7 @@
      </div>
 --- a/chrome/browser/resources/side_panel/customize_chrome/app.css
 +++ b/chrome/browser/resources/side_panel/customize_chrome/app.css
-@@ -23,10 +23,6 @@
+@@ -23,22 +23,18 @@
    display: block;
  }
  
@@ -95,7 +95,12 @@
  .sp-card {
    font-size: 12px;
    font-weight: 500;
-@@ -38,7 +34,7 @@ sp-heading {
+   line-height: 16px;
+-  max-width: calc(360px - 2 * var(--sp-body-padding));
++  max-width: calc(360px - var(--sp-body-padding));
+ }
+ 
+ #toolbarButton {
    border: none;
    color: var(--cr-primary-text-color);
    display: flex;
@@ -233,14 +238,19 @@
        title="$i18n{managedColorsTitle}"
 --- a/chrome/browser/resources/side_panel/customize_chrome/customize_toolbar/toolbar.css
 +++ b/chrome/browser/resources/side_panel/customize_chrome/customize_toolbar/toolbar.css
-@@ -21,15 +21,11 @@
+@@ -15,21 +15,14 @@
+   font-weight: 500;
+   line-height: 16px;
+   padding: var(--sp-card-padding);
+-  max-width: calc(360px - 2 * var(--sp-body-padding) - 2 * var(
+-      --sp-card-inline-padding));
+ }
  
  #pinningSelectionCard {
    /* Remove horizontal padding for highlight */
 -  padding: 16px 0px 0px 0px;
 -  max-width: calc(360px - 2 * var(--sp-body-padding));
 +  padding: 8px 0;
-+  max-width: calc(360px - 2 * 8px);
    overflow: hidden;
  }
  
@@ -251,7 +261,7 @@
  .choose-icons-row-container {
    align-items: center;
    display: flex;
-@@ -49,7 +45,7 @@
+@@ -49,7 +42,7 @@
  
  .sp-hr {
    width: auto;
@@ -260,7 +270,7 @@
  }
  
  .choose-icons-row {
-@@ -87,8 +83,8 @@
+@@ -87,8 +80,8 @@
  }
  
  #resetToDefaultButton {
@@ -271,7 +281,7 @@
  }
  
  #resetToDefaultIcon {
-@@ -105,7 +101,7 @@
+@@ -105,7 +98,7 @@
    color: var(--cr-secondary-text-color);
    font-weight: 400;
    text-align: center;
@@ -301,7 +311,7 @@
  .sp-card {
    background: var(--color-side-panel-card-background);
 -  border-radius: 12px;
-+  border-radius: 6px;
++  border-radius: 9px;
    display: block;
    margin: 0 var(--sp-body-padding);
    padding: var(--sp-card-block-padding) 0;
@@ -330,17 +340,30 @@
    margin: 0;
    width: 100%;
  }
+@@ -97,3 +106,7 @@ cr-dialog::part(dialog) {
+   border-radius: 12px;
+   box-shadow: var(--cr-elevation-3);
+ }
++
++cr-toolbar-search-field {
++  border-radius: 9px;
++}
 --- a/chrome/browser/resources/side_panel/shared/sp_shared_vars.css
 +++ b/chrome/browser/resources/side_panel/shared/sp_shared_vars.css
-@@ -8,7 +8,7 @@
+@@ -8,11 +8,11 @@
   * #css_wrapper_metadata_end */
  
  html {
 -  --sp-body-padding: 8px;
-+  --sp-body-padding: 6px;
++  --sp-body-padding: 4px;
    --sp-card-block-padding: 8px;
    --sp-card-inline-padding: 16px;
    --sp-card-padding: var(--sp-card-block-padding) var(--sp-card-inline-padding);
+-  --sp-card-gap: 12px;
++  --sp-card-gap: 8px;
+ 
+   /* Override default WebUI vars from cr_shared_vars. */
+   --cr-primary-text-color: var(--color-side-panel-card-primary-foreground);
 --- a/chrome/browser/resources/side_panel/shared/sp_heading.css
 +++ b/chrome/browser/resources/side_panel/shared/sp_heading.css
 @@ -15,12 +15,8 @@
