@@ -1,6 +1,18 @@
 --- a/chrome/browser/resources/settings/about_page/about_page.html
 +++ b/chrome/browser/resources/settings/about_page/about_page.html
-@@ -47,7 +47,7 @@
+@@ -5,10 +5,7 @@
+ 
+       .info-sections {
+         padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
+-      }
+-
+-      .info-section {
+-        margin-bottom: 12px;
++        line-height: 1.8;
+       }
+ 
+       .product-title {
+@@ -47,7 +44,7 @@
      </style>
      <settings-section page-title="$i18n{aboutPageTitle}" section="about">
        <div class="cr-row two-line first">
@@ -9,3 +21,11 @@
              srcset="chrome://theme/current-channel-logo@1x 1x,
                      chrome://theme/current-channel-logo@2x 2x"
              alt="$i18n{aboutProductLogoAlt}"
+@@ -145,7 +142,6 @@
+     <settings-section>
+       <div class="info-sections">
+         <div class="info-section">
+-          <div class="secondary">$i18n{aboutProductTitle}</div>
+           <div class="secondary">$i18n{aboutProductCopyright}</div>
+         </div>
+ 
