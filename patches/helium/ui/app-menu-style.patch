@@ -18,3 +18,12 @@
        item->set_vertical_margin(vertical_margin);
        item->SetMenuItemBackground(MenuItemView::MenuItemBackground(
            background_color_id, kBackgroundCornerRadius));
+@@ -1471,7 +1471,7 @@ void AppMenu::PopulateMenu(MenuItemView*
+       case IDC_SET_BROWSER_AS_DEFAULT: {
+         // Only highlight the default browser item when it is first in the
+         // AppMenu.
+-        if (i == 0) {
++        if ((false)) {
+           add_menu_row_background(
+               views::LayoutProvider::Get()->GetDistanceMetric(
+                   views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
