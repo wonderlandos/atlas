@@ -271,16 +271,15 @@
  
  :host {
 -  --segmented-button-height: 44px;
-+  --segmented-button-height: 38px;
++  --segmented-button-height: 40px;
    --segmented-button-width: 100%;
    --segmented-button-padding: 2px;
-+  --segmented-button-radius: 10px;
++  --segmented-button-radius: 11px;
 +  --segmented-button-child-radius: 8px;
  }
  
  cr-radio-group {
--  border: 1px var(--color-segmented-button-border,
-+  outline: 1px var(--color-segmented-button-border,
+   border: 1px var(--color-segmented-button-border,
        var(--cr-fallback-color-tonal-outline)) solid;
 -  border-radius: var(--segmented-button-height);
 +  border-radius: var(--segmented-button-radius);
