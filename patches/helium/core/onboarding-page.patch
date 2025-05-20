@@ -43,11 +43,13 @@
  #include "components/custom_handlers/protocol_handler_registry.h"
  #include "components/prefs/pref_service.h"
  #include "components/privacy_sandbox/privacy_sandbox_features.h"
-@@ -473,6 +475,13 @@ StartupBrowserCreatorImpl::DetermineStar
+@@ -473,6 +475,15 @@ StartupBrowserCreatorImpl::DetermineStar
    LaunchResult launch_result =
        tabs.empty() ? LaunchResult::kNormally : LaunchResult::kWithGivenUrls;
  
-+  if (!is_incognito_or_guest) {
++  bool no_first_run = base::CommandLine::ForCurrentProcess()->HasSwitch(
++                        switches::kNoFirstRun);
++  if (!is_incognito_or_guest && !no_first_run) {
 +    if (!profile_->GetPrefs()->GetBoolean(prefs::kHeliumDidOnboarding)) {
 +      UrlsToTabs({ GURL(chrome::kHeliumSetupURL) }, &tabs);
 +      return { tabs, LaunchResult::kWithGivenUrls };
