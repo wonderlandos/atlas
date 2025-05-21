@@ -41,7 +41,7 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
 
             try:
                 shutil.copyfile(source, dest)
-                print(f"Copied {line.split()[0]}")
+                print(f"Copied {line_parts[0]} to {line_parts[1]}")
             except Exception as e:
                 print(f"Error copying '{source}' to '{dest}': {e}")
 
