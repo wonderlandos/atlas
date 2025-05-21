@@ -10,8 +10,18 @@
        AddItemWithStringIdAndVectorIcon(this, IDC_QRCODE_GENERATOR,
                                         IDS_APP_MENU_CREATE_QR_CODE,
                                         kQrCodeChromeRefreshIcon);
-@@ -894,13 +891,6 @@ void ToolsMenuModel::Build(Browser* brow
+@@ -884,23 +881,8 @@ void ToolsMenuModel::Build(Browser* brow
+   AddItemWithStringIdAndVectorIcon(this, IDC_NAME_WINDOW, IDS_NAME_WINDOW,
+                                    kNameWindowIcon);
  
+-  if (CustomizeChromePageHandler::IsSupported(
+-          NtpCustomBackgroundServiceFactory::GetForProfile(browser->profile()),
+-          browser->profile())) {
+-    AddItemWithStringIdAndVectorIcon(this, IDC_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL,
+-                                     IDS_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL,
+-                                     kEditChromeRefreshIcon);
+-  }
+-
    AddSeparator(ui::NORMAL_SEPARATOR);
  
 -  AddItemWithStringIdAndVectorIcon(this, IDC_SHOW_READING_MODE_SIDE_PANEL,
@@ -24,7 +34,7 @@
    AddSeparator(ui::NORMAL_SEPARATOR);
    if (!features::IsExtensionMenuInRootAppMenu()) {
      AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-@@ -1786,32 +1776,6 @@ void AppMenuModel::Build() {
+@@ -1786,32 +1768,6 @@ void AppMenuModel::Build() {
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -57,7 +67,16 @@
    if (!browser_->profile()->IsOffTheRecord()) {
      auto recent_tabs_sub_menu =
          std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
-@@ -1850,15 +1814,11 @@ void AppMenuModel::Build() {
+@@ -1833,7 +1789,7 @@ void AppMenuModel::Build() {
+         std::make_unique<BookmarkSubMenuModel>(this, browser_);
+ 
+     AddSubMenuWithStringIdAndVectorIcon(
+-        this, IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_AND_LISTS_MENU,
++        this, IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_LIST_TITLE,
+         bookmark_sub_menu_model_.get(), kBookmarksListsMenuIcon);
+     SetElementIdentifierAt(GetIndexOfCommandId(IDC_BOOKMARKS_MENU).value(),
+                            kBookmarksMenuItem);
+@@ -1850,15 +1806,11 @@ void AppMenuModel::Build() {
          kTabGroupsMenuItem);
    }
  
@@ -78,7 +97,7 @@
    AddItemWithStringIdAndVectorIcon(this, IDC_CLEAR_BROWSING_DATA,
                                     IDS_CLEAR_BROWSING_DATA,
                                     kTrashCanRefreshIcon);
-@@ -1898,9 +1858,6 @@ void AppMenuModel::Build() {
+@@ -1898,9 +1850,6 @@ void AppMenuModel::Build() {
                            lens::features::kLensOverlay));
    }
  
@@ -88,7 +107,20 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
-@@ -2048,6 +2005,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
+@@ -1949,6 +1898,12 @@ void AppMenuModel::Build() {
+ #endif
+ #endif
+ 
++  if (!browser_->profile()->IsIncognitoProfile() && !browser_->profile()->IsGuestSession()) {
++    AddItemWithStringIdAndVectorIcon(this, IDC_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL,
++                                     IDS_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL,
++                                     kEditChromeRefreshIcon);
++  }
++
+   AddItemWithStringIdAndVectorIcon(this, IDC_OPTIONS, IDS_SETTINGS,
+                                    kSettingsMenuIcon);
+ 
+@@ -2048,6 +2003,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
  }
  
  bool AppMenuModel::AddSafetyHubMenuItem() {
