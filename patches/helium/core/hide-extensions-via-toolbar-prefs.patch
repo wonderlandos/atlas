@@ -80,21 +80,22 @@
    // The container (and extensions-menu button) should not be visible if we have
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -539,6 +539,13 @@ void ToolbarView::Init() {
+@@ -539,6 +539,14 @@ void ToolbarView::Init() {
      avatar_->SetVisible(show_avatar_button_.GetValue());
    }
  
-+  show_extensions_button_.Init(
-+      prefs::kShowExtensionsButton, prefs,
-+      base::BindRepeating(&ToolbarView::OnShowExtensionsButtonChanged,
-+                          base::Unretained(this)));
-+
-+  extensions_container_->SetVisible(show_extensions_button_.GetValue());
++  if (extensions_container_) {
++    show_extensions_button_.Init(
++        prefs::kShowExtensionsButton, prefs,
++        base::BindRepeating(&ToolbarView::OnShowExtensionsButtonChanged,
++                            base::Unretained(this)));
++    extensions_container_->SetVisible(show_extensions_button_.GetValue());
++  }
 +
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1252,6 +1259,10 @@ void ToolbarView::OnShowAvatarButtonChan
+@@ -1252,6 +1260,10 @@ void ToolbarView::OnShowAvatarButtonChan
    avatar_->SetVisible(show_avatar_button_.GetValue());
  }
  
