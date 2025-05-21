@@ -191,3 +191,5 @@ helium/ui/profile-picker-cleanup.patch
 helium/ui/disable-tab-group-editor-footer.patch
 helium/ui/profile-customization-cleanup.patch
 helium/ui/bangs-ui.patch
+helium/ui/thinner-infobar.patch
+helium/ui/reduce-text-button-height.patch
