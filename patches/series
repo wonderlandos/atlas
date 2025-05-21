@@ -195,3 +195,4 @@ helium/ui/profile-customization-cleanup.patch
 helium/ui/bangs-ui.patch
 helium/ui/thinner-infobar.patch
 helium/ui/reduce-text-button-height.patch
+helium/ui/fix-omnibox-tabs-icon.patch

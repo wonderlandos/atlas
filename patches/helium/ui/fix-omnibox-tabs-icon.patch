@@ -1,0 +1,19 @@
+--- a/components/omnibox/browser/autocomplete_match.cc
++++ b/components/omnibox/browser/autocomplete_match.cc
+@@ -63,6 +63,7 @@
+ #include "components/omnibox/browser/suggestion_answer.h"
+ #include "components/omnibox/browser/vector_icons.h"  // nogncheck
+ #include "components/vector_icons/vector_icons.h"     // nogncheck
++#include "chrome/app/vector_icons/vector_icons.h"     // nogncheck
+ #endif
+ 
+ constexpr bool kIsDesktop = !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS);
+@@ -643,7 +644,7 @@ const gfx::VectorIcon& AutocompleteMatch
+           case KEYWORD_MODE_STARTER_PACK_HISTORY:
+             return vector_icons::kHistoryChromeRefreshIcon;
+           case KEYWORD_MODE_STARTER_PACK_TABS:
+-            return omnibox::kProductChromeRefreshIcon;
++            return kTabIcon;
+           case KEYWORD_MODE_STARTER_PACK_GEMINI:
+             return omnibox::kSparkIcon;
+           default:
