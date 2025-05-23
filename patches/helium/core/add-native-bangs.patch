@@ -778,7 +778,19 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/omnibox/browser/omnibox_edit_model.cc
 +++ b/components/omnibox/browser/omnibox_edit_model.cc
-@@ -2928,9 +2928,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
+@@ -1711,7 +1711,10 @@ void OmniboxEditModel::InternalSetUserTe
+ 
+ std::u16string OmniboxEditModel::MaybeStripKeyword(
+     const std::u16string& text) const {
+-  return is_keyword_selected()
++  std::u16string actual_keyword = base::ToLowerASCII(
++    AutocompleteInput::SplitKeywordFromInput(text, false, nullptr));
++
++  return is_keyword_selected() && actual_keyword == keyword_
+              ? AutocompleteInput::SplitReplacementStringFromInput(text, false)
+              : text;
+ }
+@@ -2928,9 +2931,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
      return false;
  
    size_t keyword_length = new_text.length() - 1;
