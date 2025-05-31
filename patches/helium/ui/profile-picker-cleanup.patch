@@ -11,7 +11,7 @@
    <profile-picker-main-view id="mainView" slot="view">
 --- a/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.css
 +++ b/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.css
-@@ -146,11 +146,6 @@ cr-icon[icon='profiles:add'] {
+@@ -137,11 +137,6 @@ cr-icon[icon='profiles:add'] {
    --iron-icon-stroke-color: var(--google-grey-700);
  }
  
@@ -23,7 +23,7 @@
  #browseAsGuestButton > cr-icon {
    margin-inline-end: 0;
    --iron-icon-height: 24px;
-@@ -161,10 +156,10 @@ cr-checkbox {
+@@ -152,10 +147,10 @@ cr-checkbox {
    --cr-checkbox-label-color: var(--cr-secondary-text-color);
    --cr-checkbox-label-padding-start: 8px;
    justify-content: flex-end;
@@ -40,12 +40,12 @@
  #button-sign-in {
 --- a/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.html.ts
 +++ b/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.html.ts
-@@ -20,7 +20,7 @@ ${function() {
+@@ -19,7 +19,7 @@ ${function() {
+   }()}
  <div class="flex-container">
    <div class="title-container">
-     <div id="images-container">
--      <img id="product-logo" @click="${this.onProductLogoClick_}"
-+      <img id="product-logo"
-           src="product_logo.svg" role="presentation">
-       <img id="glic-logo" ?hidden="${!isGlicVersion()}" role="presentation">
-     </div>
+-    <img id="picker-logo" @click="${this.onProductLogoClick_}"
++    <img id="picker-logo"
+         src="picker_logo.svg" role="presentation">
+     <h1 class="title" .innerHTML="${this.getTitle_()}"></h1>
+     <div class="subtitle" .innerHTML="${this.getSubtitle_()}"></div>

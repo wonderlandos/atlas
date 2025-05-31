@@ -1,6 +1,6 @@
 --- a/components/bookmarks/browser/bookmark_utils.cc
 +++ b/components/bookmarks/browser/bookmark_utils.cc
-@@ -456,14 +456,14 @@ bool DoesBookmarkContainWords(const std:
+@@ -457,14 +457,14 @@ bool DoesBookmarkContainWords(const std:
  
  void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
    registry->RegisterBooleanPref(

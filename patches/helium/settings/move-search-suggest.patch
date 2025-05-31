@@ -74,7 +74,7 @@
        <settings-toggle-button id="priceEmailNotificationsToggle"
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.ts
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-@@ -252,14 +252,6 @@ export class SettingsPersonalizationOpti
+@@ -253,14 +253,6 @@ export class SettingsPersonalizationOpti
    }
    // </if>
  
@@ -91,7 +91,7 @@
    }
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -196,13 +196,6 @@ function createRoutes(): SettingsRoutes
+@@ -198,13 +198,6 @@ function createRoutes(): SettingsRoutes
      r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
      r.IMPORT_DATA.isNavigableDialog = true;
      // </if>

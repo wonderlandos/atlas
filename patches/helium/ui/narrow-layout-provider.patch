@@ -1,6 +1,6 @@
 --- a/ui/views/layout/layout_provider.cc
 +++ b/ui/views/layout/layout_provider.cc
-@@ -86,7 +86,7 @@ int LayoutProvider::GetDistanceMetric(in
+@@ -88,7 +88,7 @@ int LayoutProvider::GetDistanceMetric(in
      case DISTANCE_BUBBLE_PREFERRED_WIDTH:
        return kSmallDialogWidth;
      case DISTANCE_BUTTON_HORIZONTAL_PADDING:
@@ -9,7 +9,7 @@
      case DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
        return 112;
      case DISTANCE_CLOSE_BUTTON_MARGIN:
-@@ -201,19 +201,19 @@ ShapeSysTokens GetShapeSysToken(ShapeCon
+@@ -205,19 +205,19 @@ ShapeSysTokens GetShapeSysToken(ShapeCon
    static constexpr auto shape_token_map =
        base::MakeFixedFlatMap<ShapeContextTokens, ShapeSysTokens>({
            {ShapeContextTokens::kBadgeRadius, ShapeSysTokens::kXSmall},
@@ -35,7 +35,7 @@
            {ShapeContextTokens::kSidePanelPageContentRadius,
             ShapeSysTokens::kSmall},
        });
-@@ -229,6 +229,8 @@ int LayoutProvider::GetCornerRadiusMetri
+@@ -233,6 +233,8 @@ int LayoutProvider::GetCornerRadiusMetri
    switch (token) {
      case ShapeSysTokens::kXSmall:
        return 4;
@@ -46,7 +46,7 @@
      case ShapeSysTokens::kMediumSmall:
 --- a/ui/views/layout/layout_provider.h
 +++ b/ui/views/layout/layout_provider.h
-@@ -183,6 +183,7 @@ enum class ShapeSysTokens {
+@@ -188,6 +188,7 @@ enum class ShapeSysTokens {
    // mapping.
    kDefault,
    kXSmall,

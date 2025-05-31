@@ -114,7 +114,7 @@
  // DIR_ROAMING_USER_DATA has been overridden by a command-line option.
 --- a/chrome/common/chrome_paths_linux.cc
 +++ b/chrome/common/chrome_paths_linux.cc
-@@ -99,6 +99,23 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -101,6 +101,23 @@ bool GetDefaultUserDataDirectory(base::F
    return true;
  }
  

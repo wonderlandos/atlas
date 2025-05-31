@@ -36,7 +36,7 @@
    :host([modules-shown-to-user]) .customize-text {
 --- a/chrome/browser/resources/new_tab_page/app.html
 +++ b/chrome/browser/resources/new_tab_page/app.html
-@@ -1,95 +1,19 @@
+@@ -1,106 +1,16 @@
  <div id="content">
 -  ${this.lazyRender_ && this.microsoftModuleEnabled_ ? html`
 -    <iframe id="microsoftAuth" src="${this.microsoftAuthIframePath_}"></iframe>
@@ -103,9 +103,20 @@
 -        </ntp-modules-v2>
 -      `}
 -    ` : ''}
-     <ntp-footer .theme="${this.theme_}"></ntp-footer>
-     <!-- TODO(crbug.com/394906782): Move customize buttons and
-      theme attribution into the ntp footer. -->
+-    <a id="backgroundImageAttribution"
+-        href="${this.backgroundImageAttributionUrl_}"
+-        ?hidden="${!this.backgroundImageAttribution1_}">
+-      <div id="backgroundImageAttribution1Container">
+-        <div id="linkIcon" ?hidden="${!this.backgroundImageAttributionUrl_}"></div>
+-        <div id="backgroundImageAttribution1">
+-          ${this.backgroundImageAttribution1_}
+-        </div>
+-      </div>
+-      <div id="backgroundImageAttribution2"
+-          ?hidden="${!this.backgroundImageAttribution2_}">
+-        ${this.backgroundImageAttribution2_}
+-      </div>
+-    </a>
      <div id="customizeButtons">
 -      ${this.showWallpaperSearchButton_ ? html`
 -        <cr-button id="wallpaperSearchButton"
@@ -132,7 +143,7 @@
        </cr-button>
      </div>
      ${this.showThemeAttribution_() ? html`
-@@ -101,19 +25,3 @@
+@@ -112,19 +22,3 @@
    ` : ''}
    <div id="contentBottomSpacer"></div>
  </div>

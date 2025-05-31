@@ -1,24 +1,13 @@
 --- a/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
 +++ b/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
-@@ -235,12 +235,18 @@ void TabStripControlButton::UpdateBackgr
+@@ -234,6 +234,7 @@ void TabStripControlButton::UpdateBackgr
  }
  
  int TabStripControlButton::GetCornerRadius() const {
-+  if ((true))
-+    return 8;
-+
++  if ((true)) return 8;
    return features::IsTabSearchMoving() && !features::HasTabSearchToolbarButton()
               ? kTabstripComboButtonCornerRadius
               : TabStripControlButton::kButtonSize.width() / 2;
- }
- 
- int TabStripControlButton::GetFlatCornerRadius() const {
-+  if ((true))
-+    return 0;
-+
-   return features::IsTabSearchMoving() && !features::HasTabSearchToolbarButton()
-              ? kTabstripComboButtonFlatCornerRadius
-              : 0;
 --- a/chrome/browser/ui/views/tabs/tab_search_button.cc
 +++ b/chrome/browser/ui/views/tabs/tab_search_button.cc
 @@ -23,7 +23,7 @@

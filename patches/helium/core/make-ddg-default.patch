@@ -1,14 +1,15 @@
 --- a/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
 +++ b/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
-@@ -179,29 +179,13 @@
-     // *** *** *** *** WARNING *** *** *** ***
-     // TODO(crbug.com/343792225): Identify a way to resolve this problem and implement
-     // necessary changes.
+@@ -177,30 +177,14 @@
+       "id": 114
+     },
+ 
 -    "google": {
 +    "break_stuff_google": {
        "name": "Google",
        "keyword": "google.com",
        "favicon_url": "https://www.google.com/images/branding/product/ico/googleg_alldp.ico",
+       "base_builtin_resource_id": "IDR_SEARCH_ENGINE_GOOGLE",
 -      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:language}{google:prefetchSource}{google:searchClient}{google:sourceId}{google:contextualSearchVersion}ie={inputEncoding}",
 -      "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&gs_ri={google:suggestRid}&xssi=t&q={searchTerms}&{google:inputType}{google:omniboxFocusType}{google:cursorPosition}{google:currentPageUrl}{google:pageClassification}{google:clientCacheTimeToLive}{google:searchVersion}{google:sessionToken}{google:prefetchQuery}sugkey={google:suggestAPIKeyParameter}",
 -      "image_url": "{google:baseSearchByImageURL}upload",
@@ -36,12 +37,12 @@
  
 --- a/components/search_engines/template_url_prepopulate_data.cc
 +++ b/components/search_engines/template_url_prepopulate_data.cc
-@@ -296,7 +296,7 @@ void ClearPrepopulatedEnginesInPrefs(Pre
- std::unique_ptr<TemplateURLData> GetPrepopulatedFallbackSearch(
-     PrefService& prefs,
-     CountryId country_id) {
--  return FindPrepopulatedEngineInternal(prefs, country_id, google.id,
-+  return FindPrepopulatedEngineInternal(prefs, country_id, duckduckgo.id,
+@@ -222,7 +222,7 @@ std::unique_ptr<TemplateURLData> GetPrep
+     std::vector<const TemplateURLPrepopulateData::PrepopulatedEngine*>
+         regional_prepopulated_engines) {
+   return FindPrepopulatedEngineInternal(prefs, regional_prepopulated_engines,
+-                                        google.id,
++                                        duckduckgo.id,
                                          /*use_first_as_fallback=*/true);
  }
  
@@ -114,11 +115,12 @@
  
 --- a/third_party/search_engines_data/resources/definitions/regional_settings.json
 +++ b/third_party/search_engines_data/resources/definitions/regional_settings.json
-@@ -3,6 +3,17 @@
+@@ -3,6 +3,18 @@
  // found in the LICENSE file.
  {
    "elements": {
-+    "ZZ": {  // Default
++    "ZZ": {
++      // Default
 +      "search_engines": [
 +          "&duckduckgo",
 +          "&ecosia",
@@ -129,16 +131,16 @@
 +    }
 +  },
 +  "elements_ignored": {
-     "AE": {  // United Arab Emirates
+     "AE": {
+       // United Arab Emirates
        "search_engines": [
-           "&google",
-@@ -1335,7 +1346,8 @@
+@@ -1183,7 +1195,8 @@
      "name": "kRegionalSettings",
      "export_items": false,
      "map_key_type": "country_codes::CountryId",
 -    "map_aliases": {
 +    "map_aliases": {},
 +    "map_aliases_ignored": {
-       "AD": "ES",  // Andorra
-       "AF": "ZZ",  // Afghanistan
-       "AG": "ZZ",  // Antigua and Barbuda
+       "AD": "ES", // Andorra
+       "AF": "ZZ", // Afghanistan
+       "AG": "ZZ", // Antigua and Barbuda

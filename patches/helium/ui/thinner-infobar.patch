@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/chrome_layout_provider.cc
 +++ b/chrome/browser/ui/views/chrome_layout_provider.cc
-@@ -164,7 +164,7 @@ int ChromeLayoutProvider::GetDistanceMet
+@@ -160,7 +160,7 @@ int ChromeLayoutProvider::GetDistanceMet
      case DISTANCE_INFOBAR_HEIGHT:
        // Spec says height of button should be 36dp, vertical padding on both
        // top and bottom should be 8dp.

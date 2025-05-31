@@ -1,6 +1,6 @@
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -224,6 +224,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -226,6 +226,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
    // Custom toolbar button settings.
    (*s_allowlist)[::prefs::kShowAvatarButton] =
        settings_api::PrefType::kBoolean;
@@ -11,7 +11,7 @@
    (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -541,6 +541,7 @@
+@@ -545,6 +545,7 @@
    E(kActionHome, IDC_HOME) \
    E(kActionForward, IDC_FORWARD) \
    E(kActionAvatar, IDC_SHOW_AVATAR_MENU) \
@@ -32,7 +32,7 @@
    registry->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
 --- a/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
 +++ b/chrome/browser/ui/toolbar/pinned_toolbar/pinned_toolbar_actions_model.cc
-@@ -221,6 +221,7 @@ void PinnedToolbarActionsModel::ResetToD
+@@ -217,6 +217,7 @@ void PinnedToolbarActionsModel::ResetToD
    pref_service_->ClearPref(prefs::kShowHomeButton);
    pref_service_->ClearPref(prefs::kShowForwardButton);
    pref_service_->ClearPref(prefs::kShowAvatarButton);
@@ -40,7 +40,7 @@
    pref_service_->ClearPref(prefs::kPinnedActions);
  }
  
-@@ -237,7 +238,12 @@ bool PinnedToolbarActionsModel::IsDefaul
+@@ -233,7 +234,12 @@ bool PinnedToolbarActionsModel::IsDefaul
    const bool avatar_is_default =
        pref_service_->GetDefaultPrefValue(prefs::kShowAvatarButton)
            ->GetBool() == pref_service_->GetBoolean(prefs::kShowAvatarButton);
@@ -56,7 +56,7 @@
  void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
 --- a/chrome/browser/ui/views/extensions/extensions_toolbar_container.cc
 +++ b/chrome/browser/ui/views/extensions/extensions_toolbar_container.cc
-@@ -548,7 +548,9 @@ void ExtensionsToolbarContainer::AnchorA
+@@ -550,7 +550,9 @@ void ExtensionsToolbarContainer::AnchorA
  
    // Fix the position of widgets. Without this fix, extension-installed-bubble
    // and extension-uninstall-dialog may be out of the window border on Linux.
@@ -67,7 +67,7 @@
    {
      views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
        ->toolbar_button_provider()->GetAppMenuButton();
-@@ -955,7 +957,9 @@ void ExtensionsToolbarContainer::UpdateC
+@@ -957,7 +959,9 @@ void ExtensionsToolbarContainer::UpdateC
  }
  
  bool ExtensionsToolbarContainer::ShouldContainerBeVisible() const {
@@ -80,7 +80,7 @@
    // The container (and extensions-menu button) should not be visible if we have
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -539,6 +539,14 @@ void ToolbarView::Init() {
+@@ -541,6 +541,14 @@ void ToolbarView::Init() {
      avatar_->SetVisible(show_avatar_button_.GetValue());
    }
  
@@ -95,7 +95,7 @@
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1252,6 +1260,10 @@ void ToolbarView::OnShowAvatarButtonChan
+@@ -1255,6 +1263,10 @@ void ToolbarView::OnShowAvatarButtonChan
    avatar_->SetVisible(show_avatar_button_.GetValue());
  }
  
@@ -138,7 +138,7 @@
    kShowPaymentMethods,
 --- a/chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler.cc
 +++ b/chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler.cc
-@@ -51,6 +51,8 @@ MojoActionForChromeAction(actions::Actio
+@@ -52,6 +52,8 @@ MojoActionForChromeAction(actions::Actio
        return side_panel::customize_chrome::mojom::ActionId::kForward;
      case kActionAvatar:
        return side_panel::customize_chrome::mojom::ActionId::kAvatar;
@@ -147,7 +147,7 @@
      case kActionNewIncognitoWindow:
        return side_panel::customize_chrome::mojom::ActionId::kNewIncognitoWindow;
      case kActionShowPasswordsBubbleOrPage:
-@@ -110,6 +112,8 @@ std::optional<actions::ActionId> ChromeA
+@@ -113,6 +115,8 @@ std::optional<actions::ActionId> ChromeA
        return kActionForward;
      case side_panel::customize_chrome::mojom::ActionId::kAvatar:
        return kActionAvatar;
@@ -156,7 +156,7 @@
      case side_panel::customize_chrome::mojom::ActionId::kNewIncognitoWindow:
        return kActionNewIncognitoWindow;
      case side_panel::customize_chrome::mojom::ActionId::kShowPasswordManager:
-@@ -173,6 +177,10 @@ CustomizeToolbarHandler::CustomizeToolba
+@@ -182,6 +186,10 @@ CustomizeToolbarHandler::CustomizeToolba
        prefs::kShowAvatarButton,
        base::BindRepeating(&CustomizeToolbarHandler::OnShowAvatarButtonChanged,
                            base::Unretained(this)));
@@ -167,9 +167,9 @@
  }
  
  CustomizeToolbarHandler::~CustomizeToolbarHandler() = default;
-@@ -219,6 +227,17 @@ void CustomizeToolbarHandler::ListAction
-               .Rasterize(&provider),
-           scale_factor)));
+@@ -240,6 +248,19 @@ void CustomizeToolbarHandler::ListAction
+ 
+   actions.push_back(std::move(avatar_action));
  
 +  auto extensions_action = side_panel::customize_chrome::mojom::Action::New(
 +      MojoActionForChromeAction(kActionExtensions).value(),
@@ -182,18 +182,12 @@
 +              .Rasterize(&provider),
 +          scale_factor)));
 +
-   const raw_ptr<BrowserWindowInterface> bwi =
-       webui::GetBrowserWindowInterface(web_contents_);
-   CHECK(bwi);
-@@ -269,6 +288,7 @@ void CustomizeToolbarHandler::ListAction
-   actions.push_back(std::move(home_action));
-   actions.push_back(std::move(forward_action));
-   actions.push_back(std::move(avatar_action));
 +  actions.push_back(std::move(extensions_action));
-   add_action(kActionNewIncognitoWindow,
-              side_panel::customize_chrome::mojom::CategoryId::kNavigation);
- 
-@@ -361,6 +381,9 @@ void CustomizeToolbarHandler::PinAction(
++
+   if (base::FeatureList::IsEnabled(features::kSideBySide)) {
+     auto split_tab_action = side_panel::customize_chrome::mojom::Action::New(
+         MojoActionForChromeAction(kActionSplitTab).value(),
+@@ -393,6 +414,9 @@ void CustomizeToolbarHandler::PinAction(
      case kActionAvatar:
        prefs()->SetBoolean(prefs::kShowAvatarButton, pin);
        break;
@@ -203,7 +197,7 @@
      default:
        model_->UpdatePinnedState(chrome_action.value(), pin);
        const std::optional<std::string> metrics_name =
-@@ -414,6 +437,11 @@ void CustomizeToolbarHandler::OnShowAvat
+@@ -451,6 +475,11 @@ void CustomizeToolbarHandler::OnShowAvat
                          prefs()->GetBoolean(prefs::kShowAvatarButton));
  }
  
@@ -217,9 +211,9 @@
  }
 --- a/chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler.h
 +++ b/chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar_handler.h
-@@ -45,6 +45,7 @@ class CustomizeToolbarHandler
-   void OnShowHomeButtonChanged();
+@@ -55,6 +55,7 @@ class CustomizeToolbarHandler
    void OnShowForwardButtonChanged();
+   void OnPinSplitTabButtonChanged();
    void OnShowAvatarButtonChanged();
 +  void OnShowExtensionsButtonChanged();
    void OnActionItemChanged();
@@ -227,7 +221,7 @@
    PrefService* prefs() const;
 --- a/chrome/common/pref_names.h
 +++ b/chrome/common/pref_names.h
-@@ -1319,6 +1319,10 @@ inline constexpr char kShowForwardButton
+@@ -1328,6 +1328,10 @@ inline constexpr char kPinSplitTabButton
  // toolbar.
  inline constexpr char kShowAvatarButton[] = "helium.browser.show_avatar_button";
  

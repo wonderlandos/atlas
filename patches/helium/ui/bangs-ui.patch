@@ -32,15 +32,15 @@
      "//printing/buildflags",
 --- a/components/omnibox/browser/autocomplete_controller.h
 +++ b/components/omnibox/browser/autocomplete_controller.h
-@@ -34,6 +34,7 @@
- #include "components/omnibox/browser/omnibox_log.h"
+@@ -35,6 +35,7 @@
  #include "components/omnibox/browser/open_tab_provider.h"
+ #include "components/omnibox/browser/tab_group_provider.h"
  #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 +#include "components/search_engines/template_url_bang_manager.h"
  #include "third_party/omnibox_proto/types.pb.h"
  
  class ClipboardProvider;
-@@ -529,6 +530,8 @@ class AutocompleteController : public Au
+@@ -538,6 +539,8 @@ class AutocompleteController : public Au
    // A list of all providers.
    Providers providers_;
  
@@ -51,7 +51,7 @@
    raw_ptr<HistoryQuickProvider> history_quick_provider_;
 --- a/components/omnibox/browser/autocomplete_controller.cc
 +++ b/components/omnibox/browser/autocomplete_controller.cc
-@@ -87,6 +87,7 @@
+@@ -89,6 +89,7 @@
  #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
  #include "components/search_engines/search_engine_type.h"
  #include "components/search_engines/template_url.h"
@@ -59,11 +59,11 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -1766,7 +1767,21 @@ void AutocompleteController::UpdateKeywo
-           // name -- don't assume that the normal search keyword description
-           // is applicable.
+@@ -1803,7 +1804,21 @@ void AutocompleteController::UpdateKeywo
+           // - For contextual search matches, the description indicates the
+           //   alternative UX because they're opened in the side panel.
            i->description = template_url->AdjustedShortNameForLocaleDirection();
--          if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
+-          if (is_contextual) {
 +          if (template_url->bang_id() > 0) {
 +            int description_template = -1;
 +
@@ -78,10 +78,10 @@
 +
 +            i->description = l10n_util::GetStringFUTF16(
 +                description_template, i->description);
-+          } else if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION) {
-             i->description = l10n_util::GetStringFUTF16(
-                 IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
-           }
++          } else if (is_contextual) {
+             i->description = l10n_util::GetStringUTF16(
+                 IDS_AUTOCOMPLETE_SEARCH_IN_SIDE_PANEL_DESCRIPTION);
+           } else if (template_url->type() !=
 --- a/components/omnibox/browser/keyword_provider.h
 +++ b/components/omnibox/browser/keyword_provider.h
 @@ -22,6 +22,7 @@
@@ -188,7 +188,7 @@
  #include "components/strings/grit/components_strings.h"
  #include "components/vector_icons/vector_icons.h"
  #include "third_party/metrics_proto/omnibox_event.pb.h"
-@@ -345,6 +346,27 @@ void OmniboxSuggestionButtonRowView::Upd
+@@ -361,6 +362,27 @@ void OmniboxSuggestionButtonRowView::Upd
        const auto names = SelectedKeywordView::GetKeywordLabelNames(
            keyword,
            popup_view_->controller()->client()->GetTemplateURLService());

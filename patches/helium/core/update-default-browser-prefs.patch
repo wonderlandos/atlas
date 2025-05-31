@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -62,7 +62,7 @@ void RegisterBrowserPrefs(PrefRegistrySi
+@@ -50,7 +50,7 @@ void RegisterBrowserPrefs(PrefRegistrySi
  
    registry->RegisterBooleanPref(prefs::kHoverCardImagesEnabled, true);
  

@@ -93,7 +93,7 @@
        url.SchemeIs(url::kTraceScheme) ||
 --- a/chrome/browser/ui/browser_navigator.cc
 +++ b/chrome/browser/ui/browser_navigator.cc
-@@ -553,7 +553,8 @@ std::unique_ptr<content::WebContents> Cr
+@@ -549,7 +549,8 @@ std::unique_ptr<content::WebContents> Cr
  bool IsHostAllowedInIncognito(const GURL& url) {
    std::string scheme = url.scheme();
    std::string_view host = url.host_piece();
@@ -103,7 +103,7 @@
      return true;
    }
  
-@@ -638,6 +639,12 @@ base::WeakPtr<content::NavigationHandle>
+@@ -634,6 +635,12 @@ base::WeakPtr<content::NavigationHandle>
      }
    }
  
@@ -118,7 +118,7 @@
    // handling.
 --- a/chrome/browser/extensions/extension_tab_util.cc
 +++ b/chrome/browser/extensions/extension_tab_util.cc
-@@ -1032,7 +1032,8 @@ bool ExtensionTabUtil::IsKillURL(const G
+@@ -1062,7 +1062,8 @@ bool ExtensionTabUtil::IsKillURL(const G
      return true;
    }
  
@@ -130,7 +130,7 @@
  
 --- a/chrome/browser/ui/browser.cc
 +++ b/chrome/browser/ui/browser.cc
-@@ -2182,6 +2182,13 @@ void Browser::SetContentsBounds(WebConte
+@@ -2212,6 +2212,13 @@ void Browser::SetContentsBounds(WebConte
  }
  
  void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
@@ -144,7 +144,7 @@
    std::vector<StatusBubble*> status_bubbles = GetStatusBubbles();
    for (StatusBubble* status_bubble : status_bubbles) {
      StatusBubbleViews* status_bubble_views =
-@@ -2189,7 +2196,7 @@ void Browser::UpdateTargetURL(WebContent
+@@ -2219,7 +2226,7 @@ void Browser::UpdateTargetURL(WebContent
      ContentsWebView* anchor =
          static_cast<ContentsWebView*>(status_bubble_views->base_view());
      if (source == anchor->GetWebContents()) {
@@ -163,7 +163,7 @@
  #include "net/cookies/cookie_util.h"
  #include "third_party/icu/source/common/unicode/ubidi.h"
  #include "third_party/metrics_proto/omnibox_event.pb.h"
-@@ -594,6 +595,12 @@ void OmniboxEditModel::AdjustTextForCopy
+@@ -597,6 +598,12 @@ void OmniboxEditModel::AdjustTextForCopy
      *url_from_text = controller_->client()->GetNavigationEntryURL();
      *write_url = true;
  

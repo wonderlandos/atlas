@@ -1,6 +1,6 @@
 --- a/third_party/search_engines_data/resources/definitions/regional_settings.json
 +++ b/third_party/search_engines_data/resources/definitions/regional_settings.json
-@@ -9,7 +9,8 @@
+@@ -10,7 +10,8 @@
            "&ecosia",
            "&bing",
            "&break_stuff_google",

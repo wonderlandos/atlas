@@ -34,7 +34,7 @@
  #endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_DATA_UTIL_H_
 --- a/components/search_engines/BUILD.gn
 +++ b/components/search_engines/BUILD.gn
-@@ -36,6 +36,8 @@ static_library("search_engines") {
+@@ -35,6 +35,8 @@ static_library("search_engines") {
      "search_terms_data.h",
      "template_url.cc",
      "template_url.h",
@@ -43,7 +43,7 @@
      "template_url_data.cc",
      "template_url_data.h",
      "template_url_data_util.cc",
-@@ -80,6 +82,7 @@ static_library("search_engines") {
+@@ -79,6 +81,7 @@ static_library("search_engines") {
      "//components/country_codes",
      "//components/crash/core/common:crash_key",
      "//components/database_utils",
@@ -142,7 +142,7 @@
            search_engine_choice_service,
            prepopulate_data_resolver,
            /*search_terms_data=*/std::make_unique<SearchTermsData>(),
-@@ -622,6 +632,10 @@ bool TemplateURLService::ShowInActivesLi
+@@ -624,6 +634,10 @@ bool TemplateURLService::ShowInActivesLi
  }
  
  bool TemplateURLService::HiddenFromLists(const TemplateURL* t_url) const {
@@ -152,7 +152,7 @@
 +
    switch (t_url->policy_origin()) {
      case TemplateURLData::PolicyOrigin::kNoPolicy:
-       // Hide if the preferred search engine for the keyword is created by
+       // Hide if another engine (e.g., one set by policy) takes precedence for
 @@ -1481,11 +1495,37 @@ void TemplateURLService::Load() {
  
    if (web_data_service_) {
@@ -191,7 +191,7 @@
  base::CallbackListSubscription TemplateURLService::RegisterOnLoadedCallback(
      base::OnceClosure callback) {
    return loaded_ ? base::CallbackListSubscription()
-@@ -2356,6 +2396,13 @@ void TemplateURLService::Init() {
+@@ -2478,6 +2518,13 @@ void TemplateURLService::Init() {
              base::Unretained(this)));
    }
  
@@ -220,7 +220,7 @@
  #if BUILDFLAG(IS_ANDROID)
  #include "base/android/scoped_java_ref.h"
  #endif
-@@ -146,6 +148,7 @@ class TemplateURLService final : public
+@@ -150,6 +152,7 @@ class TemplateURLService final : public
  
    TemplateURLService(
        PrefService& prefs,
@@ -228,7 +228,7 @@
        search_engines::SearchEngineChoiceService& search_engine_choice_service,
        TemplateURLPrepopulateData::Resolver& prepopulate_data_resolver,
        std::unique_ptr<SearchTermsData> search_terms_data,
-@@ -157,6 +160,7 @@ class TemplateURLService final : public
+@@ -161,6 +164,7 @@ class TemplateURLService final : public
    // some template URL data.
    explicit TemplateURLService(
        PrefService& prefs,
@@ -236,7 +236,7 @@
        search_engines::SearchEngineChoiceService& search_engine_choice_service,
        TemplateURLPrepopulateData::Resolver& prepopulate_data_resolver,
        base::span<const TemplateURLService::Initializer> initializers = {});
-@@ -476,6 +480,8 @@ class TemplateURLService final : public
+@@ -480,6 +484,8 @@ class TemplateURLService final : public
    // OnTemplateURLServiceChanged.
    void Load();
  
@@ -245,7 +245,7 @@
    // Registers a callback to be called when the service has loaded.
    //
    // If the service has already loaded, this function does nothing.
-@@ -704,6 +710,8 @@ class TemplateURLService final : public
+@@ -708,6 +714,8 @@ class TemplateURLService final : public
  
    void Init();
  
@@ -254,7 +254,7 @@
    // Simulate a loaded `TemplateURLService`.
    void ApplyInitializersForTesting(
        base::span<const TemplateURLService::Initializer> initializers);
-@@ -905,6 +913,10 @@ class TemplateURLService final : public
+@@ -911,6 +919,10 @@ class TemplateURLService final : public
    // Service used to store entries.
    scoped_refptr<KeywordWebDataService> web_data_service_;
  
@@ -646,7 +646,7 @@
  size_t TemplateURLData::EstimateMemoryUsage() const {
 --- a/components/search_engines/template_url_data.h
 +++ b/components/search_engines/template_url_data.h
-@@ -253,6 +253,9 @@ struct TemplateURLData {
+@@ -256,6 +256,9 @@ struct TemplateURLData {
    // starter_pack_id > 0.
    int starter_pack_id{0};
  
@@ -704,7 +704,7 @@
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1841,6 +1841,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1876,6 +1876,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
@@ -716,7 +716,7 @@
        {"heliumExtProxyToggleDescription",
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2113,6 +2113,12 @@
+@@ -2112,6 +2112,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
      When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
    </message>
@@ -755,7 +755,7 @@
      registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -347,6 +347,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -349,6 +349,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
        settings_api::PrefType::kBoolean;
    (*s_allowlist)[::prefs::kHeliumExtProxyEnabled] =
        settings_api::PrefType::kBoolean;
@@ -778,7 +778,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/omnibox/browser/omnibox_edit_model.cc
 +++ b/components/omnibox/browser/omnibox_edit_model.cc
-@@ -1711,7 +1711,10 @@ void OmniboxEditModel::InternalSetUserTe
+@@ -1722,7 +1722,10 @@ void OmniboxEditModel::InternalSetUserTe
  
  std::u16string OmniboxEditModel::MaybeStripKeyword(
      const std::u16string& text) const {
@@ -790,7 +790,7 @@
               ? AutocompleteInput::SplitReplacementStringFromInput(text, false)
               : text;
  }
-@@ -2928,9 +2931,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
+@@ -2976,9 +2979,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
      return false;
  
    size_t keyword_length = new_text.length() - 1;

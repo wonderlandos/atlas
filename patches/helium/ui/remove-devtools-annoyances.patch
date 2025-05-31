@@ -1,6 +1,6 @@
 --- a/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
 +++ b/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
-@@ -1449,9 +1449,11 @@ export class RecorderController extends
+@@ -1453,9 +1453,11 @@ export class RecorderController extends
                }
              ></devtools-button>
              <div class="feedback">
@@ -24,7 +24,7 @@
  import * as Main from '../main/main.js';
 --- a/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
 +++ b/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
-@@ -959,8 +959,10 @@ export class MainMenuItem implements UI.
+@@ -967,8 +967,10 @@ export class MainMenuItem implements UI.
        }, {jslogContext: id});
      }
  

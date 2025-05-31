@@ -11,7 +11,7 @@
      "G",            IDC_FIND_NEXT,              VIRTKEY, CONTROL
 --- a/chrome/browser/global_keyboard_shortcuts_mac.mm
 +++ b/chrome/browser/global_keyboard_shortcuts_mac.mm
-@@ -144,7 +144,7 @@ const std::vector<KeyboardShortcutData>&
+@@ -145,7 +145,7 @@ const std::vector<KeyboardShortcutData>&
  
        {true,  true,  false, false, kVK_ANSI_M,            IDC_SHOW_AVATAR_MENU},
        {true,  false, false, true,  kVK_ANSI_L,            IDC_SHOW_DOWNLOADS},
@@ -33,7 +33,7 @@
       ui::VKEY_N},
 --- a/chrome/browser/ui/views/accelerator_table.cc
 +++ b/chrome/browser/ui/views/accelerator_table.cc
-@@ -257,7 +257,7 @@ const AcceleratorMapping kDevToolsAccele
+@@ -265,7 +265,7 @@ const AcceleratorMapping kDevToolsAccele
      {ui::VKEY_J, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
       IDC_DEV_TOOLS_CONSOLE},
      {ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,

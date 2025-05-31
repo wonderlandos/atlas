@@ -2861,7 +2861,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_UTILITY_IMPORTER_CHROME_IMPORTER_H_
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10830,6 +10830,9 @@ Check your passwords anytime in <ph name
+@@ -10879,6 +10879,9 @@ Check your passwords anytime in <ph name
              Microsoft Edge
            </message>
          </if>

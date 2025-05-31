@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/ui_features.cc
 +++ b/chrome/browser/ui/ui_features.cc
-@@ -155,12 +155,7 @@ BASE_FEATURE(kTabGroupsCollapseFreezing,
+@@ -157,12 +157,7 @@ BASE_FEATURE(kTabGroupsCollapseFreezing,
  // https://crbug.com/928954
  BASE_FEATURE(kTabHoverCardImages,
               "TabHoverCardImages",

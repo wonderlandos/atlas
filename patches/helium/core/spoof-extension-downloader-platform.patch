@@ -52,7 +52,7 @@
    if (command_line->HasSwitch(extensions::kSwitchTestRequestParam)) {
 --- a/chrome/browser/extensions/webstore_installer.cc
 +++ b/chrome/browser/extensions/webstore_installer.cc
-@@ -210,7 +210,7 @@ GURL WebstoreInstaller::GetWebstoreInsta
+@@ -209,7 +209,7 @@ GURL WebstoreInstaller::GetWebstoreInsta
    GURL url(
        url_string + "?response=redirect&" +
        update_client::UpdateQueryParams::Get(

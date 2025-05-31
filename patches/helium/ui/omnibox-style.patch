@@ -108,7 +108,7 @@
  BEGIN_METADATA(OmniboxRowView)
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
-@@ -369,8 +369,7 @@ void OmniboxMatchCellView::SetIcon(const
+@@ -366,8 +366,7 @@ void OmniboxMatchCellView::SetIcon(const
        match.type == AutocompleteMatchType::HISTORY_CLUSTER;
    const bool is_instant_keyword_row =
        AutocompleteMatch::IsFeaturedSearchType(match.type);
@@ -118,7 +118,7 @@
      // When a PEDAL suggestion has been split out to its own row, apply a square
      // background with a distinctive color to the respective icon. Journeys
      // suggestion rows should also receive the same treatment.
-@@ -588,7 +587,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -585,7 +584,7 @@ int OmniboxMatchCellView::GetImageIndent
    // align with any other UI; it's just arbitrarily chosen by UX. Hence, it's
    // not derived from other matches' `indent` below.
    if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
@@ -127,7 +127,7 @@
    }
  
    // The entity, answer, and icon images are horizontally centered within their
-@@ -599,12 +598,13 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -596,12 +595,13 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
@@ -155,7 +155,7 @@
    // smaller than this bounds; they'll be centered within the bounds.
 --- a/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
-@@ -572,7 +572,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
+@@ -573,7 +573,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
    // This extra padding is not added if the results section has no height
    // (result set is empty or all results are hidden).
    if (popup_height != 0) {
@@ -175,7 +175,7 @@
      SetCornerRadius(100);  // Large number to ensure 100% rounded.
  
      views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnHover(false);
-@@ -137,9 +137,8 @@ class OmniboxSuggestionRowButton : publi
+@@ -139,9 +139,8 @@ class OmniboxSuggestionRowButton : publi
                               ui::EF_MIDDLE_MOUSE_BUTTON);
      views::InstallPillHighlightPathGenerator(this);
  
@@ -187,7 +187,7 @@
      SetCornerRadius(GetLayoutConstant(TOOLBAR_CORNER_RADIUS));
  
      auto* const ink_drop = views::InkDrop::Get(this);
-@@ -152,6 +151,7 @@ class OmniboxSuggestionRowButton : publi
+@@ -154,6 +153,7 @@ class OmniboxSuggestionRowButton : publi
        CHECK(v);
        return v->GetVisible() && v->popup_view_->GetSelection() == v->selection_;
      }));
@@ -195,7 +195,7 @@
      focus_ring->SetColorId(kColorOmniboxResultsFocusIndicator);
  
      GetViewAccessibility().SetRole(ax::mojom::Role::kListBoxOption);
-@@ -235,7 +235,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
+@@ -250,7 +250,7 @@ OmniboxSuggestionButtonRowView::OmniboxS
      OmniboxPopupViewViews* popup_view,
      int model_index)
      : popup_view_(popup_view), model_index_(model_index) {

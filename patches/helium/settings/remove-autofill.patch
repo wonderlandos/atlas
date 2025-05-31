@@ -16,9 +16,9 @@
              class="cr-nav-menu-item">
 --- a/chrome/browser/resources/settings/basic_page/basic_page.html
 +++ b/chrome/browser/resources/settings/basic_page/basic_page.html
-@@ -55,7 +55,7 @@
-             <settings-ai-page prefs="{{prefs}}"></settings-ai-page>
-           </settings-section>
+@@ -57,7 +57,7 @@
+             </settings-section>
+           </template>
          </template>
 -        <template is="dom-if" if="[[showPage_(pageVisibility.autofill)]]"
 +        <template is="dom-if" if="[[false]]"
@@ -27,7 +27,7 @@
                section="autofill">
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -242,7 +242,7 @@ function createRoutes(): SettingsRoutes
+@@ -244,7 +244,7 @@ function createRoutes(): SettingsRoutes
      r.FONTS = r.APPEARANCE.createChild('/fonts');
    }
  

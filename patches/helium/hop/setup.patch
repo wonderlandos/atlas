@@ -59,7 +59,7 @@
      local_test_policy_provider_ = connector->local_test_policy_provider();
 --- a/components/policy/core/common/BUILD.gn
 +++ b/components/policy/core/common/BUILD.gn
-@@ -153,6 +153,8 @@ source_set("internal") {
+@@ -156,6 +156,8 @@ source_set("internal") {
      "external_data_manager.h",
      "features.cc",
      "features.h",
@@ -219,7 +219,7 @@
    </message>
 --- a/chrome/browser/extensions/extension_management.cc
 +++ b/chrome/browser/extensions/extension_management.cc
-@@ -602,7 +602,7 @@ void ExtensionManagement::Refresh() {
+@@ -607,7 +607,7 @@ void ExtensionManagement::Refresh() {
    const base::Value::List* denied_list_pref =
        LoadListPreference(pref_names::kInstallDenyList, false);
    const base::Value::Dict* forced_list_pref =
@@ -228,7 +228,7 @@
    const base::Value::List* install_sources_pref =
        LoadListPreference(pref_names::kAllowedInstallSites, true);
    const base::Value::List* allowed_types_pref =
-@@ -619,6 +619,8 @@ void ExtensionManagement::Refresh() {
+@@ -624,6 +624,8 @@ void ExtensionManagement::Refresh() {
        LoadPreference(pref_names::kExtensionUnpublishedAvailability,
                       /*force_managed=*/true, base::Value::Type::INTEGER);
  
@@ -237,7 +237,7 @@
    // Reset all settings.
    global_settings_ = std::make_unique<internal::GlobalSettings>();
    settings_by_id_.clear();
-@@ -669,7 +671,7 @@ void ExtensionManagement::Refresh() {
+@@ -674,7 +676,7 @@ void ExtensionManagement::Refresh() {
      }
    }
  
@@ -246,7 +246,7 @@
  
    if (install_sources_pref) {
      global_settings_->install_sources = URLPatternSet();
-@@ -864,6 +866,16 @@ void ExtensionManagement::LoadDeferredEx
+@@ -869,6 +871,16 @@ void ExtensionManagement::LoadDeferredEx
    DCHECK(found) << "Couldn't find dictionary for extension in deferred_ids_.";
  }
  
@@ -263,7 +263,7 @@
  const base::Value* ExtensionManagement::LoadPreference(
      const char* pref_name,
      bool force_managed,
-@@ -945,7 +957,7 @@ base::Value::Dict ExtensionManagement::G
+@@ -950,7 +962,7 @@ base::Value::Dict ExtensionManagement::G
  }
  
  void ExtensionManagement::UpdateForcedExtensions(
@@ -272,7 +272,7 @@
    if (!extension_dict)
      return;
  
-@@ -971,7 +983,7 @@ void ExtensionManagement::UpdateForcedEx
+@@ -976,7 +988,7 @@ void ExtensionManagement::UpdateForcedEx
        continue;
      }
      internal::IndividualSettings* by_id = AccessById(it.first);
@@ -283,7 +283,7 @@
          it.first, InstallStageTracker::Stage::CREATED);
 --- a/chrome/browser/extensions/extension_management.h
 +++ b/chrome/browser/extensions/extension_management.h
-@@ -252,6 +252,9 @@ class ExtensionManagement : public Keyed
+@@ -255,6 +255,9 @@ class ExtensionManagement : public Keyed
    // Loads the deferred settings information for |extension_id|.
    void LoadDeferredExtensionSetting(const std::string& extension_id);
  
@@ -293,7 +293,7 @@
    // Loads preference with name |pref_name| and expected type |expected_type|.
    // If |force_managed| is true, only loading from the managed preference store
    // is allowed. Returns NULL if the preference is not present, not allowed to
-@@ -287,7 +290,9 @@ class ExtensionManagement : public Keyed
+@@ -290,7 +293,9 @@ class ExtensionManagement : public Keyed
        ManagedInstallationMode installation_mode) const;
  
    // Helper to update `extension_dict` for forced installs.

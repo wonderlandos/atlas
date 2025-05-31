@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/toolbar/app_menu_model.cc
 +++ b/chrome/browser/ui/toolbar/app_menu_model.cc
-@@ -744,9 +744,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
+@@ -730,9 +730,6 @@ SaveAndShareSubMenuModel::SaveAndShareSu
      if (!sharing_hub::SharingIsDisabledByPolicy(browser->profile())) {
        AddItemWithStringIdAndVectorIcon(
            this, IDC_COPY_URL, IDS_APP_MENU_COPY_LINK, kLinkChromeRefreshIcon);
@@ -10,7 +10,7 @@
        AddItemWithStringIdAndVectorIcon(this, IDC_QRCODE_GENERATOR,
                                         IDS_APP_MENU_CREATE_QR_CODE,
                                         kQrCodeChromeRefreshIcon);
-@@ -884,23 +881,8 @@ void ToolsMenuModel::Build(Browser* brow
+@@ -870,23 +867,8 @@ void ToolsMenuModel::Build(Browser* brow
    AddItemWithStringIdAndVectorIcon(this, IDC_NAME_WINDOW, IDS_NAME_WINDOW,
                                     kNameWindowIcon);
  
@@ -32,9 +32,9 @@
 -      kReadingModeMenuItem);
 -
    AddSeparator(ui::NORMAL_SEPARATOR);
-   if (!features::IsExtensionMenuInRootAppMenu()) {
-     AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-@@ -1786,32 +1768,6 @@ void AppMenuModel::Build() {
+ 
+   AddItemWithStringIdAndVectorIcon(this, IDC_PERFORMANCE, IDS_SHOW_PERFORMANCE,
+@@ -1774,32 +1756,6 @@ void AppMenuModel::Build() {
  
    AddSeparator(ui::NORMAL_SEPARATOR);
  
@@ -67,7 +67,7 @@
    if (!browser_->profile()->IsOffTheRecord()) {
      auto recent_tabs_sub_menu =
          std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
-@@ -1833,7 +1789,7 @@ void AppMenuModel::Build() {
+@@ -1821,7 +1777,7 @@ void AppMenuModel::Build() {
          std::make_unique<BookmarkSubMenuModel>(this, browser_);
  
      AddSubMenuWithStringIdAndVectorIcon(
@@ -76,12 +76,19 @@
          bookmark_sub_menu_model_.get(), kBookmarksListsMenuIcon);
      SetElementIdentifierAt(GetIndexOfCommandId(IDC_BOOKMARKS_MENU).value(),
                             kBookmarksMenuItem);
-@@ -1850,15 +1806,11 @@ void AppMenuModel::Build() {
+@@ -1838,22 +1794,10 @@ void AppMenuModel::Build() {
          kTabGroupsMenuItem);
    }
  
--  if (features::IsExtensionMenuInRootAppMenu()) {
--    // Extensions sub menu.
+-  // Extensions sub menu.
+-  if (base::FeatureList::IsEnabled(features::kExtensionsCollapseMainMenu) &&
+-      !extensions::ui_util::HasManageableExtensions(browser_->profile())) {
+-    AddItemWithStringIdAndVectorIcon(this, IDC_FIND_EXTENSIONS,
+-                                     IDS_FIND_EXTENSIONS,
+-                                     vector_icons::kExtensionChromeRefreshIcon);
+-    SetElementIdentifierAt(GetIndexOfCommandId(IDC_FIND_EXTENSIONS).value(),
+-                           ExtensionsMenuModel::kVisitChromeWebStoreMenuItem);
+-  } else {
 -    sub_menus_.push_back(std::make_unique<ExtensionsMenuModel>(this, browser_));
 -    AddSubMenuWithStringIdAndVectorIcon(
 -        this, IDC_EXTENSIONS_SUBMENU, IDS_EXTENSIONS_SUBMENU,
@@ -93,11 +100,10 @@
 +      this, IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS,
 +      IDS_EXTENSIONS_SUBMENU,
 +      vector_icons::kExtensionChromeRefreshIcon);
-+
+ 
    AddItemWithStringIdAndVectorIcon(this, IDC_CLEAR_BROWSING_DATA,
                                     IDS_CLEAR_BROWSING_DATA,
-                                    kTrashCanRefreshIcon);
-@@ -1898,9 +1850,6 @@ void AppMenuModel::Build() {
+@@ -1897,9 +1841,6 @@ void AppMenuModel::Build() {
                            lens::features::kLensOverlay));
    }
  
@@ -107,7 +113,7 @@
    CreateFindAndEditSubMenu();
  
    sub_menus_.push_back(
-@@ -1949,6 +1898,12 @@ void AppMenuModel::Build() {
+@@ -1948,6 +1889,12 @@ void AppMenuModel::Build() {
  #endif
  #endif
  
@@ -120,7 +126,7 @@
    AddItemWithStringIdAndVectorIcon(this, IDC_OPTIONS, IDS_SETTINGS,
                                     kSettingsMenuIcon);
  
-@@ -2048,6 +2003,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
+@@ -2047,6 +1994,7 @@ bool AppMenuModel::AddDefaultBrowserMenu
  }
  
  bool AppMenuModel::AddSafetyHubMenuItem() {
