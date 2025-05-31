@@ -7,7 +7,7 @@
 
 # Copyright (c) 2019 The ungoogled-chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# found in the LICENSE.ungoogled_chromium file.
 
 """
 Utility to ease the updating of platform patches against ungoogled-chromium's patches

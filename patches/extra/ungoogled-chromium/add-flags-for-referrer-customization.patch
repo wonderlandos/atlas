@@ -144,7 +144,7 @@
 @@ -0,0 +1,49 @@
 +// Copyright 2023 The ungoogled-chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// found in the LICENSE.ungoogled_chromium file.
 +
 +#include "services/network/public/cpp/referrer_sanitizer.h"
 +
@@ -196,7 +196,7 @@
 @@ -0,0 +1,32 @@
 +// Copyright 2023 The ungoogled-chromium Authors
 +// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
++// found in the LICENSE.ungoogled_chromium file.
 +
 +#ifndef SERVICES_NETWORK_PUBLIC_CPP_REFERRER_SANITIZER_H_
 +#define SERVICES_NETWORK_PUBLIC_CPP_REFERRER_SANITIZER_H_
