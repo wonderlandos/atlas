@@ -73,7 +73,6 @@ extra/ungoogled-chromium/remove-uneeded-ui.patch
 extra/ungoogled-chromium/add-flag-to-close-window-with-last-tab.patch
 extra/ungoogled-chromium/add-flag-to-convert-popups-to-tabs.patch
 extra/ungoogled-chromium/add-flag-to-disable-local-history-expiration.patch
-
 extra/ungoogled-chromium/prepopulated-search-engines.patch
 extra/ungoogled-chromium/fix-distilled-icons.patch
 extra/ungoogled-chromium/add-flag-to-clear-data-on-exit.patch
@@ -96,7 +95,6 @@ extra/ungoogled-chromium/add-flag-for-incognito-themes.patch
 extra/ungoogled-chromium/add-flags-for-referrer-customization.patch
 extra/ungoogled-chromium/default-webrtc-ip-handling-policy.patch
 extra/ungoogled-chromium/add-flags-for-existing-switches.patch
-
 extra/ungoogled-chromium/add-flag-to-reduce-system-info.patch
 extra/ungoogled-chromium/add-flag-to-remove-client-hints.patch
 extra/ungoogled-chromium/disable-downloads-page-referrer-url.patch
