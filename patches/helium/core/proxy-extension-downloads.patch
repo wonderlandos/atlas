@@ -276,14 +276,14 @@
                              PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
-@@ -440,6 +440,7 @@ source_set("extensions") {
-     "//components/data_sharing/public",
+@@ -441,6 +441,7 @@ source_set("extensions") {
      "//components/data_sharing/public:features",
      "//components/embedder_support",
-+    "//components/helium_services",
      "//components/enterprise",
++    "//components/helium_services",
      "//components/infobars/content",
      "//components/infobars/core",
+     "//components/no_state_prefetch/browser",
 --- a/extensions/browser/pending_extension_manager.cc
 +++ b/extensions/browser/pending_extension_manager.cc
 @@ -14,11 +14,14 @@
