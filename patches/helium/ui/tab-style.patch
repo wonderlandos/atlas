@@ -5,8 +5,9 @@
  // Thickness in DIPs of the separator painted on the left and right edges of
  // the tab.
 -constexpr int kChromeRefreshSeparatorThickness = 2;
+-constexpr int kChromeRefreshSeparatorHorizontalMargin = 2;
 +constexpr int kChromeRefreshSeparatorThickness = 1;
- constexpr int kChromeRefreshSeparatorHorizontalMargin = 2;
++constexpr int kChromeRefreshSeparatorHorizontalMargin = 1;
  // TODO (crbug.com/1451400): This constant should be in LayoutConstants.
  constexpr int kChromeRefreshSeparatorHeight = 16;
  
