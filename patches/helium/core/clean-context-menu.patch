@@ -8,7 +8,7 @@
    if (IsRegionSearchEnabled()) {
      AppendRegionSearchItem();
    }
-@@ -2344,8 +2344,7 @@ void RenderViewContextMenu::AppendMediaR
+@@ -2344,8 +2343,7 @@ void RenderViewContextMenu::AppendMediaR
  
  void RenderViewContextMenu::AppendReadingModeItem() {
    // Show Read Anything option if it's not already open in the side panel.
@@ -18,7 +18,7 @@
      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                      IDS_CONTENT_CONTEXT_READING_MODE);
    }
-@@ -3975,6 +3974,8 @@ bool RenderViewContextMenu::IsVideoFrame
+@@ -3976,6 +3974,8 @@ bool RenderViewContextMenu::IsVideoFrame
  bool RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
                                                        bool draw_icon,
                                                        bool add_separator) {
@@ -27,3 +27,13 @@
    if (!IsQRCodeGeneratorEnabled()) {
      return false;
    }
+--- a/chrome/browser/ui/browser_tab_strip_model_delegate.cc
++++ b/chrome/browser/ui/browser_tab_strip_model_delegate.cc
+@@ -304,6 +304,7 @@ void BrowserTabStripModelDelegate::AddTo
+ }
+ 
+ bool BrowserTabStripModelDelegate::SupportsReadLater() {
++  return false;
+   return !browser_->profile()->IsGuestSession() && !IsForWebApp();
+ }
+ 
