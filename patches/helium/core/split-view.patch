@@ -1,0 +1,139 @@
+--- a/chrome/browser/ui/ui_features.cc
++++ b/chrome/browser/ui/ui_features.cc
+@@ -131,7 +131,7 @@ BASE_FEATURE(KScrimForTabModal,
+              "ScrimForTabModal",
+              base::FEATURE_ENABLED_BY_DEFAULT);
+ 
+-BASE_FEATURE(kSideBySide, "SideBySide", base::FEATURE_DISABLED_BY_DEFAULT);
++BASE_FEATURE(kSideBySide, "SideBySide", base::FEATURE_ENABLED_BY_DEFAULT);
+ 
+ BASE_FEATURE(kSidePanelResizing,
+              "SidePanelResizing",
+--- a/chrome/browser/ui/views/frame/multi_contents_resize_area.cc
++++ b/chrome/browser/ui/views/frame/multi_contents_resize_area.cc
+@@ -21,8 +21,8 @@
+ namespace {
+ const int kHandleCornerRadius = 2;
+ const int kHandleHeight = 24;
+-const int kHandlePadding = 6;
+-const int kHandleWidth = 4;
++const int kHandlePadding = 3;
++const int kHandleWidth = 2;
+ }  // namespace
+ 
+ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(MultiContentsResizeHandle,
+--- a/chrome/browser/ui/views/frame/multi_contents_view.h
++++ b/chrome/browser/ui/views/frame/multi_contents_view.h
+@@ -126,11 +126,11 @@ class MultiContentsView : public views::
+  private:
+   static constexpr int kMinWebContentsWidth = 200;
+   static constexpr double kMinWebContentsWidthPercentage = 0.1;
+-  static constexpr int kContentCornerRadius = 6;
++  static constexpr int kContentCornerRadius = 5;
+   static constexpr int kContentOutlineCornerRadius = 8;
+   static constexpr int kContentOutlineThickness = 1;
+-  static constexpr int kSplitViewContentInset = 8;
+-  static constexpr int kSplitViewContentPadding = 4;
++  static constexpr int kSplitViewContentInset = 3;
++  static constexpr int kSplitViewContentPadding = 2;
+ 
+   // ContentsContainerView holds the ContentsWebView and the outlines and
+   // minitoolbar when in split view.
+--- a/chrome/browser/resources/tab_search/split_view/app.css
++++ b/chrome/browser/resources/tab_search/split_view/app.css
+@@ -27,6 +27,7 @@
+   font-weight: 400;
+   line-height: 20px;
+   margin-top: 4px;
++  color: var(--cr-secondary-text-color);
+ }
+ 
+ .contents {
+--- a/chrome/browser/ui/tabs/split_tab_menu_model.cc
++++ b/chrome/browser/ui/tabs/split_tab_menu_model.cc
+@@ -11,6 +11,7 @@
+ #include "chrome/app/vector_icons/vector_icons.h"
+ #include "chrome/browser/ui/tabs/split_tab_data.h"
+ #include "chrome/browser/ui/tabs/split_tab_visual_data.h"
++#include "chrome/browser/ui/tabs/tab_enums.h"
+ #include "chrome/browser/ui/tabs/tab_model.h"
+ #include "chrome/browser/ui/tabs/tab_strip_model.h"
+ #include "chrome/grit/generated_resources.h"
+@@ -23,12 +24,10 @@
+ #include "ui/menus/simple_menu_model.h"
+ 
+ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SplitTabMenuModel, kSwapPositionMenuItem);
+-DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SplitTabMenuModel, kSwapLayoutMenuItem);
+ 
+ SplitTabMenuModel::SplitTabMenuModel(TabStripModel* tab_strip_model)
+     : ui::SimpleMenuModel(this), tab_strip_model_(tab_strip_model) {
+   AddItem(static_cast<int>(CommandId::kSwapPosition), std::u16string());
+-  AddItem(static_cast<int>(CommandId::kSwapLayout), std::u16string());
+   AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
+   AddItemWithStringIdAndIcon(
+       static_cast<int>(CommandId::kClose), IDS_SPLIT_TAB_CLOSE,
+@@ -43,9 +42,6 @@ SplitTabMenuModel::SplitTabMenuModel(Tab
+   SetElementIdentifierAt(
+       GetIndexOfCommandId(static_cast<int>(CommandId::kSwapPosition)).value(),
+       kSwapPositionMenuItem);
+-  SetElementIdentifierAt(
+-      GetIndexOfCommandId(static_cast<int>(CommandId::kSwapLayout)).value(),
+-      kSwapLayoutMenuItem);
+ }
+ 
+ SplitTabMenuModel::~SplitTabMenuModel() = default;
+@@ -86,7 +82,32 @@ ui::ImageModel SplitTabMenuModel::GetIco
+                                         ui::SimpleMenuModel::kDefaultIconSize);
+ }
+ 
+-void SplitTabMenuModel::ExecuteCommand(int command_id, int event_flags) {}
++void SplitTabMenuModel::ExecuteCommand(int command_id, int event_flags) {
++  split_tabs::SplitTabId split_id = GetSplitTabId();
++  switch (static_cast<CommandId>(command_id)) {
++    case CommandId::kSwapPosition:
++      tab_strip_model_->SwapTabsInSplit(split_id);
++      break;
++    case CommandId::kClose:
++      tab_strip_model_->CloseWebContentsAt(
++          tab_strip_model_->active_index(),
++          TabCloseTypes::CLOSE_USER_GESTURE |
++              TabCloseTypes::CLOSE_CREATE_HISTORICAL_TAB);
++      break;
++    case CommandId::kExitSplit:
++      tab_strip_model_->RemoveSplit(split_id);
++      break;
++  }
++}
++
++split_tabs::SplitTabId SplitTabMenuModel::GetSplitTabId() const {
++  tabs::TabInterface* const tab =
++      split_tab_index_.has_value()
++          ? tab_strip_model_->GetTabAtIndex(split_tab_index_.value())
++          : tab_strip_model_->GetActiveTab();
++  CHECK(tab->IsSplit());
++  return tab->GetSplit().value();
++}
+ 
+ const gfx::VectorIcon& SplitTabMenuModel::GetSwapPositionIcon(
+     split_tabs::SplitTabActiveLocation active_split_tab_location) const {
+--- a/chrome/browser/ui/tabs/split_tab_menu_model.h
++++ b/chrome/browser/ui/tabs/split_tab_menu_model.h
+@@ -40,6 +40,7 @@ class SplitTabMenuModel : public ui::Sim
+   void ExecuteCommand(int command_id, int event_flags) override;
+ 
+  private:
++ split_tabs::SplitTabId GetSplitTabId() const;
+   const gfx::VectorIcon& GetSwapPositionIcon(
+       split_tabs::SplitTabActiveLocation active_split_tab_location) const;
+   const gfx::VectorIcon& GetSwapLayoutIcon(
+@@ -47,6 +48,10 @@ class SplitTabMenuModel : public ui::Sim
+   std::u16string GetSwapLayoutString() const;
+ 
+   raw_ptr<TabStripModel> tab_strip_model_ = nullptr;
++
++  // This represents the tab that this menu model should be operating on. If
++  // nothing is provided, use the currently active tab.
++  std::optional<int> split_tab_index_;
+ };
+ 
+ #endif  // CHROME_BROWSER_UI_TABS_SPLIT_TAB_MENU_MODEL_H_
