@@ -142,6 +142,7 @@ helium/core/enable-tab-search-toolbar-button.patch
 helium/core/hide-avatar-via-toolbar-prefs.patch
 helium/core/hide-extensions-via-toolbar-prefs.patch
 helium/core/clean-context-menu.patch
+helium/core/split-view.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
