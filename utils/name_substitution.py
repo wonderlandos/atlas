@@ -89,7 +89,7 @@ async def substitute_file(tree, path, tarball = None):
     arcname = str(path.relative_to(tree))
     text = None
 
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         text = f.read()
 
     replaced = replace(text)
@@ -97,7 +97,7 @@ async def substitute_file(tree, path, tarball = None):
         print(f"Replaced strings in {arcname}")
         if tarball:
             tarball.add(path, arcname=arcname, recursive=False)
-        with open(path, 'w') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             f.write(replaced)
 
 def do_unsubstitution(tree, tarpath):
