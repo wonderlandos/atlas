@@ -119,7 +119,6 @@ DOMAIN_EXCLUDE_PREFIXES = [
     # Exclusion to allow download of sysroots
     'build/linux/sysroot_scripts/sysroots.json',
     # Google Web Store extension stuff
-    'tools/search_engine_choice/generate_search_engine_icons.py',
     'extensions/common/api/_api_features.json',
     'chrome/common/extensions/api/_api_features.json',
     'extensions/common/extension_urls.cc',
