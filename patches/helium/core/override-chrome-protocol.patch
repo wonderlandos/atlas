@@ -62,7 +62,7 @@
    // Prevent future modification of the scheme lists. This is to prevent
 --- a/content/renderer/render_thread_impl.cc
 +++ b/content/renderer/render_thread_impl.cc
-@@ -957,10 +957,18 @@ void RenderThreadImpl::RegisterSchemes()
+@@ -954,10 +954,18 @@ void RenderThreadImpl::RegisterSchemes()
        chrome_scheme);
    WebSecurityPolicy::RegisterURLSchemeAsWebUI(chrome_scheme);
  
@@ -103,7 +103,7 @@
      return true;
    }
  
-@@ -634,6 +635,12 @@ base::WeakPtr<content::NavigationHandle>
+@@ -633,6 +634,12 @@ base::WeakPtr<content::NavigationHandle>
      }
    }
  
@@ -118,7 +118,7 @@
    // handling.
 --- a/chrome/browser/extensions/extension_tab_util.cc
 +++ b/chrome/browser/extensions/extension_tab_util.cc
-@@ -1062,7 +1062,8 @@ bool ExtensionTabUtil::IsKillURL(const G
+@@ -1113,7 +1113,8 @@ bool ExtensionTabUtil::IsKillURL(const G
      return true;
    }
  
@@ -130,7 +130,7 @@
  
 --- a/chrome/browser/ui/browser.cc
 +++ b/chrome/browser/ui/browser.cc
-@@ -2212,6 +2212,13 @@ void Browser::SetContentsBounds(WebConte
+@@ -2280,6 +2280,13 @@ void Browser::SetContentsBounds(WebConte
  }
  
  void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
@@ -144,7 +144,7 @@
    std::vector<StatusBubble*> status_bubbles = GetStatusBubbles();
    for (StatusBubble* status_bubble : status_bubbles) {
      StatusBubbleViews* status_bubble_views =
-@@ -2219,7 +2226,7 @@ void Browser::UpdateTargetURL(WebContent
+@@ -2287,7 +2294,7 @@ void Browser::UpdateTargetURL(WebContent
      ContentsWebView* anchor =
          static_cast<ContentsWebView*>(status_bubble_views->base_view());
      if (source == anchor->GetWebContents()) {
@@ -155,7 +155,7 @@
    }
 --- a/components/omnibox/browser/omnibox_edit_model.cc
 +++ b/components/omnibox/browser/omnibox_edit_model.cc
-@@ -67,6 +67,7 @@
+@@ -69,6 +69,7 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
@@ -163,7 +163,7 @@
  #include "net/cookies/cookie_util.h"
  #include "third_party/icu/source/common/unicode/ubidi.h"
  #include "third_party/metrics_proto/omnibox_event.pb.h"
-@@ -597,6 +598,12 @@ void OmniboxEditModel::AdjustTextForCopy
+@@ -509,6 +510,12 @@ void OmniboxEditModel::AdjustTextForCopy
      *url_from_text = controller_->client()->GetNavigationEntryURL();
      *write_url = true;
  

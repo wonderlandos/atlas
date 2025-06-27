@@ -32,7 +32,7 @@
      "//printing/buildflags",
 --- a/components/omnibox/browser/autocomplete_controller.h
 +++ b/components/omnibox/browser/autocomplete_controller.h
-@@ -35,6 +35,7 @@
+@@ -36,6 +36,7 @@
  #include "components/omnibox/browser/open_tab_provider.h"
  #include "components/omnibox/browser/tab_group_provider.h"
  #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
@@ -51,7 +51,7 @@
    raw_ptr<HistoryQuickProvider> history_quick_provider_;
 --- a/components/omnibox/browser/autocomplete_controller.cc
 +++ b/components/omnibox/browser/autocomplete_controller.cc
-@@ -89,6 +89,7 @@
+@@ -91,6 +91,7 @@
  #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
  #include "components/search_engines/search_engine_type.h"
  #include "components/search_engines/template_url.h"
@@ -59,7 +59,7 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -1803,7 +1804,21 @@ void AutocompleteController::UpdateKeywo
+@@ -1850,7 +1851,21 @@ void AutocompleteController::UpdateKeywo
            // - For contextual search matches, the description indicates the
            //   alternative UX because they're opened in the side panel.
            i->description = template_url->AdjustedShortNameForLocaleDirection();
@@ -84,7 +84,7 @@
            } else if (template_url->type() !=
 --- a/components/omnibox/browser/keyword_provider.h
 +++ b/components/omnibox/browser/keyword_provider.h
-@@ -22,6 +22,7 @@
+@@ -23,6 +23,7 @@
  #include "components/omnibox/browser/autocomplete_input.h"
  #include "components/omnibox/browser/autocomplete_provider.h"
  #include "components/omnibox/browser/keyword_extensions_delegate.h"
@@ -92,7 +92,7 @@
  #include "third_party/metrics_proto/omnibox_input_type.pb.h"
  
  class AutocompleteProviderClient;
-@@ -118,6 +119,8 @@ class KeywordProvider : public Autocompl
+@@ -117,6 +118,8 @@ class KeywordProvider : public Autocompl
    // Model for the keywords.
    raw_ptr<TemplateURLService, DanglingUntriaged> model_;
  
@@ -103,7 +103,7 @@
    std::unique_ptr<KeywordExtensionsDelegate> extensions_delegate_;
 --- a/components/omnibox/browser/keyword_provider.cc
 +++ b/components/omnibox/browser/keyword_provider.cc
-@@ -24,6 +24,7 @@
+@@ -25,6 +25,7 @@
  #include "components/omnibox/browser/search_provider.h"
  #include "components/omnibox/common/omnibox_feature_configs.h"
  #include "components/search_engines/template_url.h"
@@ -111,7 +111,7 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -421,9 +422,20 @@ void KeywordProvider::FillInURLAndConten
+@@ -423,9 +424,20 @@ void KeywordProvider::FillInURLAndConten
      if (element_ref.SupportsReplacement(
              GetTemplateURLService()->search_terms_data()) &&
          (element->type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
@@ -154,7 +154,7 @@
    // deleted out from under us.
 --- a/chrome/browser/ui/views/location_bar/selected_keyword_view.cc
 +++ b/chrome/browser/ui/views/location_bar/selected_keyword_view.cc
-@@ -15,6 +15,7 @@
+@@ -17,6 +17,7 @@
  #include "components/omnibox/browser/vector_icons.h"
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
@@ -162,7 +162,7 @@
  #include "components/strings/grit/components_strings.h"
  #include "components/vector_icons/vector_icons.h"
  #include "ui/accessibility/ax_enums.mojom.h"
-@@ -113,6 +114,15 @@ void SelectedKeywordView::SetCustomImage
+@@ -115,6 +116,15 @@ void SelectedKeywordView::SetCustomImage
    if (template_url &&
        template_url->starter_pack_id() == TemplateURLStarterPackData::kGemini) {
      vector_icon = &omnibox::kSparkIcon;

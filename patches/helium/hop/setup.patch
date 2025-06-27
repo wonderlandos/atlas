@@ -59,7 +59,7 @@
      local_test_policy_provider_ = connector->local_test_policy_provider();
 --- a/components/policy/core/common/BUILD.gn
 +++ b/components/policy/core/common/BUILD.gn
-@@ -156,6 +156,8 @@ source_set("internal") {
+@@ -154,6 +154,8 @@ source_set("internal") {
      "external_data_manager.h",
      "features.cc",
      "features.h",
@@ -284,14 +284,14 @@
 --- a/chrome/browser/extensions/extension_management.h
 +++ b/chrome/browser/extensions/extension_management.h
 @@ -255,6 +255,9 @@ class ExtensionManagement : public Keyed
-   // Loads the deferred settings information for |extension_id|.
+   // Loads the deferred settings information for `extension_id`.
    void LoadDeferredExtensionSetting(const std::string& extension_id);
  
 +  // Checks whether a preference is managed.
 +  bool IsPreferenceManaged(const char* pref_name) const;
 +
-   // Loads preference with name |pref_name| and expected type |expected_type|.
-   // If |force_managed| is true, only loading from the managed preference store
+   // Loads preference with name `pref_name` and expected type `expected_type`.
+   // If `force_managed` is true, only loading from the managed preference store
    // is allowed. Returns NULL if the preference is not present, not allowed to
 @@ -290,7 +293,9 @@ class ExtensionManagement : public Keyed
        ManagedInstallationMode installation_mode) const;
@@ -302,5 +302,5 @@
 +    const base::Value::Dict* extension_dict,
 +    bool is_forced);
  
-   // Helper function to access |settings_by_id_| with |id| as key.
-   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for
+   // Helper function to access `settings_by_id_` with `id` as key.
+   // Adds a new IndividualSettings entry to `settings_by_id_` if none exists for

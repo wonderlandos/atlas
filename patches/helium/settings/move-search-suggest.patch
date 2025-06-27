@@ -1,12 +1,11 @@
 --- a/chrome/browser/resources/settings/people_page/people_page.html
 +++ b/chrome/browser/resources/settings/people_page/people_page.html
-@@ -122,13 +122,6 @@ shown on non-ChromeOS platforms -->
+@@ -122,12 +122,6 @@ shown on non-ChromeOS platforms -->
            </div>
          </template> <!-- if="[[!shouldShowSyncAccountControl_()]]" -->
  
 -        <cr-link-row id="sync-setup"
 -            label="$i18n{syncAndNonPersonalizedServices}"
--            sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
 -            on-click="onSyncClick_"
 -            role-description="$i18n{subpageArrowRoleDescription}">
 -        </cr-link-row>
@@ -14,7 +13,7 @@
  <if expr="not chromeos_ash">
          <template is="dom-if" if="[[signinAllowed_]]">
            <cr-link-row id="manage-google-account"
-@@ -160,39 +153,6 @@ shown on non-ChromeOS platforms -->
+@@ -159,28 +153,6 @@ shown on non-ChromeOS platforms -->
  </if>
  
        </div>
@@ -40,23 +39,12 @@
 -        </settings-subpage>
 -      </template>
 -
--      <template is="dom-if" if="[[shouldShowHistorySearchControl_(
--          showHistorySearchControl_, enableAiSettingsPageRefresh_)]]">
--        <template is="dom-if" route-path="/historySearch">
--          <settings-subpage page-title="$i18n{historySearchSettingLabel}"
--              associated-control="[[$$('#sync-setup')]]">
--            <settings-history-search-page prefs="{{prefs}}">
--            </settings-history-search-page>
--          </settings-subpage>
--        </template>
--      </template>
--
  <if expr="not chromeos_ash">
        <template is="dom-if" route-path="/manageProfile">
          <settings-subpage
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.html
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.html
-@@ -123,15 +123,6 @@
+@@ -113,15 +113,6 @@
      </cr-link-row>
  </if><!-- chromeos -->
  </if><!-- _google_chrome -->
@@ -74,7 +62,7 @@
        <settings-toggle-button id="priceEmailNotificationsToggle"
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.ts
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-@@ -253,14 +253,6 @@ export class SettingsPersonalizationOpti
+@@ -230,14 +230,6 @@ export class SettingsPersonalizationOpti
    }
    // </if>
  
@@ -91,20 +79,26 @@
    }
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -198,13 +198,6 @@ function createRoutes(): SettingsRoutes
+@@ -190,9 +190,6 @@ function createRoutes(): SettingsRoutes
      r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
      r.IMPORT_DATA.isNavigableDialog = true;
      // </if>
 -
 -    r.SYNC = r.PEOPLE.createChild('/syncSetup');
 -    r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
--    if (!loadTimeData.getBoolean('enableAiSettingsPageRefresh') &&
--        loadTimeData.getBoolean('showHistorySearchControl')) {
--      r.HISTORY_SEARCH = r.SYNC.createChild('/historySearch');
--    }
    }
  
    const visibility = pageVisibility || {};
+@@ -203,9 +200,6 @@ function createRoutes(): SettingsRoutes
+     if (loadTimeData.getBoolean('showTabOrganizationControl')) {
+       r.AI_TAB_ORGANIZATION = r.AI.createChild('/ai/tabOrganizer');
+     }
+-    if (loadTimeData.getBoolean('showHistorySearchControl')) {
+-      r.HISTORY_SEARCH = r.AI.createChild('/ai/historySearch');
+-    }
+     if (loadTimeData.getBoolean('showComposeControl')) {
+       r.OFFER_WRITING_HELP = r.AI.createChild('/ai/helpMeWrite');
+     }
 --- a/chrome/browser/resources/settings/search_page/search_page.html
 +++ b/chrome/browser/resources/settings/search_page/search_page.html
 @@ -75,6 +75,14 @@

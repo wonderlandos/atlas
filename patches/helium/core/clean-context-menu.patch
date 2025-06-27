@@ -1,6 +1,6 @@
 --- a/chrome/browser/renderer_context_menu/render_view_context_menu.cc
 +++ b/chrome/browser/renderer_context_menu/render_view_context_menu.cc
-@@ -2216,7 +2216,6 @@ void RenderViewContextMenu::AppendPageIt
+@@ -2255,7 +2255,6 @@ void RenderViewContextMenu::AppendPageIt
                                    IDS_CONTENT_CONTEXT_SAVEPAGEAS);
    menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
    AppendLiveCaptionItem();
@@ -8,7 +8,7 @@
    if (IsRegionSearchEnabled()) {
      AppendRegionSearchItem();
    }
-@@ -2344,8 +2343,7 @@ void RenderViewContextMenu::AppendMediaR
+@@ -2383,8 +2382,7 @@ void RenderViewContextMenu::AppendMediaR
  
  void RenderViewContextMenu::AppendReadingModeItem() {
    // Show Read Anything option if it's not already open in the side panel.
@@ -18,7 +18,7 @@
      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                      IDS_CONTENT_CONTEXT_READING_MODE);
    }
-@@ -3976,6 +3974,8 @@ bool RenderViewContextMenu::IsVideoFrame
+@@ -4005,6 +4003,8 @@ bool RenderViewContextMenu::IsVideoFrame
  bool RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
                                                        bool draw_icon,
                                                        bool add_separator) {

@@ -8,12 +8,11 @@
  #include "chrome/common/chrome_switches.h"
  #include "chrome/common/pref_names.h"
  #include "components/prefs/pref_registry_simple.h"
-@@ -204,6 +205,9 @@ void FirstRunService::OnFirstRunHasExite
+@@ -204,6 +205,8 @@ void FirstRunService::OnFirstRunHasExite
  void FirstRunService::FinishFirstRun(FinishedReason reason) {
    SetFirstRunFinished(reason);
  
-+  profile_->GetPrefs()->SetBoolean(GetThemePrefNameInMigration(
-+    ThemePrefInMigration::kGrayscaleThemeEnabled), true);
++  profile_->GetPrefs()->SetBoolean(prefs::kGrayscaleThemeEnabled, true);
 +
    // If the reason is `FinishedReason::kForceSignin` the profile is already
    // signed in and finalized. It should not finish the setup again.

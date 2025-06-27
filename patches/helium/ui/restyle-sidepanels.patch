@@ -122,14 +122,14 @@
        <customize-chrome-appearance @edit-theme-click="${this.onEditThemeClick_}"
 @@ -35,9 +35,6 @@ export function getHtml(this: AppElement
      </cr-button>
-      ${this.isSourceTabFirstPartyNtp_ ? html`<hr class="sp-cards-separator">
+      ${this.isSourceTabFirstPartyNtp_() ? html`<hr class="sp-cards-separator">
      <div id="shortcuts" class="section sp-card">
 -      <sp-heading hide-back-button>
 -        <h2 slot="heading">$i18n{shortcutsHeader}</h2>
 -      </sp-heading>
        <customize-chrome-shortcuts></customize-chrome-shortcuts>
      </div>`: ''}
-     ${(this.modulesEnabled_ && this.isSourceTabFirstPartyNtp_) ? html`
+     ${(this.modulesEnabled_ && this.isSourceTabFirstPartyNtp_()) ? html`
 --- a/chrome/browser/resources/side_panel/customize_chrome/appearance.css
 +++ b/chrome/browser/resources/side_panel/customize_chrome/appearance.css
 @@ -25,7 +25,8 @@
@@ -174,7 +174,7 @@
  <customize-chrome-hover-button id="thirdPartyThemeLinkButton"
      class="link-out-button theme-button"
      ?hidden="${!this.thirdPartyThemeId_}"
-@@ -26,56 +38,16 @@ export function getHtml(this: Appearance
+@@ -26,57 +38,17 @@ export function getHtml(this: Appearance
      label="$i18n{yourUploadedImage}"
      label-description="$i18n{currentTheme}">
  </customize-chrome-hover-button>
@@ -184,12 +184,13 @@
 -    label="$i18n{yourSearchedImage}"
 -    label-description="$i18n{currentTheme}">
 -</customize-chrome-hover-button>
--${(!this.isSourceTabFirstPartyNtp_ && !!this.ntpManagedByName_) ? html`
+-${this.showManagedButton_ ? html`
 -  <customize-chrome-hover-button id="thirdPartyManageLinkButton"
 -      aria-button-label="${this.i18n('newTabPageManagedByA11yLabel',
 -                           this.ntpManagedByName_)}"
 -      class="link-out-button theme-button"
 -      @click="${this.onNewTabPageManageByButtonClicked_}"
+-      label="${this.ntpManagedByName_}"
 -      label-description="${this.i18n('newTabPageManagedBy',
 -                           this.ntpManagedByName_)}">
 -  </customize-chrome-hover-button>
@@ -228,6 +229,7 @@
      label="$i18n{resetToClassicChrome}"
      @click="${this.onSetClassicChromeClicked_}">
  </customize-chrome-hover-button>
++
 +<cr-button id="editThemeButton" @click="${this.onEditThemeClicked_}">
 +  <div id="editThemeIcon" class="cr-icon edit-theme-icon" slot="prefix-icon"
 +      ?hidden="${this.wallpaperSearchButtonEnabled_}"></div>

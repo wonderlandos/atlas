@@ -39,21 +39,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "base/values.h"
 +#include "chrome/common/importer/chrome_importer_utils.h"
 +#include "chrome/common/importer/importer_constants.h"
-+#include "chrome/common/importer/importer_type.h"
++#include "components/user_data_importer/common/importer_type.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "ui/base/l10n/l10n_util.h"
 +
 +namespace {
-+void AddChromeToProfiles(std::vector<importer::SourceProfile>* profiles,
++void AddChromeToProfiles(std::vector<user_data_importer::SourceProfile>* profiles,
 +                         base::Value::List chrome_profiles,
 +                         const base::FilePath& user_data_folder,
 +                         const std::string& brand,
-+                         importer::ImporterType type) {
++                         user_data_importer::ImporterType type) {
 +  for (const auto& value : chrome_profiles) {
 +    const auto* dict = value.GetIfDict();
 +    if (!dict)
 +      continue;
-+    uint16_t items = importer::NONE;
++    uint16_t items = user_data_importer::NONE;
 +    auto* profile = dict->FindString("id");
 +    auto* name = dict->FindString("name");
 +    DCHECK(profile);
@@ -66,11 +66,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 +    // We can import password from Whale only on macOS.
 +    // Decryption failed on Windows and Linux.
-+    if (type == importer::TYPE_WHALE && (items & importer::PASSWORDS)) {
-+      items ^= importer::PASSWORDS;
++    if (type == user_data_importer::TYPE_WHALE && (items & user_data_importer::PASSWORDS)) {
++      items ^= user_data_importer::PASSWORDS;
 +    }
 +#endif
-+    importer::SourceProfile chrome;
++    user_data_importer::SourceProfile chrome;
 +    chrome.importer_name = base::UTF8ToUTF16(brand);
 +    chrome.importer_type = type;
 +    chrome.source_path = user_data_folder.Append(
@@ -81,82 +81,82 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +}
 +
-+void DetectChromeProfiles(std::vector<importer::SourceProfile>* profiles) {
++void DetectChromeProfiles(std::vector<user_data_importer::SourceProfile>* profiles) {
 +  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
 +                                                base::BlockingType::WILL_BLOCK);
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromeUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetChromeUserDataFolder(), kGoogleChromeBrowser, importer::TYPE_CHROME);
++      GetChromeUserDataFolder(), kGoogleChromeBrowser, user_data_importer::TYPE_CHROME);
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromeBetaUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetChromeBetaUserDataFolder(), kGoogleChromeBrowserBeta,
-+      importer::TYPE_CHROME);
++      user_data_importer::TYPE_CHROME);
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromeDevUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetChromeDevUserDataFolder(), kGoogleChromeBrowserDev,
-+      importer::TYPE_CHROME);
++      user_data_importer::TYPE_CHROME);
 +#if !BUILDFLAG(IS_LINUX)
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetCanaryUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetCanaryUserDataFolder(), kGoogleChromeBrowserCanary,
-+      importer::TYPE_CHROME);
++      user_data_importer::TYPE_CHROME);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetArcUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetArcUserDataFolder(), kArcBrowser, importer::TYPE_ARC);
++      GetArcUserDataFolder(), kArcBrowser, user_data_importer::TYPE_ARC);
 +#endif
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromiumUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetChromiumUserDataFolder(), kChromiumBrowser, importer::TYPE_CHROME);
++      GetChromiumUserDataFolder(), kChromiumBrowser, user_data_importer::TYPE_CHROME);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetEdgeUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetEdgeUserDataFolder(), kMicrosoftEdgeBrowser,
-+      importer::TYPE_EDGE_CHROMIUM);
++      user_data_importer::TYPE_EDGE_CHROMIUM);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetVivaldiUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetVivaldiUserDataFolder(), kVivaldiBrowser, importer::TYPE_VIVALDI);
++      GetVivaldiUserDataFolder(), kVivaldiBrowser, user_data_importer::TYPE_VIVALDI);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetOperaUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetOperaUserDataFolder(), kOperaBrowser, importer::TYPE_OPERA);
++      GetOperaUserDataFolder(), kOperaBrowser, user_data_importer::TYPE_OPERA);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetYandexUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetYandexUserDataFolder(), kYandexBrowser, importer::TYPE_YANDEX);
++      GetYandexUserDataFolder(), kYandexBrowser, user_data_importer::TYPE_YANDEX);
 +
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetWhaleUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetWhaleUserDataFolder(), kWhaleBrowser, importer::TYPE_WHALE);
++      GetWhaleUserDataFolder(), kWhaleBrowser, user_data_importer::TYPE_WHALE);
 +
 +  AddChromeToProfiles(
 +    profiles,
 +    GetChromeSourceProfiles(GetBraveUserDataFolder().Append(
 +        base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+    GetBraveUserDataFolder(), kBraveBrowser, importer::TYPE_BRAVE);
++    GetBraveUserDataFolder(), kBraveBrowser, user_data_importer::TYPE_BRAVE);
 +
 +#if BUILDFLAG(IS_LINUX)
 +  // Installed via snap Opera has different profile path.
@@ -164,7 +164,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      profiles,
 +      GetChromeSourceProfiles(GetOperaSnapUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetOperaSnapUserDataFolder(), kOperaBrowser, importer::TYPE_OPERA);
++      GetOperaSnapUserDataFolder(), kOperaBrowser, user_data_importer::TYPE_OPERA);
 +#endif
 +}
 +
@@ -189,7 +189,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "base/values.h"
 +#include "chrome/common/importer/importer_constants.h"
 +#include "chrome/common/importer/scoped_copy_file.h"
-+#include "chrome/common/importer/importer_data_types.h"
++#include "components/user_data_importer/common/importer_data_types.h"
 +#include "components/webdata/common/webdata_constants.h"
 +#include "sql/database.h"
 +#include "sql/statement.h"
@@ -354,7 +354,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +bool ChromeImporterCanImport(const base::FilePath& profile,
 +                             uint16_t* services_supported) {
 +  DCHECK(services_supported);
-+  *services_supported = importer::NONE;
++  *services_supported = user_data_importer::NONE;
 +
 +  base::FilePath bookmarks =
 +    profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("Bookmarks")));
@@ -365,18 +365,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  base::FilePath passwords_for_account = profile.Append(
 +      base::FilePath::StringType(FILE_PATH_LITERAL("Login Data For Account")));
 +  if (base::PathExists(bookmarks))
-+    *services_supported |= importer::FAVORITES;
++    *services_supported |= user_data_importer::FAVORITES;
 +  if (base::PathExists(history))
-+    *services_supported |= importer::HISTORY;
++    *services_supported |= user_data_importer::HISTORY;
 +  if (base::PathExists(passwords) || base::PathExists(passwords_for_account)) {
-+    *services_supported |= importer::PASSWORDS;
++    *services_supported |= user_data_importer::PASSWORDS;
 +  }
 +#if BUILDFLAG(ENABLE_EXTENSIONS)
 +  if (HasImportableExtensions(profile))
-+    *services_supported |= importer::EXTENSIONS;
++    *services_supported |= user_data_importer::EXTENSIONS;
 +#endif
 +
-+  return *services_supported != importer::NONE;
++  return *services_supported != user_data_importer::NONE;
 +}
 +
 +#if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -936,7 +936,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  const base::FilePath& library_dir = base::apple::GetUserLibraryPath();
 +  const base::FilePath safari_dir = library_dir.Append("Safari");
 +
-+  if (imported_items & importer::FAVORITES) {
++  if (imported_items & user_data_importer::FAVORITES) {
 +    const base::FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
 +    if (!PathIsWritable(bookmarks_path)) {
 +      LOG(ERROR) << __func__ << " " << bookmarks_path << " is not accessible."
@@ -945,7 +945,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    }
 +  }
 +
-+  if (imported_items & importer::HISTORY) {
++  if (imported_items & user_data_importer::HISTORY) {
 +    const base::FilePath history_path = safari_dir.Append("History.plist");
 +    if (!PathIsWritable(history_path)) {
 +      LOG(ERROR) << __func__ << " " << history_path << " is not accessible."
@@ -967,7 +967,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +BraveImportDataHandler::~BraveImportDataHandler() = default;
 +
 +void BraveImportDataHandler::StartImport(
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t imported_items) {
 +  if (!imported_items)
 +    return;
@@ -984,7 +984,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +void BraveImportDataHandler::StartImportImpl(
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t imported_items,
 +    Profile* profile) {
 +  // If another import is already ongoing, let it finish silently.
@@ -1004,7 +1004,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +void BraveImportDataHandler::NotifyImportProgress(
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    const base::Value::Dict& info) {
 +  const std::string* event = info.FindString("event");
 +  if (!event)
@@ -1023,14 +1023,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +void BraveImportDataHandler::OnImportEnded(
-+    const importer::SourceProfile& source_profile) {
++    const user_data_importer::SourceProfile& source_profile) {
 +  import_observers_.erase(source_profile.source_path);
 +  FireWebUIListener("import-data-status-changed",
 +                    base::Value(import_did_succeed_ ? kImportStatusSucceeded
 +                                                    : kImportStatusFailed));
 +}
 +
-+const importer::SourceProfile& BraveImportDataHandler::GetSourceProfileAt(
++const user_data_importer::SourceProfile& BraveImportDataHandler::GetSourceProfileAt(
 +    int browser_index) {
 +  return importer_list_->GetSourceProfileAt(browser_index);
 +}
@@ -1039,13 +1039,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +void BraveImportDataHandler::CheckDiskAccess(
 +    uint16_t imported_items,
 +    base::FilePath source_path,
-+    importer::ImporterType importer_type,
++    user_data_importer::ImporterType importer_type,
 +    ContinueImportCallback callback) {
 +  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 +
 +  guide_dialog_is_requested_ = false;
 +
-+  if (importer_type == importer::TYPE_SAFARI) {
++  if (importer_type == user_data_importer::TYPE_SAFARI) {
 +    // Start import if Brave has full disk access permission.
 +    // If not, show dialog that has infos about that permission.
 +    base::ThreadPool::PostTaskAndReplyWithResult(
@@ -1143,26 +1143,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + protected:
 +  using ContinueImportCallback = base::OnceCallback<void()>;
 +
-+  const importer::SourceProfile& GetSourceProfileAt(int browser_index);
++  const user_data_importer::SourceProfile& GetSourceProfileAt(int browser_index);
 +  void HandleImportData(const base::Value::List& args);
 +  // ImportDataHandler overrides:
-+  void StartImport(const importer::SourceProfile& source_profile,
++  void StartImport(const user_data_importer::SourceProfile& source_profile,
 +                   uint16_t imported_items) override;
 +
-+  void StartImportImpl(const importer::SourceProfile& source_profile,
++  void StartImportImpl(const user_data_importer::SourceProfile& source_profile,
 +                       uint16_t imported_items,
 +                       Profile* profile);
 +  virtual void NotifyImportProgress(
-+      const importer::SourceProfile& source_profile,
++      const user_data_importer::SourceProfile& source_profile,
 +      const base::Value::Dict& info);
-+  virtual void OnImportEnded(const importer::SourceProfile& source_profile);
++  virtual void OnImportEnded(const user_data_importer::SourceProfile& source_profile);
 +
-+  void OnStartImport(const importer::SourceProfile& source_profile,
++  void OnStartImport(const user_data_importer::SourceProfile& source_profile,
 +                     uint16_t imported_items);
 +#if BUILDFLAG(IS_MAC)
 +  void CheckDiskAccess(uint16_t imported_items,
 +                       base::FilePath source_path,
-+                       importer::ImporterType importer_type,
++                       user_data_importer::ImporterType importer_type,
 +                       ContinueImportCallback callback);
 +  void OnGetDiskAccessPermission(ContinueImportCallback callback,
 +                                 base::FilePath source_path,
@@ -1199,7 +1199,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +BraveImporterObserver::BraveImporterObserver(
 +    ExternalProcessImporterHost* importer_host,
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t imported_items,
 +    ReportProgressCallback callback)
 +    : source_profile_(source_profile),
@@ -1215,7 +1215,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    importer_host_->set_observer(nullptr);
 +}
 +
-+// importer::ImporterProgressObserver:
++// user_data_importer::ImporterProgressObserver:
 +void BraveImporterObserver::ImportStarted() {
 +  if (import_started_called_)
 +    return;
@@ -1228,7 +1228,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  callback_.Run(source_profile_, data);
 +}
 +
-+void BraveImporterObserver::ImportItemStarted(importer::ImportItem item) {
++void BraveImporterObserver::ImportItemStarted(user_data_importer::ImportItem item) {
 +  base::Value::Dict data;
 +  data.Set("importer_name", source_profile_.importer_name);
 +  data.Set("importer_type", source_profile_.importer_type);
@@ -1238,7 +1238,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  callback_.Run(source_profile_, data);
 +}
 +
-+void BraveImporterObserver::ImportItemEnded(importer::ImportItem item) {
++void BraveImporterObserver::ImportItemEnded(user_data_importer::ImportItem item) {
 +  base::Value::Dict data;
 +  data.Set("importer_name", source_profile_.importer_name);
 +  data.Set("importer_type", source_profile_.importer_type);
@@ -1290,18 +1290,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +class BraveImporterObserver : public importer::ImporterProgressObserver {
 + public:
 +  using ReportProgressCallback = base::RepeatingCallback<void(
-+      const importer::SourceProfile& source_profile,
++      const user_data_importer::SourceProfile& source_profile,
 +      const base::Value::Dict&)>;
 +
 +  BraveImporterObserver(ExternalProcessImporterHost* host,
-+                        const importer::SourceProfile& source_profile,
++                        const user_data_importer::SourceProfile& source_profile,
 +                        uint16_t imported_items,
 +                        ReportProgressCallback callback);
 +  ~BraveImporterObserver() override;
 +
 +  void ImportStarted() override;
-+  void ImportItemStarted(importer::ImportItem item) override;
-+  void ImportItemEnded(importer::ImportItem item) override;
++  void ImportItemStarted(user_data_importer::ImportItem item) override;
++  void ImportItemEnded(user_data_importer::ImportItem item) override;
 +  void ImportEnded() override;
 +
 + private:
@@ -1309,7 +1309,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +  ExternalProcessImporterHost* GetImporterHostForTesting();
 +
-+  importer::SourceProfile source_profile_;
++  user_data_importer::SourceProfile source_profile_;
 +  uint16_t imported_items_ = 0;
 +  ReportProgressCallback callback_;
 +  // By some reasons ImportStarted event is called few times from different
@@ -1339,16 +1339,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "content/public/browser/service_process_host.h"
 +
 +namespace {
-+bool ShouldUseBraveImporter(importer::ImporterType type) {
++bool ShouldUseBraveImporter(user_data_importer::ImporterType type) {
 +  switch (type) {
-+    case importer::TYPE_CHROME:
-+    case importer::TYPE_EDGE_CHROMIUM:
-+    case importer::TYPE_VIVALDI:
-+    case importer::TYPE_OPERA:
-+    case importer::TYPE_YANDEX:
-+    case importer::TYPE_WHALE:
-+    case importer::TYPE_ARC:
-+    case importer::TYPE_BRAVE:
++    case user_data_importer::TYPE_CHROME:
++    case user_data_importer::TYPE_EDGE_CHROMIUM:
++    case user_data_importer::TYPE_VIVALDI:
++    case user_data_importer::TYPE_OPERA:
++    case user_data_importer::TYPE_YANDEX:
++    case user_data_importer::TYPE_WHALE:
++    case user_data_importer::TYPE_ARC:
++    case user_data_importer::TYPE_BRAVE:
 +      return true;
 +    default:
 +      return false;
@@ -1364,7 +1364,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +BraveExternalProcessImporterClient::BraveExternalProcessImporterClient(
 +    base::WeakPtr<ExternalProcessImporterHost> importer_host,
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t items,
 +    InProcessImporterBridge* bridge)
 +    : ExternalProcessImporterClient(
@@ -1422,7 +1422,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +void BraveExternalProcessImporterClient::OnImportItemFinished(
-+    importer::ImportItem import_item) {
++    user_data_importer::ImportItem import_item) {
 +  if (!ShouldUseBraveImporter(source_profile_.importer_type)) {
 +    ExternalProcessImporterClient::OnImportItemFinished(import_item);
 +    return;
@@ -1458,7 +1458,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + public:
 +  BraveExternalProcessImporterClient(
 +      base::WeakPtr<ExternalProcessImporterHost> importer_host,
-+      const importer::SourceProfile& source_profile,
++      const user_data_importer::SourceProfile& source_profile,
 +      uint16_t items,
 +      InProcessImporterBridge* bridge);
 +
@@ -1471,7 +1471,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  void Start() override;
 +  void Cancel() override;
 +  void CloseMojoHandles() override;
-+  void OnImportItemFinished(importer::ImportItem import_item) override;
++  void OnImportItemFinished(user_data_importer::ImportItem import_item) override;
 +
 + protected:
 +  ~BraveExternalProcessImporterClient() override;
@@ -1607,7 +1607,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +
 +  if (!ids.empty() && observer_)
-+    observer_->ImportItemEnded(importer::EXTENSIONS);
++    observer_->ImportItemEnded(user_data_importer::EXTENSIONS);
 +
 +  ExternalProcessImporterHost::NotifyImportEnded();
 +}
@@ -1637,7 +1637,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  // Handling extensions importing after finishing all other properties makes
 +  // logic simpler.
 +  // Don't import if cancelled.
-+  if (!cancelled_ && (items_ & importer::EXTENSIONS)) {
++  if (!cancelled_ && (items_ & user_data_importer::EXTENSIONS)) {
 +    LaunchExtensionsImport();
 +    return;
 +  }
@@ -1807,9 +1807,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "chrome/browser/ui/browser_tabstrip.h"
 +#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 +#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-+#include "chrome/common/importer/importer_data_types.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "content/public/browser/web_ui.h"
++#include "components/user_data_importer/common/importer_data_types.h"
 +#include "ui/base/ui_base_types.h"
 +#include "url/gurl.h"
 +
@@ -2071,33 +2071,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "chrome/utility/importer/brave_external_process_importer_bridge.h"
 +#include "chrome/utility/importer/chrome_importer.h"
 +#include "build/build_config.h"
-+#include "chrome/common/importer/importer_type.h"
 +#include "chrome/common/importer/profile_import.mojom.h"
 +#include "chrome/utility/importer/external_process_importer_bridge.h"
 +#include "chrome/utility/importer/importer.h"
++#include "components/user_data_importer/common/importer_type.h"
 +#include "content/public/utility/utility_thread.h"
 +#include "mojo/public/cpp/bindings/remote.h"
 +#include "mojo/public/cpp/bindings/shared_remote.h"
 +
 +namespace {
 +
-+scoped_refptr<Importer> CreateImporterByType(importer::ImporterType type) {
++scoped_refptr<Importer> CreateImporterByType(user_data_importer::ImporterType type) {
 +  switch (type) {
-+    case importer::TYPE_CHROME:
++    case user_data_importer::TYPE_CHROME:
 +      return new ChromeImporter();
-+    case importer::TYPE_EDGE_CHROMIUM:
++    case user_data_importer::TYPE_EDGE_CHROMIUM:
 +      return new ChromeImporter();
-+    case importer::TYPE_VIVALDI:
++    case user_data_importer::TYPE_VIVALDI:
 +      return new ChromeImporter();
-+    case importer::TYPE_OPERA:
++    case user_data_importer::TYPE_OPERA:
 +      return new ChromeImporter();
-+    case importer::TYPE_YANDEX:
++    case user_data_importer::TYPE_YANDEX:
 +      return new ChromeImporter();
-+    case importer::TYPE_WHALE:
++    case user_data_importer::TYPE_WHALE:
 +      return new ChromeImporter();
-+    case importer::TYPE_ARC:
++    case user_data_importer::TYPE_ARC:
 +      return new ChromeImporter();
-+    case importer::TYPE_BRAVE:
++    case user_data_importer::TYPE_BRAVE:
 +      return new ChromeImporter();
 +    default:
 +      break;
@@ -2114,7 +2114,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +BraveProfileImportImpl::~BraveProfileImportImpl() = default;
 +
 +void BraveProfileImportImpl::StartImport(
-+    const importer::SourceProfile& source_profile,
++    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t items,
 +    const base::flat_map<uint32_t, std::string>& localized_strings,
 +    mojo::PendingRemote<chrome::mojom::ProfileImportObserver> observer) {
@@ -2122,21 +2122,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +  if (source_profile.importer_name.starts_with(u"Chrome")) {
 +    command_line->AppendSwitch("import-chrome");
-+  } else if (source_profile.importer_type == importer::TYPE_EDGE_CHROMIUM) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_EDGE_CHROMIUM) {
 +    command_line->AppendSwitch("import-edge");
 +  } else if (source_profile.importer_name.starts_with(u"Chromium")) {
 +    command_line->AppendSwitch("import-chromium");
-+  } else if (source_profile.importer_type == importer::TYPE_OPERA) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_OPERA) {
 +    command_line->AppendSwitch("import-opera");
-+  } else if (source_profile.importer_type == importer::TYPE_YANDEX) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_YANDEX) {
 +    command_line->AppendSwitch("import-yandex");
-+  } else if (source_profile.importer_type == importer::TYPE_WHALE) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_WHALE) {
 +    command_line->AppendSwitch("import-whale");
-+  } else if (source_profile.importer_type == importer::TYPE_ARC) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_ARC) {
 +    command_line->AppendSwitch("import-arc");
-+  } else if (source_profile.importer_type == importer::TYPE_BRAVE) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_BRAVE) {
 +    command_line->AppendSwitch("import-brave");
-+  } else if (source_profile.importer_type == importer::TYPE_VIVALDI) {
++  } else if (source_profile.importer_type == user_data_importer::TYPE_VIVALDI) {
 +    command_line->AppendSwitch("import-vivaldi");
 +  }
 +
@@ -2171,7 +2171,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +void BraveProfileImportImpl::ReportImportItemFinished(
-+    importer::ImportItem item) {
++    user_data_importer::ImportItem item) {
 +  items_to_import_ ^= item;  // Remove finished item from mask.
 +  if (items_to_import_ == 0) {
 +    ImporterCleanup();
@@ -2226,13 +2226,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + private:
 +  // chrome::mojom::ChromeProfileImport overrides:
 +  void StartImport(
-+      const importer::SourceProfile& source_profile,
++      const user_data_importer::SourceProfile& source_profile,
 +      uint16_t items,
 +      const base::flat_map<uint32_t, std::string>& localized_strings,
 +      mojo::PendingRemote<chrome::mojom::ProfileImportObserver> observer)
 +      override;
 +  void CancelImport() override;
-+  void ReportImportItemFinished(importer::ImportItem item) override;
++  void ReportImportItemFinished(user_data_importer::ImportItem item) override;
 +
 +  void ImporterCleanup();
 +
@@ -2243,7 +2243,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  // directly back to the ProfileImportProcessHost.
 +  scoped_refptr<BraveExternalProcessImporterBridge> bridge_;
 +
-+  // A bitmask of importer::ImportItem.
++  // A bitmask of user_data_importer::ImportItem.
 +  uint16_t items_to_import_ = 0;
 +
 +  // Importer of the appropriate type (Firefox, Safari, IE, etc.)
@@ -2324,10 +2324,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "base/strings/string_util.h"
 +#include "base/strings/utf_string_conversions.h"
 +#include "build/build_config.h"
-+#include "chrome/common/importer/imported_bookmark_entry.h"
 +#include "chrome/common/importer/importer_bridge.h"
-+#include "chrome/common/importer/importer_data_types.h"
-+#include "chrome/common/importer/importer_url_row.h"
 +#include "chrome/common/importer/scoped_copy_file.h"
 +#include "chrome/grit/generated_resources.h"
 +#include "chrome/utility/importer/brave_external_process_importer_bridge.h"
@@ -2338,6 +2335,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "components/password_manager/core/common/password_manager_pref_names.h"
 +#include "components/prefs/json_pref_store.h"
 +#include "components/prefs/pref_filter.h"
++#include "components/user_data_importer/common/imported_bookmark_entry.h"
++#include "components/user_data_importer/common/importer_data_types.h"
++#include "components/user_data_importer/common/importer_url_row.h"
 +#include "components/webdata/common/webdata_constants.h"
 +#include "sql/database.h"
 +#include "sql/statement.h"
@@ -2446,16 +2446,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +bool PasswordFormToImportedPasswordForm(
 +    const password_manager::PasswordForm& form,
-+    importer::ImportedPasswordForm& imported_form) {
++    user_data_importer::ImportedPasswordForm& imported_form) {
 +  if (form.scheme != password_manager::PasswordForm::Scheme::kHtml &&
 +      form.scheme != password_manager::PasswordForm::Scheme::kBasic) {
 +    return false;
 +  }
 +
 +  if (form.scheme == password_manager::PasswordForm::Scheme::kHtml) {
-+    imported_form.scheme = importer::ImportedPasswordForm::Scheme::kHtml;
++    imported_form.scheme = user_data_importer::ImportedPasswordForm::Scheme::kHtml;
 +  } else {
-+    imported_form.scheme = importer::ImportedPasswordForm::Scheme::kBasic;
++    imported_form.scheme = user_data_importer::ImportedPasswordForm::Scheme::kBasic;
 +  }
 +
 +  imported_form.signon_realm = form.signon_realm;
@@ -2475,7 +2475,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +ChromeImporter::~ChromeImporter() = default;
 +
-+void ChromeImporter::StartImport(const importer::SourceProfile& source_profile,
++void ChromeImporter::StartImport(const user_data_importer::SourceProfile& source_profile,
 +                                 uint16_t items,
 +                                 ImporterBridge* bridge) {
 +  bridge_ = bridge;
@@ -2484,32 +2484,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  // The order here is important!
 +  bridge_->NotifyStarted();
 +
-+  if ((items & importer::HISTORY) && !cancelled()) {
-+    bridge_->NotifyItemStarted(importer::HISTORY);
++  if ((items & user_data_importer::HISTORY) && !cancelled()) {
++    bridge_->NotifyItemStarted(user_data_importer::HISTORY);
 +    ImportHistory();
-+    bridge_->NotifyItemEnded(importer::HISTORY);
++    bridge_->NotifyItemEnded(user_data_importer::HISTORY);
 +  }
 +
-+  if ((items & importer::FAVORITES) && !cancelled()) {
-+    bridge_->NotifyItemStarted(importer::FAVORITES);
++  if ((items & user_data_importer::FAVORITES) && !cancelled()) {
++    bridge_->NotifyItemStarted(user_data_importer::FAVORITES);
 +    ImportBookmarks();
-+    bridge_->NotifyItemEnded(importer::FAVORITES);
++    bridge_->NotifyItemEnded(user_data_importer::FAVORITES);
 +  }
 +
 +#if BUILDFLAG(IS_WIN)
-+  auto source_path = source_profile.importer_type == importer::TYPE_OPERA
++  auto source_path = source_profile.importer_type == user_data_importer::TYPE_OPERA
 +                         ? source_path_
 +                         : source_path_.DirName();
 +#else
 +  auto source_path = source_path_;
 +#endif
 +  const bool set_encryption_key = SetEncryptionKey(source_path);
-+  if ((items & importer::PASSWORDS) && !cancelled() && set_encryption_key) {
-+    bridge_->NotifyItemStarted(importer::PASSWORDS);
++  if ((items & user_data_importer::PASSWORDS) && !cancelled() && set_encryption_key) {
++    bridge_->NotifyItemStarted(user_data_importer::PASSWORDS);
 +    ImportPasswords(base::FilePath(FILE_PATH_LITERAL("Login Data")));
 +    ImportPasswords(
 +        base::FilePath(FILE_PATH_LITERAL("Login Data For Account")));
-+    bridge_->NotifyItemEnded(importer::PASSWORDS);
++    bridge_->NotifyItemEnded(user_data_importer::PASSWORDS);
 +  }
 +
 +  bridge_->NotifyEnded();
@@ -2545,11 +2545,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  s.BindInt64(3, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
 +  s.BindInt64(4, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 +
-+  std::vector<ImporterURLRow> rows;
++  std::vector<user_data_importer::ImporterURLRow> rows;
 +  while (s.Step() && !cancelled()) {
 +    GURL url(s.ColumnString(0));
 +
-+    ImporterURLRow row(url);
++    user_data_importer::ImporterURLRow row(url);
 +    row.title = s.ColumnString16(1);
 +    row.last_visit = base::Time::FromSecondsSinceUnixEpoch(
 +        chromeTimeToDouble((s.ColumnInt64(2))));
@@ -2561,7 +2561,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +
 +  if (!rows.empty() && !cancelled())
-+    bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_CHROME_IMPORTED);
++    bridge_->SetHistoryItems(rows, user_data_importer::VISIT_SOURCE_CHROME_IMPORTED);
 +}
 +
 +void ChromeImporter::ImportBookmarks() {
@@ -2579,7 +2579,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  if (!bookmark_dict)
 +    return;
 +
-+  std::vector<ImportedBookmarkEntry> bookmarks;
++  std::vector<user_data_importer::ImportedBookmarkEntry> bookmarks;
 +  const base::Value::Dict* roots = bookmark_dict->FindDict("roots");
 +  if (roots) {
 +    // Importing bookmark bar items
@@ -2690,7 +2690,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    const base::Value::Dict* folder,
 +    const std::vector<std::u16string>& parent_path,
 +    bool is_in_toolbar,
-+    std::vector<ImportedBookmarkEntry>* bookmarks) {
++    std::vector<user_data_importer::ImportedBookmarkEntry>* bookmarks) {
 +  const base::Value::List* children = folder->FindList("children");
 +  if (children) {
 +    for (const auto& value : *children) {
@@ -2702,7 +2702,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      auto name = base::UTF8ToUTF16(name_found ? *name_found : std::string());
 +      const auto* type = dict->FindString("type");
 +      const auto* url = dict->FindString("url");
-+      ImportedBookmarkEntry entry;
++      user_data_importer::ImportedBookmarkEntry entry;
 +      if (type && *type == "folder") {
 +        // Folders are added implicitly on adding children, so we only
 +        // explicitly add empty folders.
@@ -2764,7 +2764,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  bool success = database.GetAutofillableLogins(&forms);
 +  if (success) {
 +    for (auto& entry : forms) {
-+      importer::ImportedPasswordForm form;
++      user_data_importer::ImportedPasswordForm form;
 +      if (PasswordFormToImportedPasswordForm(entry, form)) {
 +        bridge_->SetPasswordForm(form);
 +      }
@@ -2774,7 +2774,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  success = database.GetBlocklistLogins(&blocklist);
 +  if (success) {
 +    for (auto& entry : blocklist) {
-+      importer::ImportedPasswordForm form;
++      user_data_importer::ImportedPasswordForm form;
 +      if (PasswordFormToImportedPasswordForm(entry, form)) {
 +        bridge_->SetPasswordForm(form);
 +      }
@@ -2783,7 +2783,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 --- /dev/null
 +++ b/chrome/utility/importer/chrome_importer.h
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,77 @@
 +/* Copyright (c) 2019 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2807,7 +2807,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "chrome/utility/importer/importer.h"
 +#include "components/favicon_base/favicon_usage_data.h"
 +
++namespace user_data_importer {
 +struct ImportedBookmarkEntry;
++}
 +
 +namespace sql {
 +class Database;
@@ -2820,7 +2822,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  ChromeImporter& operator=(const ChromeImporter&) = delete;
 +
 +  // Importer:
-+  void StartImport(const importer::SourceProfile& source_profile,
++  void StartImport(const user_data_importer::SourceProfile& source_profile,
 +                   uint16_t items,
 +                   ImporterBridge* bridge) override;
 +
@@ -2853,7 +2855,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      const base::Value::Dict* folder,
 +      const std::vector<std::u16string>& parent_path,
 +      bool is_in_toolbar,
-+      std::vector<ImportedBookmarkEntry>* bookmarks);
++      std::vector<user_data_importer::ImportedBookmarkEntry>* bookmarks);
 +
 +  std::u16string importer_name_;
 +};
@@ -2861,7 +2863,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_UTILITY_IMPORTER_CHROME_IMPORTER_H_
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -10879,6 +10879,9 @@ Check your passwords anytime in <ph name
+@@ -10913,6 +10913,9 @@ Check your passwords anytime in <ph name
              Microsoft Edge
            </message>
          </if>

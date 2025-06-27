@@ -120,8 +120,7 @@ helium/core/copy-page-url-shortcut.patch
 helium/core/update-default-browser-prefs.patch
 helium/core/proxy-extension-downloads.patch
 helium/core/reenable-update-checks.patch
-helium/core/download-icons-from-source.patch
-helium/core/regenerate-search_engine_choice_scaled_resources.patch
+helium/core/fix-search-engine-icons.patch
 helium/core/add-native-bangs.patch
 helium/core/force-eu-search-features.patch
 helium/core/disable-bookmarks-bar.patch

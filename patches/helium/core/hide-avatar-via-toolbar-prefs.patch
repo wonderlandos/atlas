@@ -13,7 +13,7 @@
    (*s_allowlist)[::prefs::kPinnedActions] = settings_api::PrefType::kList;
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -544,6 +544,7 @@
+@@ -546,6 +546,7 @@
  #define TOOLBAR_PINNABLE_ACTION_IDS \
    E(kActionHome, IDC_HOME) \
    E(kActionForward, IDC_FORWARD) \
@@ -23,7 +23,7 @@
    E(kActionShowPasswordManager, IDC_SHOW_PASSWORD_MANAGER) \
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -93,6 +93,9 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -109,6 +109,9 @@ void RegisterBrowserUserPrefs(user_prefs
    registry->RegisterBooleanPref(prefs::kPinSplitTabButton, false,
                                  pref_registration_flags);
  
@@ -57,7 +57,7 @@
  void PinnedToolbarActionsModel::MaybeMigrateExistingPinnedStates() {
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -461,8 +461,7 @@ void ToolbarView::Init() {
+@@ -468,8 +468,7 @@ void ToolbarView::Init() {
  #else
    // DevTools profiles are OffTheRecord, so hide it there.
    show_avatar_toolbar_button = browser_->profile()->IsIncognitoProfile() ||
@@ -67,7 +67,7 @@
  #endif
  
    const std::string sab_value = base::CommandLine::ForCurrentProcess()->
-@@ -531,6 +530,17 @@ void ToolbarView::Init() {
+@@ -538,6 +537,17 @@ void ToolbarView::Init() {
  
    home_->SetVisible(show_home_button_.GetValue());
  
@@ -85,7 +85,7 @@
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1241,6 +1251,10 @@ void ToolbarView::OnShowHomeButtonChange
+@@ -1260,6 +1270,10 @@ void ToolbarView::OnShowHomeButtonChange
    home_->SetVisible(show_home_button_.GetValue());
  }
  
@@ -98,7 +98,7 @@
      // Update the internal margins for touch layout.
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.h
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.h
-@@ -279,6 +279,8 @@ class ToolbarView : public views::Access
+@@ -287,6 +287,8 @@ class ToolbarView : public views::Access
  
    void OnShowHomeButtonChanged();
  
@@ -107,7 +107,7 @@
    void OnTouchUiChanged();
  
    void UpdateClipPath();
-@@ -330,6 +332,8 @@ class ToolbarView : public views::Access
+@@ -338,6 +340,8 @@ class ToolbarView : public views::Access
    // Controls whether or not a home button should be shown on the toolbar.
    BooleanPrefMember show_home_button_;
  

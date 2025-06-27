@@ -133,7 +133,7 @@
 +#endif  // EXTENSIONS_COMMON_MANIFEST_URL_PATCHER_H_
 --- a/extensions/common/BUILD.gn
 +++ b/extensions/common/BUILD.gn
-@@ -449,6 +449,8 @@ static_library("common") {
+@@ -450,6 +450,8 @@ static_library("common") {
      "manifest_handlers/webview_info.h",
      "manifest_url_handlers.cc",
      "manifest_url_handlers.h",
@@ -177,7 +177,7 @@
  
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -173,6 +173,7 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -191,6 +191,7 @@ void RegisterBrowserUserPrefs(user_prefs
  
    {
      registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
@@ -201,7 +201,7 @@
  </div>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1876,6 +1876,10 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1853,6 +1853,10 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
@@ -214,7 +214,7 @@
          IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION},
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2106,6 +2106,12 @@
+@@ -1852,6 +1852,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
      When enabled, Helium will be able to connect to anonymous services for providing additional functionality, such as native !bangs or extension downloads.
    </message>
@@ -276,7 +276,7 @@
                              PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
-@@ -441,6 +441,7 @@ source_set("extensions") {
+@@ -470,6 +470,7 @@ source_set("extensions") {
      "//components/data_sharing/public:features",
      "//components/embedder_support",
      "//components/enterprise",
@@ -336,7 +336,7 @@
  
 --- a/chrome/browser/extensions/updater/extension_updater.cc
 +++ b/chrome/browser/extensions/updater/extension_updater.cc
-@@ -36,7 +36,10 @@
+@@ -35,7 +35,10 @@
  #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
  #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
  #include "chrome/browser/profiles/profile.h"
@@ -347,7 +347,7 @@
  #include "components/update_client/update_query_params.h"
  #include "content/public/browser/browser_context.h"
  #include "content/public/browser/browser_task_traits.h"
-@@ -213,9 +216,6 @@ void ExtensionUpdater::EnsureDownloaderC
+@@ -212,9 +215,6 @@ void ExtensionUpdater::EnsureDownloaderC
    if (!downloader_.get()) {
      downloader_ = downloader_factory_.Run(this);
    }
@@ -357,7 +357,7 @@
  }
  
  void ExtensionUpdater::Start() {
-@@ -237,6 +237,15 @@ void ExtensionUpdater::Start() {
+@@ -236,6 +236,15 @@ void ExtensionUpdater::Start() {
        CheckSoon();
      ScheduleNextCheck();
    }
@@ -373,7 +373,7 @@
  }
  
  void ExtensionUpdater::Stop() {
-@@ -366,7 +375,6 @@ void ExtensionUpdater::AddToDownloader(
+@@ -365,7 +374,6 @@ void ExtensionUpdater::AddToDownloader(
      int request_id,
      DownloadFetchPriority fetch_priority,
      ExtensionUpdateCheckParams* update_check_params) {
@@ -381,7 +381,7 @@
  
    // In Kiosk mode extensions are downloaded and updated by the ExternalCache.
    // Therefore we skip updates here to avoid conflicts.
-@@ -464,7 +472,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+@@ -463,7 +471,7 @@ void ExtensionUpdater::CheckNow(CheckPar
    // Add fetch records for extensions that should be fetched by an update URL.
    // These extensions are not yet installed. They come from group policy
    // and external install sources.
@@ -390,7 +390,7 @@
        PendingExtensionManager::Get(profile_);
  
    ExtensionUpdateCheckParams update_check_params;
-@@ -597,7 +605,7 @@ void ExtensionUpdater::CheckNow(CheckPar
+@@ -596,7 +604,7 @@ void ExtensionUpdater::CheckNow(CheckPar
    // OnExtensionDownloadFinished for each extension that was checked.
    downloader_->StartAllPending(extension_cache_);
  
@@ -399,7 +399,7 @@
      update_check_params.priority =
          params.fetch_priority == DownloadFetchPriority::kBackground
              ? ExtensionUpdateCheckParams::UpdateCheckPriority::BACKGROUND
-@@ -815,6 +823,9 @@ void ExtensionUpdater::CleanUpCrxFileIfN
+@@ -814,6 +822,9 @@ void ExtensionUpdater::CleanUpCrxFileIfN
  
  bool ExtensionUpdater::CanUseUpdateService(
      const ExtensionId& extension_id) const {
@@ -488,7 +488,7 @@
          << "An extension's update URL cannot be overridden to the webstore.";
 --- a/chrome/browser/extensions/updater/extension_updater.h
 +++ b/chrome/browser/extensions/updater/extension_updater.h
-@@ -22,6 +22,7 @@
+@@ -21,6 +21,7 @@
  #include "base/observer_list.h"
  #include "base/time/time.h"
  #include "base/unguessable_token.h"
@@ -496,7 +496,7 @@
  #include "components/keyed_service/core/keyed_service.h"
  #include "extensions/browser/extension_registry_observer.h"
  #include "extensions/browser/extension_system.h"
-@@ -406,6 +407,8 @@ class ExtensionUpdater : public KeyedSer
+@@ -405,6 +406,8 @@ class ExtensionUpdater : public KeyedSer
    raw_ptr<PrefService> prefs_ = nullptr;
    raw_ptr<Profile> profile_ = nullptr;
  
@@ -514,7 +514,7 @@
 +  void OverrideURL(GURL new_url) { update_url_ = new_url; }
 +
    // ShouldAllowInstall() returns the result of running constructor argument
-   // |should_allow_install| on an extension. After an extension is unpacked,
+   // `should_allow_install` on an extension. After an extension is unpacked,
    // this function is run. If it returns true, the extension is installed.
 --- a/extensions/browser/pending_extension_manager.h
 +++ b/extensions/browser/pending_extension_manager.h

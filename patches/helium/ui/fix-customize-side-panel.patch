@@ -1,23 +1,22 @@
 --- a/chrome/browser/resources/side_panel/customize_chrome/app.ts
 +++ b/chrome/browser/resources/side_panel/customize_chrome/app.ts
-@@ -139,24 +139,6 @@ export class AppElement extends AppEleme
+@@ -140,23 +140,6 @@ export class AppElement extends AppEleme
                    element.scrollIntoView({behavior: 'auto'});
                  });
  
 -    this.attachedTabStateUpdatedId_ =
 -        CustomizeChromeApiProxy.getInstance()
 -            .callbackRouter.attachedTabStateUpdated.addListener(
--                (isSourceTabFirstPartyNtp: boolean) => {
--                  if (this.isSourceTabFirstPartyNtp_ ===
--                      isSourceTabFirstPartyNtp) {
+-                (newTabPageType: NewTabPageType) => {
+-                  if (this.newTabPageType_ === newTabPageType) {
 -                    return;
 -                  }
 -
--                  this.isSourceTabFirstPartyNtp_ = isSourceTabFirstPartyNtp;
+-                  this.newTabPageType_ = newTabPageType;
 -
 -                  // Since some pages aren't supported in non first party mode,
 -                  // change the section back to the overview.
--                  if (!this.isSourceTabFirstPartyNtp_ &&
+-                  if (!this.isSourceTabFirstPartyNtp_() &&
 -                      !this.pageSupportedOnNonFirstPartyNtps()) {
 -                    this.page_ = CustomizeChromePage.OVERVIEW;
 -                  }
@@ -25,7 +24,7 @@
      this.pageHandler_.updateAttachedTabState();
  
      this.setThemeEditableId_ = CustomizeChromeApiProxy.getInstance()
-@@ -291,10 +273,6 @@ export class AppElement extends AppEleme
+@@ -299,10 +282,6 @@ export class AppElement extends AppEleme
      await this.updateComplete;
      page.focusOnBackButton();
    }
@@ -38,15 +37,15 @@
  declare global {
 --- a/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
 +++ b/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
-@@ -131,12 +131,6 @@ export class AppearanceElement extends A
+@@ -138,12 +138,6 @@ export class AppearanceElement extends A
          });
      this.pageHandler_.updateTheme();
  
 -    this.attachedTabStateUpdatedId_ =
 -        CustomizeChromeApiProxy.getInstance()
 -            .callbackRouter.attachedTabStateUpdated.addListener(
--                (isSourceTabFirstPartyNtp: boolean) => {
--                  this.isSourceTabFirstPartyNtp_ = isSourceTabFirstPartyNtp;
+-                (newTabPageType: NewTabPageType) => {
+-                  this.newTabPageType_ = newTabPageType;
 -                });
      this.pageHandler_.updateAttachedTabState();
  

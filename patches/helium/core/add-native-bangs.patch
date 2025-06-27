@@ -61,7 +61,7 @@
  #include "third_party/search_engines_data/resources/definitions/prepopulated_engines.h"
  #include "ui/base/l10n/l10n_util.h"
  #include "url/gurl.h"
-@@ -510,3 +511,20 @@ std::unique_ptr<TemplateURLData> Templat
+@@ -517,3 +518,20 @@ std::unique_ptr<TemplateURLData> Templat
  
    return turl;
  }
@@ -84,7 +84,7 @@
 +}
 --- a/components/search_engines/template_url_service.cc
 +++ b/components/search_engines/template_url_service.cc
-@@ -46,6 +46,8 @@
+@@ -40,6 +40,8 @@
  #include "base/strings/utf_string_conversions.h"
  #include "build/build_config.h"
  #include "components/country_codes/country_codes.h"
@@ -93,7 +93,7 @@
  #include "components/omnibox/common/omnibox_features.h"
  #include "components/pref_registry/pref_registry_syncable.h"
  #include "components/prefs/pref_service.h"
-@@ -62,7 +64,9 @@
+@@ -56,7 +58,9 @@
  #include "components/search_engines/search_engines_switches.h"
  #include "components/search_engines/search_terms_data.h"
  #include "components/search_engines/template_url.h"
@@ -103,7 +103,7 @@
  #include "components/search_engines/template_url_prepopulate_data.h"
  #include "components/search_engines/template_url_prepopulate_data_resolver.h"
  #include "components/search_engines/template_url_service_client.h"
-@@ -76,6 +80,7 @@
+@@ -70,6 +74,7 @@
  #include "components/sync/protocol/search_engine_specifics.pb.h"
  #include "components/url_formatter/url_fixer.h"
  #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -111,7 +111,7 @@
  #include "url/gurl.h"
  #include "url/origin.h"
  #include "url/url_util.h"
-@@ -489,6 +494,7 @@ class TemplateURLService::PreLoadingProv
+@@ -526,6 +531,7 @@ class TemplateURLService::PreLoadingProv
  // TemplateURLService ---------------------------------------------------------
  TemplateURLService::TemplateURLService(
      PrefService& prefs,
@@ -119,7 +119,7 @@
      search_engines::SearchEngineChoiceService& search_engine_choice_service,
      TemplateURLPrepopulateData::Resolver& prepopulate_data_resolver,
      std::unique_ptr<SearchTermsData> search_terms_data,
-@@ -501,6 +507,8 @@ TemplateURLService::TemplateURLService(
+@@ -538,6 +544,8 @@ TemplateURLService::TemplateURLService(
        prepopulate_data_resolver_(prepopulate_data_resolver),
        search_terms_data_(std::move(search_terms_data)),
        web_data_service_(web_data_service),
@@ -128,7 +128,7 @@
        client_(std::move(client)),
        dsp_change_callback_(dsp_change_callback),
        pre_loading_providers_(std::make_unique<PreLoadingProviders>()),
-@@ -517,11 +525,13 @@ TemplateURLService::TemplateURLService(
+@@ -554,11 +562,13 @@ TemplateURLService::TemplateURLService(
  
  TemplateURLService::TemplateURLService(
      PrefService& prefs,
@@ -142,7 +142,7 @@
            search_engine_choice_service,
            prepopulate_data_resolver,
            /*search_terms_data=*/std::make_unique<SearchTermsData>(),
-@@ -624,6 +634,10 @@ bool TemplateURLService::ShowInActivesLi
+@@ -661,6 +671,10 @@ bool TemplateURLService::ShowInActivesLi
  }
  
  bool TemplateURLService::HiddenFromLists(const TemplateURL* t_url) const {
@@ -151,9 +151,9 @@
 +  }
 +
    switch (t_url->policy_origin()) {
-     case TemplateURLData::PolicyOrigin::kNoPolicy:
-       // Hide if another engine (e.g., one set by policy) takes precedence for
-@@ -1481,11 +1495,37 @@ void TemplateURLService::Load() {
+     case TemplateURLData::PolicyOrigin::kDefaultSearchProvider:
+       return false;
+@@ -1473,11 +1487,37 @@ void TemplateURLService::Load() {
  
    if (web_data_service_) {
      load_handle_ = web_data_service_->GetKeywords(this);
@@ -191,7 +191,7 @@
  base::CallbackListSubscription TemplateURLService::RegisterOnLoadedCallback(
      base::OnceClosure callback) {
    return loaded_ ? base::CallbackListSubscription()
-@@ -2478,6 +2518,13 @@ void TemplateURLService::Init() {
+@@ -2481,6 +2521,13 @@ void TemplateURLService::Init() {
              base::Unretained(this)));
    }
  
@@ -236,7 +236,7 @@
        search_engines::SearchEngineChoiceService& search_engine_choice_service,
        TemplateURLPrepopulateData::Resolver& prepopulate_data_resolver,
        base::span<const TemplateURLService::Initializer> initializers = {});
-@@ -480,6 +484,8 @@ class TemplateURLService final : public
+@@ -475,6 +479,8 @@ class TemplateURLService final : public
    // OnTemplateURLServiceChanged.
    void Load();
  
@@ -245,7 +245,7 @@
    // Registers a callback to be called when the service has loaded.
    //
    // If the service has already loaded, this function does nothing.
-@@ -708,6 +714,8 @@ class TemplateURLService final : public
+@@ -718,6 +724,8 @@ class TemplateURLService final : public
  
    void Init();
  
@@ -254,7 +254,7 @@
    // Simulate a loaded `TemplateURLService`.
    void ApplyInitializersForTesting(
        base::span<const TemplateURLService::Initializer> initializers);
-@@ -911,6 +919,10 @@ class TemplateURLService final : public
+@@ -921,6 +929,10 @@ class TemplateURLService final : public
    // Service used to store entries.
    scoped_refptr<KeywordWebDataService> web_data_service_;
  
@@ -545,7 +545,7 @@
 +
 --- a/components/omnibox/browser/autocomplete_input.cc
 +++ b/components/omnibox/browser/autocomplete_input.cc
-@@ -743,9 +743,9 @@ bool AutocompleteInput::HasHTTPSScheme(c
+@@ -739,9 +739,9 @@ bool AutocompleteInput::HasHTTPSScheme(c
  // static
  AutocompleteInput::FeaturedKeywordMode
  AutocompleteInput::GetFeaturedKeywordMode(std::u16string_view text) {
@@ -557,7 +557,7 @@
      return FeaturedKeywordMode::kPrefix;
    return FeaturedKeywordMode::kFalse;
  }
-@@ -913,6 +913,7 @@ std::u16string AutocompleteInput::Autoco
+@@ -909,6 +909,7 @@ std::u16string AutocompleteInput::Autoco
      const std::u16string& input,
      bool trim_leading_whitespace,
      std::u16string* remaining_input) {
@@ -565,7 +565,7 @@
    // Find end of first token.  The AutocompleteController has trimmed leading
    // whitespace, so we need not skip over that.
    const size_t first_white(input.find_first_of(base::kWhitespaceUTF16));
-@@ -921,6 +922,39 @@ std::u16string AutocompleteInput::Autoco
+@@ -917,6 +918,39 @@ std::u16string AutocompleteInput::Autoco
      return input;  // Only one token provided.
    }
  
@@ -607,7 +607,7 @@
      const size_t remaining_start =
 --- a/components/search_engines/template_url_data.cc
 +++ b/components/search_engines/template_url_data.cc
-@@ -27,7 +27,7 @@ namespace {
+@@ -32,7 +32,7 @@ constexpr bool kEnableBuiltinSearchProvi
  // Returns a GUID used for sync, which is random except for built-in search
  // engines. The latter benefit from using a deterministic GUID, to make sure
  // sync doesn't incur in duplicates for prepopulated engines.
@@ -616,7 +616,7 @@
    // We compute a GUID deterministically given |prepopulate_id| or
    // |starter_pack_id|, using an arbitrary base GUID.
    std::string guid;
-@@ -38,6 +38,9 @@ std::string GenerateGUID(int prepopulate
+@@ -43,6 +43,9 @@ std::string GenerateGUID(int prepopulate
    } else if (starter_pack_id > 0) {
      guid = base::StringPrintf("ec205736-edd7-4022-a9a3-b431fc%06d",
                                starter_pack_id);
@@ -626,7 +626,7 @@
    } else {
      guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
    }
-@@ -117,7 +120,7 @@ TemplateURLData::TemplateURLData(
+@@ -128,7 +131,7 @@ TemplateURLData::TemplateURLData(
        regulatory_origin(RegulatoryExtensionType::kDefault),
        usage_count(0),
        prepopulate_id(prepopulate_id),
@@ -635,7 +635,7 @@
        preconnect_to_search_url(preconnect_to_search_url),
        prefetch_likely_navigations(prefetch_likely_navigations) {
    SetShortName(name);
-@@ -183,7 +186,7 @@ std::vector<uint8_t> TemplateURLData::Ge
+@@ -201,7 +204,7 @@ std::string TemplateURLData::GetBuiltinI
  }
  
  void TemplateURLData::GenerateSyncGUID() {
@@ -646,7 +646,7 @@
  size_t TemplateURLData::EstimateMemoryUsage() const {
 --- a/components/search_engines/template_url_data.h
 +++ b/components/search_engines/template_url_data.h
-@@ -256,6 +256,9 @@ struct TemplateURLData {
+@@ -268,6 +268,9 @@ struct TemplateURLData {
    // starter_pack_id > 0.
    int starter_pack_id{0};
  
@@ -658,7 +658,7 @@
  
 --- a/components/search_engines/template_url.cc
 +++ b/components/search_engines/template_url.cc
-@@ -1682,6 +1682,8 @@ bool TemplateURL::IsBetterThanConflictin
+@@ -1688,6 +1688,8 @@ bool TemplateURL::IsBetterThanConflictin
                                  : base::Time(),
          // Prefer engines that CANNOT be auto-replaced.
          !engine->safe_for_autoreplace(),
@@ -704,7 +704,7 @@
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1876,6 +1876,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1853,6 +1853,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
@@ -716,7 +716,7 @@
        {"heliumExtProxyToggleDescription",
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2112,6 +2112,12 @@
+@@ -1858,6 +1858,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
      When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
    </message>
@@ -745,7 +745,7 @@
                  label="$i18n{heliumExtProxyToggle}"
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -173,6 +173,7 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -191,6 +191,7 @@ void RegisterBrowserUserPrefs(user_prefs
  
    {
      registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
@@ -778,7 +778,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/omnibox/browser/omnibox_edit_model.cc
 +++ b/components/omnibox/browser/omnibox_edit_model.cc
-@@ -1722,7 +1722,10 @@ void OmniboxEditModel::InternalSetUserTe
+@@ -1642,7 +1642,10 @@ void OmniboxEditModel::InternalSetUserTe
  
  std::u16string OmniboxEditModel::MaybeStripKeyword(
      const std::u16string& text) const {
@@ -790,7 +790,7 @@
               ? AutocompleteInput::SplitReplacementStringFromInput(text, false)
               : text;
  }
-@@ -2976,9 +2979,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
+@@ -2857,9 +2860,8 @@ bool OmniboxEditModel::MaybeAcceptKeywor
      return false;
  
    size_t keyword_length = new_text.length() - 1;

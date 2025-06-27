@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.cc
 +++ b/chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.cc
-@@ -747,6 +747,7 @@ bool TabGroupEditorBubbleView::IsGroupSh
+@@ -772,6 +772,7 @@ bool TabGroupEditorBubbleView::IsGroupSh
  }
  
  bool TabGroupEditorBubbleView::ShouldShowSavedFooter() const {

@@ -75,7 +75,7 @@
  }
  
  void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
-@@ -496,14 +492,6 @@ void OmniboxResultView::ApplyThemeAndRef
+@@ -490,14 +486,6 @@ void OmniboxResultView::ApplyThemeAndRef
            popup_view_->controller()->client()->GetTemplateURLService())) {
      const OmniboxPopupSelection::LineState line_state =
          popup_view_->GetSelection().state;
@@ -92,7 +92,7 @@
    if (suggestion_view_->iph_link_view()->GetVisible()) {
 --- a/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
-@@ -117,12 +117,7 @@ views::View* OmniboxRowView::GetActiveAu
+@@ -105,12 +105,7 @@ views::View* OmniboxRowView::GetActiveAu
  }
  
  gfx::Insets OmniboxRowView::GetInsets() const {
@@ -108,7 +108,7 @@
  BEGIN_METADATA(OmniboxRowView)
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
-@@ -366,8 +366,7 @@ void OmniboxMatchCellView::SetIcon(const
+@@ -347,8 +347,7 @@ void OmniboxMatchCellView::SetIcon(const
        match.type == AutocompleteMatchType::HISTORY_CLUSTER;
    const bool is_instant_keyword_row =
        AutocompleteMatch::IsFeaturedSearchType(match.type);
@@ -118,7 +118,7 @@
      // When a PEDAL suggestion has been split out to its own row, apply a square
      // background with a distinctive color to the respective icon. Journeys
      // suggestion rows should also receive the same treatment.
-@@ -585,7 +584,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -584,7 +583,7 @@ int OmniboxMatchCellView::GetImageIndent
    // align with any other UI; it's just arbitrarily chosen by UX. Hence, it's
    // not derived from other matches' `indent` below.
    if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
@@ -127,18 +127,21 @@
    }
  
    // The entity, answer, and icon images are horizontally centered within their
-@@ -596,12 +595,13 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -595,7 +594,7 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
 -  int indent = 16 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
 +  int indent = 5 + kUniformRowHeightIconSize / 2 - kImageBoundsWidth / 2;
  
-   return indent;
+   indent += omnibox_feature_configs::AdjustOmniboxIndent()
+                 .Get()
+@@ -605,6 +604,8 @@ int OmniboxMatchCellView::GetImageIndent
  }
  
  int OmniboxMatchCellView::GetTextIndent() const {
 +  return 33;
++
    // Text indent is added to the `OmniboxMatchCellView::GetInsets()`. It is not
    // added to the image position & size.
  
@@ -155,7 +158,7 @@
    // smaller than this bounds; they'll be centered within the bounds.
 --- a/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_popup_view_views.cc
-@@ -573,7 +573,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
+@@ -572,7 +572,7 @@ gfx::Rect OmniboxPopupViewViews::GetTarg
    // This extra padding is not added if the results section has no height
    // (result set is empty or all results are hidden).
    if (popup_height != 0) {

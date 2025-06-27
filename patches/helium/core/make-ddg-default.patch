@@ -1,6 +1,6 @@
 --- a/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
 +++ b/third_party/search_engines_data/resources/definitions/prepopulated_engines.json
-@@ -177,30 +177,14 @@
+@@ -166,30 +166,14 @@
        "id": 114
      },
  
@@ -18,7 +18,7 @@
 -      "image_url_post_params": "encoded_image={google:imageThumbnail},image_url={google:imageURL},sbisrc={google:imageSearchSource},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},processed_image_dimensions={google:processedImageDimensions}",
 -      "image_translate_source_language_param_key": "sourcelang",
 -      "image_translate_target_language_param_key": "targetlang",
--      "search_intent_params": ["si", "gs_ssp"],
+-      "search_intent_params": ["si", "gs_ssp", "udm"],
 -      "alternate_urls": [
 -        "{google:baseURL}#q={searchTerms}",
 -        "{google:baseURL}search#q={searchTerms}",
@@ -69,50 +69,6 @@
  
    // Now check the rest of the prepopulate data.
    for (const auto* engine : TemplateURLPrepopulateData::kAllEngines) {
---- a/tools/search_engine_choice/generate_search_engine_icons.py
-+++ b/tools/search_engine_choice/generate_search_engine_icons.py
-@@ -18,6 +18,8 @@ def generate_icon_path_map(output_filena
-         '\tbase::MakeFixedFlatMap<std::u16string_view, std::string_view>({\n')
- 
-     for engine_keyword in engine_keywords:
-+      if engine_keyword == "google.com":
-+          continue
-       resource_name = search_engine_icons_utils.keyword_to_resource_name(
-           engine_keyword)
-       utils_file.write('\t\t{')
-@@ -26,11 +28,7 @@ def generate_icon_path_map(output_filena
- 
-     # Add Google to the map
-     utils_file.write('\t\t{u"google.com",\n')
--    utils_file.write('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)\n')
-     utils_file.write('\t\t "chrome://theme/IDR_GOOGLE_COM_PNG"\n')
--    utils_file.write('#else\n')
--    utils_file.write('\t\t "chrome://theme/IDR_DEFAULT_FAVICON"\n')
--    utils_file.write('#endif\n')
-     utils_file.write('\t}});\n')
- 
- 
-@@ -45,6 +43,8 @@ def generate_icon_resource_id_map(output
-     utils_file.write('\tbase::MakeFixedFlatMap<std::u16string_view, int>({\n')
- 
-     for engine_keyword in engine_keywords:
-+      if engine_keyword == "google.com":
-+        continue
-       resource_name = search_engine_icons_utils.keyword_to_resource_name(
-           engine_keyword)
-       utils_file.write('\t\t{')
-@@ -53,11 +53,7 @@ def generate_icon_resource_id_map(output
- 
-     # Add Google to the map
-     utils_file.write('\t\t{u"google.com",\n')
--    utils_file.write('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)\n')
-     utils_file.write('\t\t IDR_GOOGLE_COM_PNG\n')
--    utils_file.write('#else\n')
--    utils_file.write('\t\t IDR_DEFAULT_FAVICON\n')
--    utils_file.write('#endif\n')
-     utils_file.write('\t}});\n\n')
- 
- 
 --- a/third_party/search_engines_data/resources/definitions/regional_settings.json
 +++ b/third_party/search_engines_data/resources/definitions/regional_settings.json
 @@ -3,6 +3,18 @@

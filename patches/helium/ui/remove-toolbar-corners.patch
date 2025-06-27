@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -269,18 +269,6 @@ void ToolbarView::Init() {
+@@ -276,18 +276,6 @@ void ToolbarView::Init() {
    aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
  #endif
  
@@ -19,21 +19,22 @@
    auto location_bar = std::make_unique<LocationBarView>(
        browser_, browser_->profile(), browser_->command_controller(), this,
        display_mode_ != DisplayMode::NORMAL);
-@@ -834,13 +822,6 @@ void ToolbarView::Layout(PassKey) {
+@@ -851,14 +839,6 @@ void ToolbarView::Layout(PassKey) {
    // The container view should be the exact same size/position as ToolbarView.
    container_view_->SetSize(size());
  
 -  // The background views should be behind the top-left and top-right corners
 -  // of the container_view_.
--  const int corner_radius = GetLayoutConstant(TOOLBAR_CORNER_RADIUS);
--  background_view_left_->SetBounds(0, 0, corner_radius, corner_radius);
--  background_view_right_->SetBounds(width() - corner_radius, 0, corner_radius,
--                                    corner_radius);
+-  background_view_left_->SetBounds(0, 0, receding_corner_radius_,
+-                                   receding_corner_radius_);
+-  background_view_right_->SetBounds(width() - receding_corner_radius_, 0,
+-                                    receding_corner_radius_,
+-                                    receding_corner_radius_);
 -
    if (display_mode_ == DisplayMode::CUSTOM_TAB) {
      custom_tab_bar_->SetBounds(0, 0, width(),
                                 custom_tab_bar_->GetPreferredSize().height());
-@@ -850,7 +831,6 @@ void ToolbarView::Layout(PassKey) {
+@@ -868,7 +848,6 @@ void ToolbarView::Layout(PassKey) {
  
    if (display_mode_ == DisplayMode::NORMAL) {
      LayoutCommon();
@@ -41,12 +42,11 @@
    }
  
    if (toolbar_controller_) {
-@@ -888,37 +868,6 @@ void ToolbarView::OnThemeChanged() {
+@@ -906,38 +885,6 @@ void ToolbarView::OnThemeChanged() {
    SchedulePaint();
  }
  
 -void ToolbarView::UpdateClipPath() {
--  const int corner_radius = GetLayoutConstant(TOOLBAR_CORNER_RADIUS);
 -  const gfx::Rect local_bounds = GetLocalBounds();
 -  SkPath path;
 -  // The bottom of the toolbar may be clipped more than necessary in
@@ -60,12 +60,14 @@
 -  // enabled on all aura platforms.
 -  const int extended_height = local_bounds.height() + 2;
 -  path.moveTo(0, local_bounds.height());
--  path.lineTo(0, corner_radius);
--  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
--             SkPathDirection::kCW, corner_radius, 0);
--  path.lineTo(local_bounds.width() - corner_radius, 0);
--  path.arcTo(corner_radius, corner_radius, 0, SkPath::kSmall_ArcSize,
--             SkPathDirection::kCW, local_bounds.width(), corner_radius);
+-  path.lineTo(0, receding_corner_radius_);
+-  path.arcTo(receding_corner_radius_, receding_corner_radius_, 0,
+-             SkPath::kSmall_ArcSize, SkPathDirection::kCW,
+-             receding_corner_radius_, 0);
+-  path.lineTo(local_bounds.width() - receding_corner_radius_, 0);
+-  path.arcTo(receding_corner_radius_, receding_corner_radius_, 0,
+-             SkPath::kSmall_ArcSize, SkPathDirection::kCW, local_bounds.width(),
+-             receding_corner_radius_);
 -  path.lineTo(local_bounds.width(), extended_height);
 -  path.lineTo(0, extended_height);
 -  container_view_->SetClipPath(path);

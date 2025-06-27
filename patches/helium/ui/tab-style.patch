@@ -17,7 +17,7 @@
  constexpr int kChromeRefreshTabHorizontalPadding = 8;
  
  // The standard tab width is 232 DIP, excluding separators and overlap.
-@@ -97,11 +97,11 @@ int TabStyle::GetMinimumInactiveWidth()
+@@ -104,11 +104,11 @@ int TabStyle::GetMinimumInactiveWidth()
  }
  
  int TabStyle::GetTopCornerRadius() const {
@@ -69,7 +69,7 @@
  
 --- a/chrome/browser/ui/views/tabs/tab_style_views.cc
 +++ b/chrome/browser/ui/views/tabs/tab_style_views.cc
-@@ -202,8 +202,6 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
+@@ -214,8 +214,6 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
    CHECK(tab());
    const int stroke_thickness = GetStrokeThickness(force_active);
  
@@ -78,7 +78,7 @@
    // We'll do the entire path calculation in aligned pixels.
    // TODO(dfried): determine if we actually want to use `stroke_thickness` as
    // the inset in this case.
-@@ -217,11 +215,7 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
+@@ -229,11 +227,7 @@ SkPath TabStyleViewsImpl::GetPath(TabSty
    float extension_corner_radius = tab_style()->GetBottomCornerRadius() * scale;
  
    // Selected, hover, and inactive tab fills are a detached squarcle tab.

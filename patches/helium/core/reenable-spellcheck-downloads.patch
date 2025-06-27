@@ -96,7 +96,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -8070,6 +8070,8 @@ static_library("browser") {
+@@ -8168,6 +8168,8 @@ static_library("browser") {
      deps += [
        "//components/spellcheck/browser",
        "//components/spellcheck/common",
@@ -118,7 +118,7 @@
  
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -175,6 +175,7 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -193,6 +193,7 @@ void RegisterBrowserUserPrefs(user_prefs
      registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
      registry->RegisterBooleanPref(prefs::kHeliumBangsEnabled, true);
      registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, true);
@@ -144,7 +144,7 @@
  </div>
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -2118,6 +2118,12 @@
+@@ -1864,6 +1864,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
      When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
    </message>
@@ -159,7 +159,7 @@
    </message>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1877,6 +1877,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1854,6 +1854,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
        {"heliumBangsToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},

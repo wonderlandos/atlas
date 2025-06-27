@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  namespace {
  
  #if BUILDFLAG(IS_WIN)
-@@ -164,20 +166,30 @@ std::vector<importer::SourceProfile> Det
+@@ -171,20 +173,30 @@ std::vector<user_data_importer::SourcePr
    if (shell_integration::IsFirefoxDefaultBrowser()) {
      DetectFirefoxProfiles(locale, &profiles);
      DetectBuiltinWindowsProfiles(&profiles);
@@ -65,15 +65,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
  #endif
    if (include_interactive_profiles) {
-     importer::SourceProfile bookmarks_profile;
-@@ -227,5 +239,11 @@ void ImporterList::SourceProfilesLoaded(
+     user_data_importer::SourceProfile bookmarks_profile;
+@@ -234,5 +246,11 @@ void ImporterList::SourceProfilesLoaded(
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
  
    source_profiles_.assign(profiles.begin(), profiles.end());
 +
 +  for (auto& profile : source_profiles_) {
-+    if (profile.services_supported & importer::PASSWORDS)
-+      profile.services_supported ^= importer::PASSWORDS;
++    if (profile.services_supported & user_data_importer::PASSWORDS)
++      profile.services_supported ^= user_data_importer::PASSWORDS;
 +  }
 +
    std::move(profiles_loaded_callback).Run();
@@ -97,19 +97,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
    public_deps = [
      "//mojo/public/mojom/base",
-@@ -81,6 +85,9 @@ source_set("importer") {
+@@ -82,19 +86,28 @@ source_set("importer") {
    sources = [
      "firefox_importer_utils.cc",
      "firefox_importer_utils.h",
 +    "chrome_importer_constants.h",
 +    "chrome_importer_utils.cc",
 +    "chrome_importer_utils.h",
-     "imported_bookmark_entry.cc",
-     "imported_bookmark_entry.h",
      "importer_autofill_form_data_entry.cc",
-@@ -93,14 +100,20 @@ source_set("importer") {
-     "importer_url_row.cc",
-     "importer_url_row.h",
+     "importer_autofill_form_data_entry.h",
+     "importer_bridge.cc",
+     "importer_bridge.h",
      "pstore_declarations.h",
 +    "scoped_copy_file.cc",
 +    "scoped_copy_file.h",
@@ -130,7 +128,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      ]
    } else if (is_win) {
      sources += [
-@@ -111,6 +124,7 @@ source_set("importer") {
+@@ -105,6 +118,7 @@ source_set("importer") {
        "ie_importer_utils_win.h",
        "importer_test_registry_overrider_win.cc",
        "importer_test_registry_overrider_win.h",
@@ -138,10 +136,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      ]
    }
    deps = [
-@@ -118,8 +132,17 @@ source_set("importer") {
-     "//chrome/app:generated_resources",
+@@ -113,8 +127,17 @@ source_set("importer") {
      "//chrome/common:ini_parser",
      "//components/favicon_base",
+     "//components/user_data_importer/common",
 +    "//components/webdata/common",
      "//content/public/common",
 +    "//extensions/buildflags",
@@ -156,8 +154,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    ]
 +  }
  }
---- a/chrome/common/importer/importer_type.h
-+++ b/chrome/common/importer/importer_type.h
+--- a/components/user_data_importer/common/importer_type.h
++++ b/components/user_data_importer/common/importer_type.h
 @@ -28,6 +28,14 @@ enum ImporterType {
  #if BUILDFLAG(IS_WIN)
    TYPE_EDGE = 6,
@@ -172,7 +170,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  TYPE_BRAVE = 71,
  };
  
- }  // namespace importer
+ }  // namespace user_data_importer
 --- a/tools/metrics/histograms/metadata/sql/histograms.xml
 +++ b/tools/metrics/histograms/metadata/sql/histograms.xml
 @@ -39,6 +39,7 @@ chromium-metrics-reviews@google.com.
@@ -183,15 +181,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    <variant name="FileIndexService" summary="FileIndexService"/>
    <variant name="FirefoxImporter" summary="FirefoxImporter"/>
    <variant name="FirstPartySets" summary="FirstPartySets"/>
---- a/chrome/common/importer/importer_data_types.h
-+++ b/chrome/common/importer/importer_data_types.h
+--- a/components/user_data_importer/common/importer_data_types.h
++++ b/components/user_data_importer/common/importer_data_types.h
 @@ -29,7 +29,8 @@ enum ImportItem {
-   SEARCH_ENGINES     = 1 << 4,
-   HOME_PAGE          = 1 << 5,
+   SEARCH_ENGINES = 1 << 4,
+   HOME_PAGE = 1 << 5,
    AUTOFILL_FORM_DATA = 1 << 6,
--  ALL                = (1 << 7) - 1  // All the bits should be 1, hence the -1.
-+  EXTENSIONS         = 1 << 7,
-+  ALL                = (1 << 8) - 1  // All the bits should be 1, hence the -1.
+-  ALL = (1 << 7) - 1  // All the bits should be 1, hence the -1.
++  EXTENSIONS = 1 << 7,
++  ALL = (1 << 8) - 1  // All the bits should be 1, hence the -1.
  };
  
  // Information about a profile needed by an importer to do import work.
@@ -202,60 +200,59 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  VISIT_SOURCE_CHROME_IMPORTED = 4,
  };
  
- }  // namespace importer
+ }  // namespace user_data_importer
 --- a/chrome/common/importer/profile_import_process_param_traits_macros.h
 +++ b/chrome/common/importer/profile_import_process_param_traits_macros.h
 @@ -20,11 +20,11 @@
  #if BUILDFLAG(IS_WIN)
- IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
-                               importer::TYPE_UNKNOWN,
--                              importer::TYPE_EDGE)
-+                              importer::TYPE_BRAVE)
+ IPC_ENUM_TRAITS_MIN_MAX_VALUE(user_data_importer::ImporterType,
+                               user_data_importer::TYPE_UNKNOWN,
+-                              user_data_importer::TYPE_EDGE)
++                              user_data_importer::TYPE_BRAVE)
  #else
- IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
-                               importer::TYPE_UNKNOWN,
--                              importer::TYPE_BOOKMARKS_FILE)
-+                              importer::TYPE_BRAVE)
+ IPC_ENUM_TRAITS_MIN_MAX_VALUE(user_data_importer::ImporterType,
+                               user_data_importer::TYPE_UNKNOWN,
+-                              user_data_importer::TYPE_BOOKMARKS_FILE)
++                              user_data_importer::TYPE_BRAVE)
  #endif
  
- IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImportItem,
+ IPC_ENUM_TRAITS_MIN_MAX_VALUE(user_data_importer::ImportItem,
 --- a/chrome/browser/ui/webui/settings/import_data_handler.cc
 +++ b/chrome/browser/ui/webui/settings/import_data_handler.cc
 @@ -146,6 +146,9 @@ void ImportDataHandler::HandleImportData
    if (*type_dict.FindBool(prefs::kImportDialogSearchEngine)) {
-     selected_items |= importer::SEARCH_ENGINES;
+     selected_items |= user_data_importer::SEARCH_ENGINES;
    }
 +  if (*type_dict.FindBool(prefs::kImportDialogExtensions)) {
-+    selected_items |= importer::EXTENSIONS;
++    selected_items |= user_data_importer::EXTENSIONS;
 +  }
  
-   const importer::SourceProfile& source_profile =
+   const user_data_importer::SourceProfile& source_profile =
        importer_list_->GetSourceProfileAt(browser_index);
-@@ -223,6 +226,8 @@ void ImportDataHandler::SendBrowserProfi
-                         (browser_services & importer::SEARCH_ENGINES) != 0);
-     browser_profile.Set("autofillFormData",
-                         (browser_services & importer::AUTOFILL_FORM_DATA) != 0);
+@@ -225,6 +228,8 @@ void ImportDataHandler::SendBrowserProfi
+     browser_profile.Set(
+         "autofillFormData",
+         (browser_services & user_data_importer::AUTOFILL_FORM_DATA) != 0);
 +    browser_profile.Set("extensions",
-+                        (browser_services & importer::EXTENSIONS) != 0);
++                        (browser_services & user_data_importer::EXTENSIONS) != 0);
  
      browser_profiles.Append(std::move(browser_profile));
    }
 --- a/chrome/common/pref_names.h
 +++ b/chrome/common/pref_names.h
-@@ -4271,6 +4271,10 @@ inline constexpr char kServiceWorkerToCo
- // is set as a SharedWorker script URL.
+@@ -4270,6 +4270,9 @@ inline constexpr char kServiceWorkerToCo
  inline constexpr char kSharedWorkerBlobURLFixEnabled[] =
      "worker.shared_worker_blob_url_fix_enabled";
-+
+ 
 +inline constexpr char kImportDialogExtensions[] =
 +    "import_dialog_extensions";
 +
- }  // namespace prefs
- 
- #endif  // CHROME_COMMON_PREF_NAMES_H_
+ // Boolean indicating whether clearing window.name when the navigation is
+ // top-level, cross-site and swaps BrowsingContextGroup is allowed or not.
+ inline constexpr char kClearWindowNameForNewBrowsingContextGroup[] =
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -1150,6 +1150,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -1148,6 +1148,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
        settings_api::PrefType::kBoolean;
    (*s_allowlist)[::prefs::kImportDialogSearchEngine] =
        settings_api::PrefType::kBoolean;
@@ -266,7 +263,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    // Supervised Users.  This setting is queried in our Tast tests (b/241943380).
 --- a/chrome/browser/ui/webui/settings/settings_ui.cc
 +++ b/chrome/browser/ui/webui/settings/settings_ui.cc
-@@ -63,6 +63,7 @@
+@@ -62,6 +62,7 @@
  #include "chrome/browser/ui/webui/settings/font_handler.h"
  #include "chrome/browser/ui/webui/settings/hats_handler.h"
  #include "chrome/browser/ui/webui/settings/import_data_handler.h"
@@ -274,7 +271,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
  #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
  #include "chrome/browser/ui/webui/settings/password_manager_handler.h"
-@@ -213,6 +214,7 @@ void SettingsUI::RegisterProfilePrefs(
+@@ -206,6 +207,7 @@ void SettingsUI::RegisterProfilePrefs(
    registry->RegisterBooleanPref(prefs::kImportDialogHistory, true);
    registry->RegisterBooleanPref(prefs::kImportDialogSavedPasswords, true);
    registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
@@ -282,7 +279,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  }
  
  SettingsUI::SettingsUI(content::WebUI* web_ui)
-@@ -259,7 +261,7 @@ SettingsUI::SettingsUI(content::WebUI* w
+@@ -235,7 +237,7 @@ SettingsUI::SettingsUI(content::WebUI* w
    AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
    AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
    AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
@@ -293,7 +290,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #if BUILDFLAG(IS_WIN)
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -880,6 +880,8 @@ void AddImportDataStrings(content::WebUI
+@@ -862,6 +862,8 @@ void AddImportDataStrings(content::WebUI
        {"importHistory", IDS_SETTINGS_IMPORT_HISTORY_CHECKBOX},
        {"importFavorites", IDS_SETTINGS_IMPORT_FAVORITES_CHECKBOX},
        {"importPasswords", IDS_SETTINGS_IMPORT_PASSWORDS_CHECKBOX},
@@ -318,7 +315,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
        </div>
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -1528,6 +1528,10 @@ static_library("ui") {
+@@ -1456,6 +1456,10 @@ static_library("ui") {
        "webui/settings/accessibility_main_handler.h",
        "webui/settings/appearance_handler.cc",
        "webui/settings/appearance_handler.h",
@@ -329,7 +326,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
        "webui/settings/browser_lifetime_handler.cc",
        "webui/settings/browser_lifetime_handler.h",
        "webui/settings/captions_handler.cc",
-@@ -1683,6 +1687,13 @@ static_library("ui") {
+@@ -1611,6 +1615,13 @@ static_library("ui") {
        ]
      }
  
@@ -345,14 +342,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
        "//base",
 --- a/chrome/browser/ui/webui/settings/import_data_handler.h
 +++ b/chrome/browser/ui/webui/settings/import_data_handler.h
-@@ -38,7 +38,9 @@ class ImportDataHandler : public Setting
+@@ -36,9 +36,9 @@ class ImportDataHandler : public Setting
+   void RegisterMessages() override;
+   void OnJavascriptAllowed() override {}
    void OnJavascriptDisallowed() override;
- 
-  private:
--  void StartImport(const importer::SourceProfile& source_profile,
+-
 +  friend class BraveImportDataHandler;
-+ private:
-+  virtual void StartImport(const importer::SourceProfile& source_profile,
+  private:
+-  void StartImport(const user_data_importer::SourceProfile& source_profile,
++  virtual void StartImport(const user_data_importer::SourceProfile& source_profile,
                     uint16_t imported_items);
  
    // Handler for the "importData" message. First argument is the selected
@@ -369,7 +367,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      "external_process_importer_client.h",
      "external_process_importer_host.h",
      "firefox_profile_lock.h",
-@@ -36,6 +40,10 @@ source_set("impl") {
+@@ -37,6 +41,10 @@ source_set("impl") {
    public_deps = [ "//chrome/browser:browser_public_dependencies" ]
  
    sources = [
@@ -382,10 +380,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      "firefox_profile_lock.cc",
 --- a/chrome/browser/importer/external_process_importer_host.h
 +++ b/chrome/browser/importer/external_process_importer_host.h
-@@ -78,8 +78,9 @@ class ExternalProcessImporterHost
+@@ -79,8 +79,9 @@ class ExternalProcessImporterHost
    void NotifyImportStarted();
-   void NotifyImportItemStarted(importer::ImportItem item);
-   void NotifyImportItemEnded(importer::ImportItem item);
+   void NotifyImportItemStarted(user_data_importer::ImportItem item);
+   void NotifyImportItemEnded(user_data_importer::ImportItem item);
 -  void NotifyImportEnded();
 +  void virtual NotifyImportEnded();
  
@@ -395,7 +393,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    ~ExternalProcessImporterHost() override;
 --- a/components/history/core/browser/history_types.h
 +++ b/components/history/core/browser/history_types.h
-@@ -54,6 +54,8 @@ enum VisitSource {
+@@ -53,6 +53,8 @@ enum VisitSource {
    SOURCE_FIREFOX_IMPORTED = 3,
    SOURCE_IE_IMPORTED = 4,
    SOURCE_SAFARI_IMPORTED = 5,
@@ -406,7 +404,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  // Corresponds to the "id" column of the "visits" SQL table.
 --- a/components/history/core/browser/visit_database.cc
 +++ b/components/history/core/browser/visit_database.cc
-@@ -118,6 +118,8 @@ VisitSource VisitSourceFromInt(int value
+@@ -117,6 +117,8 @@ VisitSource VisitSourceFromInt(int value
      case SOURCE_FIREFOX_IMPORTED:
      case SOURCE_IE_IMPORTED:
      case SOURCE_SAFARI_IMPORTED:
@@ -419,9 +417,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +++ b/chrome/browser/importer/in_process_importer_bridge.cc
 @@ -53,6 +53,8 @@ history::VisitSource ConvertImporterVisi
        return history::SOURCE_IE_IMPORTED;
-     case importer::VISIT_SOURCE_SAFARI_IMPORTED:
+     case user_data_importer::VISIT_SOURCE_SAFARI_IMPORTED:
        return history::SOURCE_SAFARI_IMPORTED;
-+    case importer::VISIT_SOURCE_CHROME_IMPORTED:
++    case user_data_importer::VISIT_SOURCE_CHROME_IMPORTED:
 +      return history::SOURCE_CHROME_IMPORTED;
    }
    NOTREACHED();
@@ -477,7 +475,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    services.Add(RunPassageEmbeddingsService);
 --- a/chrome/utility/importer/external_process_importer_bridge.h
 +++ b/chrome/utility/importer/external_process_importer_bridge.h
-@@ -69,7 +69,7 @@ class ExternalProcessImporterBridge : pu
+@@ -72,7 +72,7 @@ class ExternalProcessImporterBridge : pu
  
    std::u16string GetLocalizedString(int message_id) override;
    // End ImporterBridge implementation.
@@ -513,7 +511,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  }
 --- a/chrome/browser/importer/in_process_importer_bridge.h
 +++ b/chrome/browser/importer/in_process_importer_bridge.h
-@@ -57,7 +57,7 @@ class InProcessImporterBridge : public I
+@@ -59,7 +59,7 @@ class InProcessImporterBridge : public I
  
    std::u16string GetLocalizedString(int message_id) override;
    // End ImporterBridge implementation.
@@ -527,13 +525,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @@ -35,6 +35,7 @@ enum ImporterTypeMetrics {
  
  void LogImporterUseToMetrics(const std::string& metric_postfix,
-                              ImporterType type) {
+                              user_data_importer::ImporterType type) {
 +  return;
    ImporterTypeMetrics metrics_type = IMPORTER_METRICS_UNKNOWN;
    switch (type) {
-     case TYPE_UNKNOWN:
+     case user_data_importer::TYPE_UNKNOWN:
 @@ -59,6 +60,9 @@ void LogImporterUseToMetrics(const std::
-     case TYPE_BOOKMARKS_FILE:
+     case user_data_importer::TYPE_BOOKMARKS_FILE:
        metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
        break;
 +    default:
@@ -544,7 +542,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    // Note: This leaks memory, which is the expected behavior as the factory
 --- a/chrome/browser/importer/external_process_importer_client.h
 +++ b/chrome/browser/importer/external_process_importer_client.h
-@@ -51,10 +51,10 @@ class ExternalProcessImporterClient
+@@ -48,10 +48,10 @@ class ExternalProcessImporterClient
        const ExternalProcessImporterClient&) = delete;
  
    // Launches the task to start the external process.
@@ -557,7 +555,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
    // chrome::mojom::ProfileImportObserver:
    void OnImportStart() override;
-@@ -84,6 +84,8 @@ class ExternalProcessImporterClient
+@@ -82,6 +82,8 @@ class ExternalProcessImporterClient
        const std::vector<ImporterAutofillFormDataEntry>&
            autofill_form_data_entry_group) override;
  
@@ -566,7 +564,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   protected:
    ~ExternalProcessImporterClient() override;
  
-@@ -99,7 +101,7 @@ class ExternalProcessImporterClient
+@@ -97,7 +99,7 @@ class ExternalProcessImporterClient
    // The Mojo connections need to be torn down on the same thread that created
    // them, but the destructor is not guaranteed to be run on that thread so we
    // tear down the connections explicitly.

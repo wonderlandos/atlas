@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/toasts/toast_view.cc
 +++ b/chrome/browser/ui/toasts/toast_view.cc
-@@ -49,9 +49,8 @@ constexpr float kAnimationHeightScale =
+@@ -50,9 +50,8 @@ constexpr float kAnimationHeightScale =
  
  gfx::Transform GetScaleTransformation(gfx::Rect bounds) {
    gfx::Transform transform;
@@ -13,7 +13,7 @@
  }
  
 @@ -119,8 +118,7 @@ ToastView::ToastView(
-   SetPaintClientToLayer(true);
+   SetBackgroundColor(ui::kColorToastBackgroundProminent);
    SetShowCloseButton(false);
    DialogDelegate::SetButtons(static_cast<int>(ui::mojom::DialogButton::kNone));
 -  set_corner_radius(ChromeLayoutProvider::Get()->GetDistanceMetric(

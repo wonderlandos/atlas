@@ -76,7 +76,7 @@
  
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -216,7 +216,10 @@ LocationBarView::LocationBarView(Browser
+@@ -220,7 +220,10 @@ LocationBarView::LocationBarView(Browser
                   !v->GetOmniboxPopupView()->IsOpen();
          }));
      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
@@ -88,7 +88,7 @@
  
  #if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
      if (features::IsOsLevelGeolocationPermissionSupportEnabled()) {
-@@ -265,9 +268,9 @@ void LocationBarView::Init() {
+@@ -270,9 +273,9 @@ void LocationBarView::Init() {
        CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
  
    const gfx::FontList& omnibox_chip_font_list = typography_provider.GetFont(
@@ -100,7 +100,7 @@
  
    auto location_icon_view =
        std::make_unique<LocationIconView>(omnibox_chip_font_list, this, this);
-@@ -477,7 +480,7 @@ bool LocationBarView::IsInitialized() co
+@@ -490,7 +493,7 @@ bool LocationBarView::IsInitialized() co
  
  int LocationBarView::GetBorderRadius() const {
    return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -109,29 +109,46 @@
  }
  
  std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
-@@ -721,15 +724,15 @@ void LocationBarView::Layout(PassKey) {
-   // The padding between the left edges of the location bar and the LHS icon
-   // (e.g. the page info icon, the google G icon, the selected suggestion icon,
-   // etc)
+@@ -690,9 +693,9 @@ void LocationBarView::Layout(PassKey) {
+   // TODO(manukh): Move constants to layout_constants.cc.
+   // The padding between the left edges of the location bar and the LHS icon,
+   // e.g. the page info icon, the google G icon, the selected suggestion icon.
 -  int icon_left = 5;
 +  int icon_left = 2;
    // The padding between the LHS icon and the text.
 -  int text_left = 8;
 +  int text_left = 5;
-   // Indentation to match the suggestion icons & texts.
--  int icon_indent = 7;
--  int text_indent = 6;
-+  int icon_indent = 0;
-+  int text_indent = 0;
-   // Indentation to match the suggestion icons & texts when in keyword mode.
--  int icon_keyword_indent = 9;
--  int text_keyword_indent = -9;
-+  int icon_keyword_indent = 3;
-+  int text_keyword_indent = 0;
-   // Indentation add padding when the permission chip is visible and replacing
-   // the LHS icon.
-   int text_overriding_permission_chip_indent = 0;
-@@ -1197,7 +1200,7 @@ int LocationBarView::GetMinimumTrailingW
+ 
+   // Apply indentation to align the omnibox input icon and the text with those
+   // of the suggestions in the popup. However, there are two exceptions where
+@@ -711,22 +714,22 @@ void LocationBarView::Layout(PassKey) {
+                              !location_icon_view_->ShouldShowLabel() &&
+                              !ShouldShowKeywordBubble();
+   if (should_indent) {
+-    icon_left += 7 /*icon_indent*/;
++    icon_left += 0 /*icon_indent*/;
+     icon_left += omnibox_feature_configs::AdjustOmniboxIndent()
+                      .Get()
+                      .input_icon_indent_offset;
+-    text_left += 6 /*text_indent*/;
++    text_left += 0 /*text_indent*/;
+     text_left += omnibox_feature_configs::AdjustOmniboxIndent()
+                      .Get()
+                      .input_text_indent_offset;
+   } else if (ShouldShowKeywordBubble()) {
+     // Otherwise, if in keyword mode, adjust indentation to align the icon and
+     // the text with the suggestion icons & texts.
+-    icon_left += 9;  /*icon_indent_keyword_mode*/
++    icon_left += 3;  /*icon_indent_keyword_mode*/
+     icon_left += omnibox_feature_configs::AdjustOmniboxIndent()
+                      .Get()
+                      .input_icon_indent_offset;
+-    text_left += -9; /*text_indent_keyword_mode*/
++    text_left += 0; /*text_indent_keyword_mode*/
+   }
+ 
+   LocationBarLayout leading_decorations(LocationBarLayout::Position::kLeftEdge,
+@@ -1183,7 +1186,7 @@ int LocationBarView::GetMinimumTrailingW
  }
  
  gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
