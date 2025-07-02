@@ -24,7 +24,16 @@
  DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(MultiContentsResizeHandle,
 --- a/chrome/browser/ui/views/frame/multi_contents_view.h
 +++ b/chrome/browser/ui/views/frame/multi_contents_view.h
-@@ -141,11 +141,11 @@ class MultiContentsView : public views::
+@@ -132,20 +132,16 @@ class MultiContentsView : public views::
+     return contents_container_views_[1]->GetContentsView();
+   }
+ 
+-  MultiContentsViewMiniToolbar* mini_toolbar_for_testing(int index) const {
+-    return contents_container_views_[index]->GetMiniToolbar();
+-  }
+-
+   static int contents_inset_for_testing() { return kSplitViewContentInset; }
+ 
   private:
    static constexpr int kMinWebContentsWidth = 200;
    static constexpr double kMinWebContentsWidthPercentage = 0.1;
@@ -39,6 +48,22 @@
  
    // ContentsContainerView holds the ContentsWebView and the outlines and
    // minitoolbar when in split view.
+@@ -159,7 +155,6 @@ class MultiContentsView : public views::
+     ~ContentsContainerView() override = default;
+ 
+     ContentsWebView* GetContentsView() { return contents_view_; }
+-    MultiContentsViewMiniToolbar* GetMiniToolbar() { return mini_toolbar_; }
+ 
+    private:
+     // LayoutDelegate:
+@@ -167,7 +162,6 @@ class MultiContentsView : public views::
+         const views::SizeBounds& size_bounds) const override;
+ 
+     raw_ptr<ContentsWebView> contents_view_;
+-    raw_ptr<MultiContentsViewMiniToolbar> mini_toolbar_;
+   };
+ 
+   int GetInactiveIndex();
 --- a/chrome/browser/resources/tab_search/split_view/app.css
 +++ b/chrome/browser/resources/tab_search/split_view/app.css
 @@ -50,7 +50,7 @@ picture {
@@ -50,3 +75,56 @@
    font-size: 14px;
    font-weight: 400;
    line-height: 20px;
+--- a/chrome/browser/ui/views/frame/multi_contents_view.cc
++++ b/chrome/browser/ui/views/frame/multi_contents_view.cc
+@@ -235,8 +235,6 @@ MultiContentsView::ContentsContainerView
+   SetLayoutManager(std::make_unique<views::DelegatingLayoutManager>(this));
+   contents_view_ = AddChildView(
+       std::make_unique<ContentsWebView>(browser_view->GetProfile()));
+-  mini_toolbar_ = AddChildView(std::make_unique<MultiContentsViewMiniToolbar>(
+-      browser_view, contents_view_));
+ }
+ 
+ views::ProposedLayout
+@@ -255,20 +253,6 @@ MultiContentsView::ContentsContainerView
+   layouts.child_layouts.emplace_back(
+       contents_view_.get(), contents_view_->GetVisible(), contents_rect);
+ 
+-  // |mini_toolbar_| should be offset in the bottom right corner, overlapping
+-  // the outline.
+-  gfx::Size mini_toolbar_size = mini_toolbar_->GetPreferredSize(
+-      views::SizeBounds(width - kContentOutlineCornerRadius, height));
+-  const int offset_x =
+-      width - mini_toolbar_size.width() + (kContentOutlineThickness / 2.0f);
+-  const int offset_y =
+-      height - mini_toolbar_size.height() + (kContentOutlineThickness / 2.0f);
+-  const gfx::Rect mini_toolbar_rect =
+-      gfx::Rect(offset_x, offset_y, mini_toolbar_size.width(),
+-                mini_toolbar_size.height());
+-  layouts.child_layouts.emplace_back(
+-      mini_toolbar_.get(), mini_toolbar_->GetVisible(), mini_toolbar_rect);
+-
+   layouts.host_size = gfx::Size(width, height);
+   return layouts;
+ }
+@@ -325,10 +309,6 @@ void MultiContentsView::UpdateContentsBo
+         contents_container_view->SetBorder(nullptr);
+       }
+     }
+-    // Update mini toolbar visibility.
+-    for (auto* contents_container_view : contents_container_views_) {
+-      contents_container_view->GetMiniToolbar()->SetVisible(false);
+-    }
+     return;
+   }
+ 
+@@ -347,9 +327,6 @@ void MultiContentsView::UpdateContentsBo
+             views::CreateRoundedRectBorder(kContentOutlineThickness,
+                                            kContentOutlineCornerRadius, color),
+             gfx::Insets(kSplitViewContentPadding)));
+-        // Mini toolbar should only be visible for the inactive contents
+-        // container view.
+-        contents_container_view->GetMiniToolbar()->SetVisible(!is_active);
+       };
+   for (auto* contents_container_view : contents_container_views_) {
+     set_contents_border_and_mini_toolbar(contents_container_view);
