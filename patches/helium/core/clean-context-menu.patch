@@ -18,7 +18,15 @@
      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE,
                                      IDS_CONTENT_CONTEXT_READING_MODE);
    }
-@@ -4005,6 +4003,8 @@ bool RenderViewContextMenu::IsVideoFrame
+@@ -3635,6 +3633,7 @@ void RenderViewContextMenu::ExecuteComma
+ }
+ 
+ void RenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
++  return;
+   AddSpellCheckServiceItem(&menu_model_, is_checked);
+ }
+ 
+@@ -4005,6 +4004,8 @@ bool RenderViewContextMenu::IsVideoFrame
  bool RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
                                                        bool draw_icon,
                                                        bool add_separator) {
