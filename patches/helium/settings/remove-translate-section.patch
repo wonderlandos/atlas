@@ -1,0 +1,30 @@
+--- a/chrome/browser/resources/settings/basic_page/basic_page.html
++++ b/chrome/browser/resources/settings/basic_page/basic_page.html
+@@ -210,6 +210,7 @@
+                 </settings-spell-check-page>
+               </settings-section>
+             </template>
++<if expr="_google_chrome">
+             <settings-section page-title="$i18n{translatePageTitle}"
+                 section="translate" nest-under-section="languages">
+               <settings-translate-page prefs="{{prefs}}"
+@@ -218,6 +219,7 @@
+               </settings-translate-page>
+             </settings-section>
+ </if>
++</if>
+             <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"
+                 restamp>
+               <settings-section page-title="$i18n{downloadsPageTitle}"
+--- a/chrome/browser/resources/settings/languages_page/languages_page.html
++++ b/chrome/browser/resources/settings/languages_page/languages_page.html
+@@ -82,9 +82,6 @@
+           <div title="[[item.language.nativeDisplayName]]" role="none">
+             [[formatIndex_(index)]]. [[item.language.displayName]]
+           </div>
+-          <div class="target-info secondary">
+-            $i18n{translateTargetLabel}
+-          </div>
+ <if expr="is_win">
+           <div class="explain-selected"
+               hidden="[[!isProspectiveUiLanguage_(
