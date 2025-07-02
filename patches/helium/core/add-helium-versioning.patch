@@ -14,7 +14,7 @@
          # BUILD will always be an increasing value, so BUILD_PATH gives us
          # something unique that meetings what LS wants.
 -        'CFBundleVersion': '@BUILD@.@PATCH@',
-+        'CFBundleVersion': '@MAJOR@.@PATCH@',
++        'CFBundleVersion': '@MAJOR@.@MINOR@.@BUILD@.@PATCH@',
      }
    else:
      version_format_for_key = {
