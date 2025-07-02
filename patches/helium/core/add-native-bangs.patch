@@ -164,7 +164,7 @@
  }
  
 +void TemplateURLService::LoadBangs() {
-+  LOG(ERROR) << "LoadBangs() called";
++  VLOG(2) << "LoadBangs() called";
 +  bang_manager_->LoadBangs(url_loader_factory_, prefs_.get(),
 +    base::BindOnce(&TemplateURLService::BangsLoadedCallback, base::Unretained(this)));
 +}
