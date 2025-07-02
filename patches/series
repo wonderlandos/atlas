@@ -116,7 +116,6 @@ helium/core/scan-chrome-native-messaging-hosts.patch
 helium/core/make-ddg-default.patch
 helium/core/add-kagi-search.patch
 helium/core/copy-page-url-shortcut.patch
-
 helium/core/update-default-browser-prefs.patch
 helium/core/proxy-extension-downloads.patch
 helium/core/reenable-update-checks.patch
@@ -143,6 +142,7 @@ helium/core/hide-extensions-via-toolbar-prefs.patch
 helium/core/clean-context-menu.patch
 helium/core/split-view.patch
 helium/core/fix-tab-sync-unreached-error.patch
+helium/core/add-update-channels.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch

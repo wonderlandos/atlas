@@ -1,0 +1,111 @@
+--- a/chrome/browser/about_flags.cc
++++ b/chrome/browser/about_flags.cc
+@@ -41,6 +41,7 @@
+ #include "chrome/browser/apps/app_discovery_service/app_discovery_service.h"
+ #include "chrome/browser/browser_features.h"
+ #include "chrome/browser/browser_process.h"
++#include "chrome/browser/channel_selection.h"
+ #include "chrome/browser/devtools/features.h"
+ #include "chrome/browser/flag_descriptions.h"
+ #include "chrome/browser/ip_protection/ip_protection_switches.h"
+@@ -4733,11 +4734,13 @@ const FeatureEntry::FeatureVariation kHi
+ #include "chrome/browser/bromite_flag_choices.h"
+ #include "chrome/browser/ungoogled_platform_flag_choices.h"
+ #include "chrome/browser/existing_switch_flag_choices.h"
++#include "chrome/browser/helium_flag_choices.h"
+ const FeatureEntry kFeatureEntries[] = {
+ #include "chrome/browser/ungoogled_flag_entries.h"
+ #include "chrome/browser/bromite_flag_entries.h"
+ #include "chrome/browser/ungoogled_platform_flag_entries.h"
+ #include "chrome/browser/existing_switch_flag_entries.h"
++#include "chrome/browser/helium_flag_entries.h"
+ // Include generated flags for flag unexpiry; see //docs/flag_expiry.md and
+ // //tools/flags/generate_unexpire_flags.py.
+ #include "build/chromeos_buildflags.h"
+--- /dev/null
++++ b/chrome/browser/channel_selection.cc
+@@ -0,0 +1,25 @@
++#include <string>
++
++#include "base/command_line.h"
++#include "chrome/browser/channel_selection.h"
++
++
++namespace helium {
++
++std::string GetSelectedChannel() {
++  auto* command_line = base::CommandLine::ForCurrentProcess();
++
++  if (command_line->HasSwitch(kChannelCommandLine)) {
++    std::string override_channel =
++        command_line->GetSwitchValueASCII(kChannelCommandLine);
++
++    if ((override_channel == kChannelStable) ||
++        (override_channel == kChannelBeta)) {
++      return override_channel;
++    }
++  }
++
++  return kChannelStable;
++}
++
++}  // namespace helium
+--- /dev/null
++++ b/chrome/browser/channel_selection.h
+@@ -0,0 +1,15 @@
++#ifndef CHROME_BROWSER_CHANNEL_SELECTION_H_
++#define CHROME_BROWSER_CHANNEL_SELECTION_H_
++
++#include <string>
++namespace helium {
++
++constexpr const char kChannelCommandLine[] = "helium-update-channel";
++
++constexpr const char kChannelStable[] = "stable";
++constexpr const char kChannelBeta[] = "beta";
++
++std::string GetSelectedChannel();
++
++}  // namespace helium
++#endif  /* CHROME_BROWSER_CHANNEL_SELECTION_H_ */
+--- /dev/null
++++ b/chrome/browser/helium_flag_choices.h
+@@ -0,0 +1,18 @@
++#ifndef CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
++#define CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
++
++#include "components/webui/flags/feature_entry.h"
++#include "chrome/browser/channel_selection.h"
++
++namespace helium {
++  using namespace ::helium;
++
++  constexpr const FeatureEntry::Choice kChannelChoices[] = {
++    {flags_ui::kGenericExperimentChoiceAutomatic, "", ""},
++    {kChannelStable, kChannelCommandLine, kChannelStable},
++    {kChannelBeta, kChannelCommandLine, kChannelBeta},
++  };
++
++}  // namespace helium
++
++#endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
+--- /dev/null
++++ b/chrome/browser/helium_flag_entries.h
+@@ -0,0 +1,6 @@
++#ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
++#define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
++    {helium::kChannelCommandLine,
++     "Update channel", "Selects which update channel to use for update checking. Helium flag.",
++     kOsAll, MULTI_VALUE_TYPE(helium::kChannelChoices)},
++#endif  /* CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_ */
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -281,6 +281,8 @@ static_library("browser") {
+     "btm/btm_browser_signin_detector_factory.h",
+     "btm/stateful_bounce_counter.cc",
+     "btm/stateful_bounce_counter.h",
++    "channel_selection.cc",
++    "channel_selection.h",
+     "chained_back_navigation_tracker.cc",
+     "chained_back_navigation_tracker.h",
+     "child_process_host_flags.h",
