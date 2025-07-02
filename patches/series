@@ -142,6 +142,7 @@ helium/core/hide-avatar-via-toolbar-prefs.patch
 helium/core/hide-extensions-via-toolbar-prefs.patch
 helium/core/clean-context-menu.patch
 helium/core/split-view.patch
+helium/core/fix-tab-sync-unreached-error.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
