@@ -143,6 +143,7 @@ helium/core/clean-context-menu.patch
 helium/core/split-view.patch
 helium/core/fix-tab-sync-unreached-error.patch
 helium/core/add-update-channels.patch
+helium/core/add-updater-preference.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
