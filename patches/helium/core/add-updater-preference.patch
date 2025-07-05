@@ -73,7 +73,7 @@ TODO: guard services_page.html with is_mac
 +
 +#if BUILDFLAG(IS_MAC)
 +    std::string path = base::StringPrintf(
-+        "/updates/mac-%s/appcast.xml", cpu_arch);
++        "/updates/mac/appcast-%s.xml", cpu_arch);
 +    return GetServicesBaseURL(prefs).Resolve(path);
 +#else
 +    return GetDummyURL();
