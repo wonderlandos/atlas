@@ -144,7 +144,9 @@ helium/core/hide-extensions-via-toolbar-prefs.patch
 helium/core/clean-context-menu.patch
 helium/core/split-view.patch
 helium/core/fix-tab-sync-unreached-error.patch
-helium/core/add-update-channels.patch
+helium/core/flags-setup.patch
+helium/core/add-low-power-framerate-flag.patch
+helium/core/add-update-channel-flag.patch
 helium/core/add-updater-preference.patch
 
 helium/settings/move-search-suggest.patch

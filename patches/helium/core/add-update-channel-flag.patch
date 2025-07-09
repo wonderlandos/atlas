@@ -8,20 +8,6 @@
  #include "chrome/browser/devtools/features.h"
  #include "chrome/browser/flag_descriptions.h"
  #include "chrome/browser/ip_protection/ip_protection_switches.h"
-@@ -4733,11 +4734,13 @@ const FeatureEntry::FeatureVariation kHi
- #include "chrome/browser/bromite_flag_choices.h"
- #include "chrome/browser/ungoogled_platform_flag_choices.h"
- #include "chrome/browser/existing_switch_flag_choices.h"
-+#include "chrome/browser/helium_flag_choices.h"
- const FeatureEntry kFeatureEntries[] = {
- #include "chrome/browser/ungoogled_flag_entries.h"
- #include "chrome/browser/bromite_flag_entries.h"
- #include "chrome/browser/ungoogled_platform_flag_entries.h"
- #include "chrome/browser/existing_switch_flag_entries.h"
-+#include "chrome/browser/helium_flag_entries.h"
- // Include generated flags for flag unexpiry; see //docs/flag_expiry.md and
- // //tools/flags/generate_unexpire_flags.py.
- #include "build/chromeos_buildflags.h"
 --- /dev/null
 +++ b/chrome/browser/channel_selection.cc
 @@ -0,0 +1,25 @@
@@ -68,36 +54,32 @@
 +
 +}  // namespace helium
 +#endif  /* CHROME_BROWSER_CHANNEL_SELECTION_H_ */
---- /dev/null
+--- a/chrome/browser/helium_flag_choices.h
 +++ b/chrome/browser/helium_flag_choices.h
-@@ -0,0 +1,18 @@
-+#ifndef CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
-+#define CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
-+
-+#include "components/webui/flags/feature_entry.h"
-+#include "chrome/browser/channel_selection.h"
-+
-+namespace helium {
-+  using namespace ::helium;
-+
+@@ -16,6 +16,12 @@ namespace helium {
+     {"Disabled", kEnergySaverFrameRateCommandLine, "9001"},
+   };
+ 
 +  constexpr const FeatureEntry::Choice kChannelChoices[] = {
 +    {flags_ui::kGenericExperimentChoiceAutomatic, "", ""},
 +    {kChannelStable, kChannelCommandLine, kChannelStable},
 +    {kChannelBeta, kChannelCommandLine, kChannelBeta},
 +  };
 +
-+}  // namespace helium
-+
-+#endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
---- /dev/null
+ }  // namespace helium
+ 
+ #endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
+--- a/chrome/browser/helium_flag_entries.h
 +++ b/chrome/browser/helium_flag_entries.h
-@@ -0,0 +1,6 @@
-+#ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
-+#define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
+@@ -1,5 +1,8 @@
+ #ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
+ #define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
 +    {helium::kChannelCommandLine,
 +     "Update channel", "Selects which update channel to use for update checking. Helium flag.",
 +     kOsAll, MULTI_VALUE_TYPE(helium::kChannelChoices)},
-+#endif  /* CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_ */
+     {helium::kEnergySaverFrameRateCommandLine,
+      "Maximum frame rate for Energy Saver",
+      "Configures the frame rate the browser is throttled to when Energy Saver is enabled. Helium flag",
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
 @@ -281,6 +281,8 @@ static_library("browser") {
