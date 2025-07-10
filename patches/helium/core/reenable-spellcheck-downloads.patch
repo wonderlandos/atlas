@@ -159,7 +159,7 @@
    </message>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1854,6 +1854,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1857,6 +1857,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
        {"heliumBangsToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},

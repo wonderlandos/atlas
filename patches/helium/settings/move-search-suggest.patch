@@ -57,12 +57,12 @@
 -      </settings-toggle-button>
 -    </template>
 -
-     <template is="dom-if" if="[[showPriceEmailNotificationsToggle_(
-         syncStatus, syncStatus.signedInState)]]" restamp>
-       <settings-toggle-button id="priceEmailNotificationsToggle"
+     <!-- This toggle is only shown for users with the appropriate enterprise
+         policy enabled. The state is not changeable by the user, so when shown,
+         it is alays selected but disabled. -->
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.ts
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-@@ -230,14 +230,6 @@ export class SettingsPersonalizationOpti
+@@ -252,14 +252,6 @@ export class SettingsPersonalizationOpti
    }
    // </if>
  

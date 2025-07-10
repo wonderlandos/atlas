@@ -263,7 +263,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    // Supervised Users.  This setting is queried in our Tast tests (b/241943380).
 --- a/chrome/browser/ui/webui/settings/settings_ui.cc
 +++ b/chrome/browser/ui/webui/settings/settings_ui.cc
-@@ -62,6 +62,7 @@
+@@ -63,6 +63,7 @@
  #include "chrome/browser/ui/webui/settings/font_handler.h"
  #include "chrome/browser/ui/webui/settings/hats_handler.h"
  #include "chrome/browser/ui/webui/settings/import_data_handler.h"
@@ -271,7 +271,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
  #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
  #include "chrome/browser/ui/webui/settings/password_manager_handler.h"
-@@ -206,6 +207,7 @@ void SettingsUI::RegisterProfilePrefs(
+@@ -208,6 +209,7 @@ void SettingsUI::RegisterProfilePrefs(
    registry->RegisterBooleanPref(prefs::kImportDialogHistory, true);
    registry->RegisterBooleanPref(prefs::kImportDialogSavedPasswords, true);
    registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
@@ -279,7 +279,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  }
  
  SettingsUI::SettingsUI(content::WebUI* web_ui)
-@@ -235,7 +237,7 @@ SettingsUI::SettingsUI(content::WebUI* w
+@@ -237,7 +239,7 @@ SettingsUI::SettingsUI(content::WebUI* w
    AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
    AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
    AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
