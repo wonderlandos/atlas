@@ -41,12 +41,21 @@
      case LOCATION_BAR_ICON_SIZE:
        return touch_ui ? 20 : 16;
      case LOCATION_BAR_LEADING_ICON_SIZE:
+@@ -85,7 +85,7 @@ int GetLayoutConstant(LayoutConstant con
+                      !features::HasTabstripComboButtonWithBackground() &&
+                      !features::HasTabSearchToolbarButton()
+                  ? 4
+-                 : 0;
++                 : 1;
+     case STAR_RATING_ICON_SIZE:
+       return 14;
+     case TAB_AFTER_TITLE_PADDING:
 @@ -97,12 +97,12 @@ int GetLayoutConstant(LayoutConstant con
      case TAB_CLOSE_BUTTON_SIZE:
        return touch_ui ? 24 : 16;
      case TAB_HEIGHT:
 -      return 34 + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
-+      return 33;
++      return 31;
      case TAB_STRIP_HEIGHT:
        return GetLayoutConstant(TAB_HEIGHT) +
               GetLayoutConstant(TAB_STRIP_PADDING);
