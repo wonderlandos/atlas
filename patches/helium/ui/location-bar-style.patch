@@ -157,6 +157,27 @@
    gfx::Rect bounds_without_endcaps(GetLocalBounds());
    bounds_without_endcaps.Inset(gfx::Insets::VH(0, border_radius));
    return bounds_without_endcaps;
+@@ -1197,9 +1200,9 @@ void LocationBarView::RefreshBackground(
+   const bool high_contrast = GetNativeTheme()->UserHasContrastPreference();
+ 
+   const auto* const color_provider = GetColorProvider();
+-  SkColor normal = color_provider->GetColor(kColorLocationBarBackground);
++  SkColor normal = color_provider->GetColor(kColorOmniboxResultsBackground);
+   SkColor hovered =
+-      color_provider->GetColor(kColorLocationBarBackgroundHovered);
++      color_provider->GetColor(kColorOmniboxResultsBackgroundHovered);
+ 
+   background_color_ = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
+   if (is_caret_visible) {
+@@ -1223,7 +1226,7 @@ void LocationBarView::RefreshBackground(
+         is_caret_visible
+             ? color_provider->GetColor(kColorOmniboxResultsBackground)
+             : color_provider->GetColor(kColorLocationBarBorder);
+-  } else if (!is_caret_visible && input_in_progress) {
++  } else if (!is_caret_visible) {
+     // Under CR23 guidelines, if the (regular contrast) Omnibox is unfocused,
+     // but still contains in-progress user input, a unique border color will be
+     // applied.
 --- a/chrome/browser/ui/views/location_bar/location_icon_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_icon_view.cc
 @@ -110,7 +110,7 @@ SkColor LocationIconView::GetForegroundC
