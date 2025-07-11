@@ -4,7 +4,7 @@
                  </settings-spell-check-page>
                </settings-section>
              </template>
-+<if expr="_google_chrome">
++<if expr="False">
              <settings-section page-title="$i18n{translatePageTitle}"
                  section="translate" nest-under-section="languages">
                <settings-translate-page prefs="{{prefs}}"
