@@ -31,3 +31,25 @@
  
      SkPath path;
      path.addRoundRect(gfx::RectToSkRect(rect), radii, radii);
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -1036,7 +1036,7 @@ void ToolbarView::LayoutCommon() {
+     views::ManualLayoutUtil(layout_manager_)
+         .SetViewHidden(toolbar_divider_, !extensions_container_->GetVisible());
+     const SkColor toolbar_extension_separator_color =
+-        GetColorProvider()->GetColor(kColorToolbarExtensionSeparatorEnabled);
++        GetColorProvider()->GetColor(kColorTabDividerFrameActive);
+     toolbar_divider_->SetBackground(views::CreateRoundedRectBackground(
+         toolbar_extension_separator_color,
+         GetLayoutConstant(TOOLBAR_DIVIDER_CORNER_RADIUS)));
+--- a/chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc
++++ b/chrome/browser/ui/views/toolbar/pinned_toolbar_actions_container.cc
+@@ -269,7 +269,7 @@ void PinnedToolbarActionsContainer::Upda
+ 
+ void PinnedToolbarActionsContainer::OnThemeChanged() {
+   const SkColor toolbar_divider_color =
+-      GetColorProvider()->GetColor(kColorToolbarExtensionSeparatorEnabled);
++      GetColorProvider()->GetColor(kColorTabDividerFrameActive);
+   toolbar_divider_->SetBackground(views::CreateRoundedRectBackground(
+       toolbar_divider_color, GetLayoutConstant(TOOLBAR_DIVIDER_CORNER_RADIUS)));
+   ToolbarIconContainerView::OnThemeChanged();

@@ -1,0 +1,31 @@
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -833,8 +833,7 @@ class BrowserViewLayoutDelegateImpl : pu
+     // will enable BrowserViewLayout to hide the contents separator on its own
+     // using the same logic used by normal BrowserViews.
+     // The separator should not be shown when in split view.
+-    return !browser_view_->browser()->app_controller() &&
+-           !browser_view_->IsInSplitView();
++    return false;
+   }
+ 
+   bool IsInSplitView() const override { return browser_view_->IsInSplitView(); }
+--- a/chrome/browser/ui/views/frame/top_container_background.cc
++++ b/chrome/browser/ui/views/frame/top_container_background.cc
+@@ -6,6 +6,7 @@
+ 
+ #include "chrome/browser/themes/theme_properties.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+ #include "chrome/browser/ui/views/frame/browser_view.h"
+ #include "chrome/browser/ui/views/tabs/tab_strip.h"
+ #include "chrome/grit/theme_resources.h"
+@@ -68,6 +69,7 @@ void TopContainerBackground::PaintBackgr
+                                              const BrowserView* browser_view) {
+   bool painted = PaintThemeCustomImage(canvas, view, browser_view);
+   if (!painted) {
+-    canvas->DrawColor(view->GetColorProvider()->GetColor(kColorToolbar));
++    canvas->DrawColor(browser_view->frame()->GetFrameView()->GetFrameColor(
++        BrowserFrameActiveState::kUseCurrent));
+   }
+ }

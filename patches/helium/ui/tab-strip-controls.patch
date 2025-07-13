@@ -1,19 +1,10 @@
 --- a/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
 +++ b/chrome/browser/ui/views/tabs/tab_strip_control_button.cc
-@@ -58,7 +58,7 @@ class ControlButtonHighlightPathGenerato
- }  // namespace
- 
- const int TabStripControlButton::kIconSize = 16;
--const gfx::Size TabStripControlButton::kButtonSize{28, 28};
-+const gfx::Size TabStripControlButton::kButtonSize{26, 26};
- 
- TabStripControlButton::TabStripControlButton(
-     TabStripController* tab_strip_controller,
 @@ -234,6 +234,7 @@ void TabStripControlButton::UpdateBackgr
  }
  
  int TabStripControlButton::GetCornerRadius() const {
-+  if ((true)) return 6;
++  if ((true)) return 8;
    return features::IsTabSearchMoving() && !features::HasTabSearchToolbarButton()
               ? kTabstripComboButtonCornerRadius
               : TabStripControlButton::kButtonSize.width() / 2;
@@ -38,14 +29,3 @@
      SetForegroundFrameActiveColorId(kColorNewTabButtonForegroundFrameActive);
      SetForegroundFrameInactiveColorId(
          kColorNewTabButtonForegroundFrameInactive);
---- a/chrome/browser/ui/views/frame/tab_strip_region_view.cc
-+++ b/chrome/browser/ui/views/frame/tab_strip_region_view.cc
-@@ -472,7 +472,7 @@ void TabStripRegionView::Layout(PassKey)
-             GetLayoutConstant(TAB_STRIP_PADDING) +
-             GetLayoutConstant(NEW_TAB_BUTTON_LEADING_MARGIN);
- 
--    gfx::Point button_new_position = gfx::Point(x, 0);
-+    gfx::Point button_new_position = gfx::Point(x, 1);
-     gfx::Rect button_new_bounds = gfx::Rect(button_new_position, button_size);
- 
-     // If the tabsearch button is before the tabstrip container, then manually
