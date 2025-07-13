@@ -176,7 +176,7 @@ helium/ui/omnibox-style.patch
 helium/ui/app-menu-style.patch
 helium/ui/fix-customize-side-panel.patch
 helium/ui/adjust-immersive-padding.patch
-helium/ui/adjust-side-panel-padding.patch
+helium/ui/side-panel.patch
 helium/ui/narrow-layout-provider.patch
 helium/ui/app-menu-model.patch
 helium/ui/remove-dead-toolbar-actions.patch

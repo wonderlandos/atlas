@@ -1,6 +1,23 @@
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -833,8 +833,7 @@ class BrowserViewLayoutDelegateImpl : pu
+@@ -561,15 +561,7 @@ class ContentsSeparator : public views::
+   METADATA_HEADER(ContentsSeparator, views::View)
+ 
+  public:
+-  ContentsSeparator() {
+-    SetBackground(
+-        views::CreateSolidBackground(kColorToolbarContentAreaSeparator));
+-
+-    // BrowserViewLayout will respect either the height or width of this,
+-    // depending on orientation, not simultaneously both.
+-    SetPreferredSize(
+-        gfx::Size(views::Separator::kThickness, views::Separator::kThickness));
+-  }
++  ContentsSeparator() {}
+ };
+ 
+ BEGIN_METADATA(ContentsSeparator)
+@@ -833,8 +825,7 @@ class BrowserViewLayoutDelegateImpl : pu
      // will enable BrowserViewLayout to hide the contents separator on its own
      // using the same logic used by normal BrowserViews.
      // The separator should not be shown when in split view.
