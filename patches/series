@@ -206,3 +206,4 @@ helium/ui/fix-omnibox-tabs-icon.patch
 helium/ui/smaller-window-grab-handle.patch
 helium/ui/fix-pwa-toolbar.patch
 helium/ui/top-container.patch
+helium/ui/toolbar-avatar-button.patch
