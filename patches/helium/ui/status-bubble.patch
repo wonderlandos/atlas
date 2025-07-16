@@ -1,0 +1,119 @@
+--- a/chrome/browser/ui/views/status_bubble_views.cc
++++ b/chrome/browser/ui/views/status_bubble_views.cc
+@@ -58,7 +58,7 @@
+ namespace {
+ 
+ // The roundedness of the edges of our bubble.
+-constexpr int kBubbleCornerRadius = 4;
++constexpr int kBubbleCornerRadius = 6;
+ 
+ // How close the mouse can get to the infobubble before it starts sliding
+ // off-screen.
+@@ -66,7 +66,10 @@ constexpr int kMousePadding = 20;
+ 
+ // The minimum horizontal space between the edges of the text and the edges of
+ // the status bubble, not including the outer shadow ring.
+-constexpr int kTextHorizPadding = 5;
++constexpr int kTextHorizPadding = 8;
++constexpr int kTextVertPadding = 3;
++
++constexpr int kWindowMargin = 8;
+ 
+ // Delays before we start hiding or showing the bubble after we receive a
+ // show or hide request.
+@@ -258,7 +261,7 @@ StatusView::~StatusView() {
+ }
+ 
+ gfx::Insets StatusView::GetInsets() const {
+-  return gfx::Insets::VH(kShadowThickness,
++  return gfx::Insets::VH(kShadowThickness + kTextVertPadding,
+                          kShadowThickness + kTextHorizPadding);
+ }
+ 
+@@ -450,47 +453,13 @@ void StatusView::OnPaint(gfx::Canvas* ca
+   float scale = canvas->UndoDeviceScaleFactor();
+   const float radius = kBubbleCornerRadius * scale;
+ 
+-  std::array<SkScalar, 8> rad{};
+-  auto round_corner = [&rad, radius](gfx::RRectF::Corner c) {
+-    int index = base::to_underlying(c);
+-    rad[2 * index] = radius;
+-    rad[2 * index + 1] = radius;
++  std::array<SkScalar, 8> rad = {
++    radius, radius, // Upper-left
++    radius, radius, // Upper-right
++    radius, radius, // Lower-right
++    radius, radius  // Lower-left
+   };
+ 
+-  // Top Edges - if the bubble is in its bottom position (sticking downwards),
+-  // then we square the top edges. Otherwise, we square the edges based on the
+-  // position of the bubble within the window (the bubble is positioned in the
+-  // southeast corner in RTL and in the southwest corner in LTR).
+-  if (style_ != BubbleStyle::kBottom) {
+-    if (base::i18n::IsRTL() != (style_ == BubbleStyle::kStandardRight)) {
+-      // The text is RtL or the bubble is on the right side (but not both).
+-      round_corner(gfx::RRectF::Corner::kUpperLeft);
+-    } else {
+-      round_corner(gfx::RRectF::Corner::kUpperRight);
+-    }
+-  }
+-
+-  // Bottom edges - Keep these squared off if the bubble is in its standard
+-  // position (sticking upward).
+-  if (style_ != BubbleStyle::kStandard &&
+-      style_ != BubbleStyle::kStandardRight) {
+-    round_corner(gfx::RRectF::Corner::kLowerRight);
+-    round_corner(gfx::RRectF::Corner::kLowerLeft);
+-  } else {
+-#if BUILDFLAG(IS_MAC)
+-    // Mac's window has rounded corners, but the corner radius might be
+-    // different on different versions. Status bubble will use its own round
+-    // corner on Mac when there is no download shelf beneath.
+-    if (!status_bubble_->download_shelf_is_visible_) {
+-      if (base::i18n::IsRTL() != (style_ == BubbleStyle::kStandard)) {
+-        round_corner(gfx::RRectF::Corner::kLowerLeft);
+-      } else {
+-        round_corner(gfx::RRectF::Corner::kLowerRight);
+-      }
+-    }
+-#endif
+-  }
+-
+   // Snap to pixels to avoid shadow blurriness.
+   gfx::Size scaled_size = gfx::ScaleToRoundedSize(size(), scale);
+ 
+@@ -502,10 +471,8 @@ void StatusView::OnPaint(gfx::Canvas* ca
+   // The shadow will overlap the window frame. Clip it off when the bubble is
+   // docked. Otherwise when the bubble is floating preserve the full shadow so
+   // the bubble looks complete.
+-  int clip_left =
+-      style_ == BubbleStyle::kStandard ? shadow_thickness_pixels : 0;
+-  int clip_right =
+-      style_ == BubbleStyle::kStandardRight ? shadow_thickness_pixels : 0;
++  int clip_left = 0;
++  int clip_right = 0;
+   if (base::i18n::IsRTL()) {
+     std::swap(clip_left, clip_right);
+   }
+@@ -553,9 +520,6 @@ void StatusView::OnPaint(gfx::Canvas* ca
+           : kColorStatusBubbleBackgroundFrameInactive;
+   flags.setColor(color_provider->GetColor(id));
+   canvas->sk_canvas()->drawPath(fill_path, flags);
+-
+-  flags.setColor(color_provider->GetColor(kColorStatusBubbleShadow));
+-  canvas->sk_canvas()->drawPath(stroke_path, flags);
+ }
+ 
+ DEFINE_ENUM_CONVERTERS(StatusView::BubbleState,
+@@ -769,7 +733,9 @@ void StatusBubbleViews::Reposition() {
+   int overlap = kShadowThickness;
+   int height = GetPreferredHeight();
+   int base_view_height = base_view_->bounds().height();
+-  gfx::Point origin(-overlap, base_view_height - height + overlap);
++  gfx::Point origin(
++    -overlap + kWindowMargin, base_view_height - height - kWindowMargin + overlap
++  );
+   SetBounds(origin.x(), origin.y(), base_view_->bounds().width() / 3, height);
+ }
+ 
