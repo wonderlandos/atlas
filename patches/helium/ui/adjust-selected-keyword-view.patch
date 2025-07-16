@@ -10,12 +10,29 @@
      }
    }
    return names;
-@@ -194,7 +193,7 @@ const std::u16string& SelectedKeywordVie
+@@ -78,6 +77,8 @@ SelectedKeywordView::SelectedKeywordView
+   partial_label_.SetVisible(false);
+   label()->SetElideBehavior(gfx::FADE_TAIL);
+ 
++  SetExpandedLabelAdditionalInsets(views::Inset1D(2, 0));
++
+   // TODO(crbug.com/40890218): `IconLabelBubbleView::GetAccessibleNodeData`
+   // would set the name to explicitly empty when the name was missing.
+   // That function no longer exists. As a result we need to handle that here.
+@@ -116,6 +117,7 @@ void SelectedKeywordView::SetCustomImage
+   if (template_url &&
+       template_url->starter_pack_id() == TemplateURLStarterPackData::kGemini) {
+     vector_icon = &omnibox::kSparkIcon;
++
+   } else if (history_embeddings::IsHistoryEmbeddingsEnabledForProfile(
+                  profile_) &&
+              history_embeddings::GetFeatureParameters().omnibox_scoped &&
+@@ -194,7 +196,7 @@ const std::u16string& SelectedKeywordVie
  
  int SelectedKeywordView::GetExtraInternalSpacing() const {
    // Align the label text with the suggestion text.
 -  return 14;
-+  return 3;
++  return 2;
  }
  
  void SelectedKeywordView::SetLabelForCurrentWidth() {

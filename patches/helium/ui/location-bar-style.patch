@@ -139,7 +139,7 @@
      // Otherwise, if in keyword mode, adjust indentation to align the icon and
      // the text with the suggestion icons & texts.
 -    icon_left += 9;  /*icon_indent_keyword_mode*/
-+    icon_left += 3;  /*icon_indent_keyword_mode*/
++    icon_left += 0;  /*icon_indent_keyword_mode*/
      icon_left += omnibox_feature_configs::AdjustOmniboxIndent()
                       .Get()
                       .input_icon_indent_offset;
