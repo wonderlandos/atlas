@@ -8,22 +8,22 @@
 +    Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_DESCRIPTION" desc="Description of the controls available on the Helium services settings page">
-+    Control Helium services and whether your browser is allowed to use them
++    Manage what Helium services are allowed in your browser
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE" desc="Global toggle for enabling/disabling of all Helium services">
 +    Allow connecting to Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
-+    When enabled, Helium will be able to connect to anonymous services for providing additional functionality, such as native !bangs or extension downloads.
++    When enabled, Helium will be able to connect to anonymous web services to provide additional functionality. When disabled, additional features will not work.
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
 +    Use your own instance of Helium services
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION" desc="Description of the text input for overriding the Helium services server">
-+    You can host your own instance of Helium services and use it in your browser instead of the default services server. HTTPS only.
++    You can host your own instance of Helium services and use it in your browser instead of the default one. HTTPS only.
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_DESCRIPTION_WARNING" desc="Warning section of description for overriding the Helium services server">
-+    Do not use this field unless you know exactly what you're doing. Do not paste URLs from other people here, they're trying to steal your data. We are not responsible for any damages caused by using a custom server.
++    Do not use this field unless you know exactly what you are doing. Never paste URLs from other people here, they are trying to steal your data. We are not responsible for any damages caused by using a custom server and will not be able to help you.
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE_ARIA_LABEL" desc="ARIA label of the text input for overriding the Helium services server">
 +    Custom origin URL for Helium services
@@ -129,7 +129,7 @@
      "privacy_sandbox/privacy_sandbox_interest_item.ts",
 --- /dev/null
 +++ b/chrome/browser/resources/settings/privacy_page/services_page.html
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,45 @@
 +<style include="cr-shared-style settings-shared">
 +    .label-wrapper {
 +        padding: var(--cr-section-vertical-padding) 0;
@@ -153,7 +153,11 @@
 +  <div class="flex">
 +    <div class="flex label-wrapper">
 +        <div class="label">$i18n{heliumOriginOverride}</div>
-+        <div class="cr-secondary-text label">$i18n{heliumOriginOverrideDescription} <b>$i18n{heliumOriginOverrideDescriptionWarning}</b></div>
++        <div class="cr-secondary-text label">
++            $i18n{heliumOriginOverrideDescription}
++            <br><br>
++            <b>$i18n{heliumOriginOverrideDescriptionWarning}</b>
++        </div>
 +    </div>
 +    <cr-input
 +        id="heliumOriginOverride"

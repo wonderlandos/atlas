@@ -146,7 +146,7 @@
 +++ b/chrome/app/settings_strings.grdp
 @@ -1864,6 +1864,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
-     When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
+     Helium will fetch a list of bangs that help you browse the Internet faster, such as !w or !gh. When disabled, bangs will not work.
    </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_SPELLCHECK_TOGGLE" desc="Toggle for enabling/disabling of downloading spellcheck files">
 +    Allow downloading dictionary files for spell checking

@@ -721,10 +721,10 @@
      When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
    </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE" desc="Toggle for enabling/disabling of downloading bangs">
-+    Allow downloading the !bang list
++    Allow downloading the !bangs list
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
-+    When enabled, Helium will fetch our list of bangs that help you browse the Internet faster, such as !w or !gh.
++    Helium will fetch a list of bangs that help you browse the Internet faster, such as !w or !gh. When disabled, bangs will not work.
 +  </message>
    <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
      Use your own instance of Helium services

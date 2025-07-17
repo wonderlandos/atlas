@@ -140,10 +140,10 @@ TODO: guard services_page.html with is_mac
      When enabled, Helium will fetch dictionary files used for spell checking when requested.
    </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_UPDATE" desc="Toggle for automatic update downloads">
-+    Allow fetching browser updates
++    Allow automatic browser updates
 +  </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_UPDATE_DESCRIPTION" desc="Description of the toggle for automatic update downloads">
-+    When enabled, Helium will download and install browser updates whenever they are available.
++    Helium will automatically download and install browser updates as they become available. We recommend keeping this setting enabled to ensure you get the latest security patches and features.
 +  </message>
    <message name="IDS_SETTINGS_HELIUM_SERVICES_OVERRIDE" desc="Text input for overriding the Helium services server">
      Use your own instance of Helium services
