@@ -216,7 +216,7 @@
 +++ b/chrome/app/settings_strings.grdp
 @@ -1852,6 +1852,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of all Helium services">
-     When enabled, Helium will be able to connect to anonymous web services to provide additional functionality. When disabled, none of additional features will work.
+     When enabled, Helium will be able to connect to anonymous web services to provide additional functionality. When disabled, additional features will not work.
    </message>
 +  <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE" desc="Toggle for enabling/disabling of downloading and proxying extensions">
 +    Proxy extension downloads and updates
