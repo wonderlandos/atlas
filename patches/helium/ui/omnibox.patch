@@ -137,12 +137,21 @@
      // When a PEDAL suggestion has been split out to its own row, apply a square
      // background with a distinctive color to the respective icon. Journeys
      // suggestion rows should also receive the same treatment.
+@@ -568,7 +567,7 @@ gfx::Size OmniboxMatchCellView::Calculat
+     }
+   } else if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
+     // IPH suggestions have extra height.
+-    height = kRowHeight + 4;
++    height = kRowHeight;
+   } else {
+     // The height for traditional 1-line matches.
+     height = kRowHeight;
 @@ -584,7 +583,7 @@ int OmniboxMatchCellView::GetImageIndent
    // align with any other UI; it's just arbitrarily chosen by UX. Hence, it's
    // not derived from other matches' `indent` below.
    if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
 -    return 2;
-+    return 0;
++    return -3;
    }
  
    // The entity, answer, and icon images are horizontally centered within their
