@@ -100,7 +100,41 @@
  
    auto location_icon_view =
        std::make_unique<LocationIconView>(omnibox_chip_font_list, this, this);
-@@ -490,7 +493,7 @@ bool LocationBarView::IsInitialized() co
+@@ -391,22 +394,13 @@ void LocationBarView::Init() {
+     // first so that they appear on the left side of the icon container.
+     // TODO(crbug.com/40835681): Improve the ordering heuristics for page action
+     // icons and determine a way to handle simultaneous icon animations.
+-    if (base::FeatureList::IsEnabled(commerce::kProductSpecifications)) {
+-      params.types_enabled.push_back(
+-          PageActionIconType::kProductSpecifications);
+-    }
+-    params.types_enabled.push_back(PageActionIconType::kDiscounts);
+-    params.types_enabled.push_back(PageActionIconType::kPriceInsights);
+-    params.types_enabled.push_back(PageActionIconType::kPriceTracking);
+ 
+     if (optimization_guide::features::ShouldEnableOptimizationGuideIconView()) {
+       params.types_enabled.push_back(PageActionIconType::kOptimizationGuide);
+     }
+     params.types_enabled.push_back(PageActionIconType::kClickToCall);
+     params.types_enabled.push_back(PageActionIconType::kSmsRemoteFetcher);
+-    params.types_enabled.push_back(PageActionIconType::kAutofillAddress);
+-    params.types_enabled.push_back(PageActionIconType::kManagePasswords);
+-    params.types_enabled.push_back(PageActionIconType::kChangePassword);
++
+     if (!apps::features::ShouldShowLinkCapturingUX()) {
+       params.types_enabled.push_back(PageActionIconType::kIntentPicker);
+     }
+@@ -416,9 +410,6 @@ void LocationBarView::Init() {
+     params.types_enabled.push_back(PageActionIconType::kZoom);
+     params.types_enabled.push_back(PageActionIconType::kFileSystemAccess);
+ 
+-    params.types_enabled.push_back(PageActionIconType::kCookieControls);
+-    params.types_enabled.push_back(
+-        PageActionIconType::kPaymentsOfferNotification);
+     params.types_enabled.push_back(PageActionIconType::kMemorySaver);
+   }
+   params.types_enabled.push_back(PageActionIconType::kSaveCard);
+@@ -490,7 +481,7 @@ bool LocationBarView::IsInitialized() co
  
  int LocationBarView::GetBorderRadius() const {
    return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -109,7 +143,7 @@
  }
  
  std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
-@@ -690,9 +693,9 @@ void LocationBarView::Layout(PassKey) {
+@@ -690,9 +681,9 @@ void LocationBarView::Layout(PassKey) {
    // TODO(manukh): Move constants to layout_constants.cc.
    // The padding between the left edges of the location bar and the LHS icon,
    // e.g. the page info icon, the google G icon, the selected suggestion icon.
@@ -121,7 +155,7 @@
  
    // Apply indentation to align the omnibox input icon and the text with those
    // of the suggestions in the popup. However, there are two exceptions where
-@@ -711,22 +714,22 @@ void LocationBarView::Layout(PassKey) {
+@@ -711,22 +702,22 @@ void LocationBarView::Layout(PassKey) {
                               !location_icon_view_->ShouldShowLabel() &&
                               !ShouldShowKeywordBubble();
    if (should_indent) {
@@ -148,7 +182,7 @@
    }
  
    LocationBarLayout leading_decorations(LocationBarLayout::Position::kLeftEdge,
-@@ -1183,7 +1186,7 @@ int LocationBarView::GetMinimumTrailingW
+@@ -1183,7 +1174,7 @@ int LocationBarView::GetMinimumTrailingW
  }
  
  gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
@@ -157,7 +191,7 @@
    gfx::Rect bounds_without_endcaps(GetLocalBounds());
    bounds_without_endcaps.Inset(gfx::Insets::VH(0, border_radius));
    return bounds_without_endcaps;
-@@ -1197,9 +1200,9 @@ void LocationBarView::RefreshBackground(
+@@ -1197,9 +1188,9 @@ void LocationBarView::RefreshBackground(
    const bool high_contrast = GetNativeTheme()->UserHasContrastPreference();
  
    const auto* const color_provider = GetColorProvider();
