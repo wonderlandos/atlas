@@ -83,20 +83,41 @@
    // Snap to pixels to avoid shadow blurriness.
    gfx::Size scaled_size = gfx::ScaleToRoundedSize(size(), scale);
  
-@@ -502,10 +471,8 @@ void StatusView::OnPaint(gfx::Canvas* ca
-   // The shadow will overlap the window frame. Clip it off when the bubble is
-   // docked. Otherwise when the bubble is floating preserve the full shadow so
-   // the bubble looks complete.
+@@ -499,20 +468,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
+   // where the web content is visible.
+   const int shadow_thickness_pixels = std::floor(kShadowThickness * scale);
+ 
+-  // The shadow will overlap the window frame. Clip it off when the bubble is
+-  // docked. Otherwise when the bubble is floating preserve the full shadow so
+-  // the bubble looks complete.
 -  int clip_left =
 -      style_ == BubbleStyle::kStandard ? shadow_thickness_pixels : 0;
 -  int clip_right =
 -      style_ == BubbleStyle::kStandardRight ? shadow_thickness_pixels : 0;
-+  int clip_left = 0;
-+  int clip_right = 0;
-   if (base::i18n::IsRTL()) {
-     std::swap(clip_left, clip_right);
-   }
-@@ -553,9 +520,6 @@ void StatusView::OnPaint(gfx::Canvas* ca
+-  if (base::i18n::IsRTL()) {
+-    std::swap(clip_left, clip_right);
+-  }
+-
+-  const int clip_bottom = clip_left || clip_right ? shadow_thickness_pixels : 0;
+   gfx::Rect clip_rect(scaled_size);
+-  clip_rect.Inset(gfx::Insets::TLBR(0, clip_left, clip_bottom, clip_right));
+   canvas->ClipRect(clip_rect);
+ 
+   gfx::RectF bubble_rect{gfx::SizeF(scaled_size)};
+@@ -522,11 +478,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
+   // bubble bounds by 1 DIP minus 1 pixel. Failing to do this results in drawing
+   // further and further outside the window as the scale increases.
+   const int inset = shadow_thickness_pixels - 1;
+-  bubble_rect.Inset(
+-      gfx::InsetsF()
+-          .set_left(style_ == BubbleStyle::kStandardRight ? 0 : inset)
+-          .set_right(style_ == BubbleStyle::kStandardRight ? inset : 0)
+-          .set_bottom(inset));
++  bubble_rect.Inset(gfx::InsetsF::VH(inset, inset));
+   // Align to pixel centers now that the layout is correct.
+   bubble_rect.Inset(0.5);
+ 
+@@ -553,9 +505,6 @@ void StatusView::OnPaint(gfx::Canvas* ca
            : kColorStatusBubbleBackgroundFrameInactive;
    flags.setColor(color_provider->GetColor(id));
    canvas->sk_canvas()->drawPath(fill_path, flags);
@@ -106,7 +127,7 @@
  }
  
  DEFINE_ENUM_CONVERTERS(StatusView::BubbleState,
-@@ -769,7 +733,9 @@ void StatusBubbleViews::Reposition() {
+@@ -769,7 +718,9 @@ void StatusBubbleViews::Reposition() {
    int overlap = kShadowThickness;
    int height = GetPreferredHeight();
    int base_view_height = base_view_->bounds().height();
@@ -117,3 +138,12 @@
    SetBounds(origin.x(), origin.y(), base_view_->bounds().width() / 3, height);
  }
  
+@@ -807,7 +758,7 @@ int StatusBubbleViews::GetWidthForURL(co
+   // Get the width of the elided url
+   int elided_url_width = gfx::GetStringWidth(url_string, GetFont());
+   // Add proper paddings
+-  return elided_url_width + (kShadowThickness + kTextHorizPadding) * 2 + 1;
++  return elided_url_width + (kShadowThickness + kTextHorizPadding) * 2;
+ }
+ 
+ void StatusBubbleViews::SetStatus(const std::u16string& status_text) {
