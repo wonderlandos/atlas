@@ -59,7 +59,7 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -1850,7 +1851,21 @@ void AutocompleteController::UpdateKeywo
+@@ -1855,7 +1856,21 @@ void AutocompleteController::UpdateKeywo
            // - For contextual search matches, the description indicates the
            //   alternative UX because they're opened in the side panel.
            i->description = template_url->AdjustedShortNameForLocaleDirection();
