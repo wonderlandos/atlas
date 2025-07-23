@@ -147,7 +147,7 @@
 +bool GetChromeUserDataDirectory(base::FilePath* result) {
 +  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, result))
 +    return false;
-+  *result = result->Append("Google\\Chrome");
++  *result = result->Append(L"Google\\Chrome");
 +  *result = result->Append(chrome::kUserDataDirname);
 +  return true;
 +}
