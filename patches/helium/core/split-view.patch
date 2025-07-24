@@ -38,8 +38,9 @@
    static constexpr int kMinWebContentsWidth = 200;
    static constexpr double kMinWebContentsWidthPercentage = 0.1;
 -  static constexpr int kContentCornerRadius = 6;
+-  static constexpr int kContentOutlineCornerRadius = 8;
 +  static constexpr int kContentCornerRadius = 8;
-   static constexpr int kContentOutlineCornerRadius = 8;
++  static constexpr int kContentOutlineCornerRadius = 9;
    static constexpr int kContentOutlineThickness = 1;
 -  static constexpr int kSplitViewContentInset = 8;
 -  static constexpr int kSplitViewContentPadding = 4;
@@ -129,13 +130,19 @@
      return;
    }
  
-@@ -347,9 +327,6 @@ void MultiContentsView::UpdateContentsBo
+@@ -343,13 +323,9 @@ void MultiContentsView::UpdateContentsBo
+                             kColorMulitContentsViewActiveContentOutline)
+                       : GetColorProvider()->GetColor(
+                             kColorMulitContentsViewInactiveContentOutline);
+-        contents_container_view->SetBorder(views::CreatePaddedBorder(
++        contents_container_view->SetBorder(
              views::CreateRoundedRectBorder(kContentOutlineThickness,
-                                            kContentOutlineCornerRadius, color),
-             gfx::Insets(kSplitViewContentPadding)));
+-                                           kContentOutlineCornerRadius, color),
+-            gfx::Insets(kSplitViewContentPadding)));
 -        // Mini toolbar should only be visible for the inactive contents
 -        // container view.
 -        contents_container_view->GetMiniToolbar()->SetVisible(!is_active);
++                                           kContentOutlineCornerRadius, color));
        };
    for (auto* contents_container_view : contents_container_views_) {
      set_contents_border_and_mini_toolbar(contents_container_view);
