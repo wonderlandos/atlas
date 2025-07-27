@@ -1,7 +1,6 @@
 # Copyright 2025 The Helium Authors
 # You can use, redistribute, and/or modify this source code under
 # the terms of the GPL-3.0 license that can be found in the LICENSE file.
-
 """
 Replaces resources (such as icons) with Helium branding.
 """
@@ -16,16 +15,6 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
     Handles copying resources from the source tree into the build
     tree based on a resources list.
     """
-    if not os.path.isfile(resource_list):
-        print(f"Resource list '{resource_list}' does not exist, skipping")
-        return
-    if not os.path.isdir(resource_dir):
-        print(f"Resource dir '{resource_dir}' does not exist.")
-        sys.exit(1)
-    if not os.path.isdir(chromium_dir):
-        print(f"Chromium dir '{chromium_dir}' does not exist.")
-        sys.exit(1)
-
     with open(resource_list, 'r', encoding='utf-8') as file:
         for line_number, line in enumerate(file, start=1):
             line = line.strip()
@@ -41,21 +30,12 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
             source = os.path.join(resource_dir, line_parts[0])
             dest = os.path.join(chromium_dir, line_parts[1])
 
-            if not os.path.exists(source):
-                print(f"Source file '{source}' does not exist. Skipping copy.")
-                continue
-            if not os.path.exists(dest):
-                print(f"Destination file '{dest}' does not exist. Skipping copy.")
-                continue
-
-            try:
-                shutil.copyfile(source, dest)
-                print(f"Copied {line_parts[0]} to {line_parts[1]}")
-            except Exception as e:
-                print(f"Error copying '{source}' to '{dest}': {e}")
+            shutil.copyfile(source, dest)
+            print(f"Copied {line_parts[0]} to {line_parts[1]}")
 
 
 def main():
+    """CLI entrypoint"""
     if len(sys.argv) != 4:
         print(
             "Usage: python3 replace_resources.py <helium_resources.txt> " \
