@@ -2,11 +2,20 @@
 # You can use, redistribute, and/or modify this source code under
 # the terms of the GPL-3.0 license that can be found in the LICENSE file.
 
+"""
+Replaces resources (such as icons) with Helium branding.
+"""
+
 import os
 import shutil
 import sys
 
+
 def copy_resources(resource_list, resource_dir, chromium_dir):
+    """
+    Handles copying resources from the source tree into the build
+    tree based on a resources list.
+    """
     if not os.path.isfile(resource_list):
         print(f"Resource list '{resource_list}' does not exist, skipping")
         return
@@ -17,7 +26,7 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
         print(f"Chromium dir '{chromium_dir}' does not exist.")
         sys.exit(1)
 
-    with open(resource_list, 'r') as file:
+    with open(resource_list, 'r', encoding='utf-8') as file:
         for line_number, line in enumerate(file, start=1):
             line = line.strip()
             if not line or line.startswith('#'):
@@ -45,9 +54,13 @@ def copy_resources(resource_list, resource_dir, chromium_dir):
             except Exception as e:
                 print(f"Error copying '{source}' to '{dest}': {e}")
 
+
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python3 replace_resources.py <helium_resources.txt> <resources_dir> <chromium_src_dir>")
+        print(
+            "Usage: python3 replace_resources.py <helium_resources.txt> " \
+            "<resources_dir> <chromium_src_dir>"
+        )
         sys.exit(1)
 
     resource_list = sys.argv[1]
@@ -55,6 +68,7 @@ def main():
     chromium_dir = sys.argv[3]
 
     copy_resources(resource_list, resource_dir, chromium_dir)
+
 
 if __name__ == "__main__":
     main()
