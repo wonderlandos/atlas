@@ -1,0 +1,116 @@
+# Copyright 2025 The Helium Authors
+# You can use, redistribute, and/or modify this source code under
+# the terms of the GPL-3.0 license that can be found in the LICENSE file.
+
+from third_party import unidiff
+from pathlib import Path
+
+LICENSE_HEADER_IGNORES = ["html", "license", "readme"]
+
+patches_dir = None
+series = None
+
+
+def _read_text(path):
+    with open(patches_dir / path, "r") as f:
+        return filter(str, f.read().splitlines())
+
+
+def _init(root):
+    global patches_dir
+    global series
+    patches_dir = root / "patches"
+    series = set(_read_text("series"))
+
+
+def a_all_patches_in_series_exist(root):
+    for patch in series:
+        assert (patches_dir / patch).is_file(), \
+               f"{patch} is in series, but does not exist in the source tree"
+
+
+def a_all_patches_in_tree_are_in_series(root):
+    for patch in patches_dir.rglob('*'):
+        if not patch.is_file() or patch == patches_dir / "series":
+            continue
+
+        assert str(patch.relative_to(patches_dir)) in series, \
+               f"{patch} exists in source tree, but is not included in the series"
+
+
+def b_all_patches_have_meaningful_contents(root):
+    for patch in series:
+        assert any(map(lambda l: l.startswith('+++ '), _read_text(patch))), \
+               f"{patch} does not have any meaningful content"
+
+
+def b_all_patches_have_no_trailing_whitespace(root):
+    for patch in series:
+        for i, line in enumerate(_read_text(patch)):
+            if not line.startswith('+ '):
+                continue
+
+            assert not line.endswith(' '), \
+                   f"{patch} contains trailing whitespace on line {i + 1}"
+
+
+def c_all_new_files_have_license_header(root):
+    for patch in series:
+        if 'helium' not in patch:
+            continue
+
+        patch_set = unidiff.PatchSet('\n'.join(_read_text(patch)))
+        added_files = filter(lambda f: f.is_added_file, patch_set)
+
+        for file in added_files:
+            if any(map(lambda p: p in file.path.lower(), LICENSE_HEADER_IGNORES)):
+                continue
+
+            # TODO: convert into assert once all of them are resolved
+            if any(map(lambda hunk: 'terms of the GPL-3.0 license' in str(hunk), file)):
+                print(
+                    f"File {file.path} was added in {patch}, but contains no Helium license header")
+
+
+def c_all_new_headers_have_correct_guard(root):
+    for patch in series:
+        if 'helium' not in patch:
+            continue
+
+        patch_set = unidiff.PatchSet('\n'.join(_read_text(patch)))
+        added_files = filter(lambda f: f.is_added_file and f.path.endswith('.h'), patch_set)
+
+        for file in added_files:
+            expected_macro_name = file.path.upper() \
+                                  .replace('.', '_') \
+                                  .replace('/', '_') + '_'
+
+            assert len(file) == 1
+
+            expected = {
+                "ifndef": f'#ifndef {expected_macro_name}\n',
+                "define": f'#define {expected_macro_name}\n'
+            }
+
+            found = {
+                "ifndef": None,
+                "define": None,
+            }
+
+            for _line in file[0]:
+                line = str(_line)
+
+                if '#ifndef' in line:
+                    assert found["define"] is None
+                    assert found["ifndef"] is None
+                    found["ifndef"] = line
+                elif '#define' in line:
+                    assert found["ifndef"] is not None
+                    assert found["define"] is None
+                    found["define"] = line
+
+            # TODO: convert into assert once all of them are resolved
+            for macro_type, value in found.items():
+                if value != f"+{expected[macro_type]}":
+                    print(f"Patch {patch} has unexpected {macro_type} in {file.path}:")
+                    print(f"{value.rstrip()}, expecting: {expected[macro_type].rstrip()}")
