@@ -113,4 +113,4 @@ def c_all_new_headers_have_correct_guard(root):
             for macro_type, value in found.items():
                 if value != f"+{expected[macro_type]}":
                     print(f"Patch {patch} has unexpected {macro_type} in {file.path}:")
-                    print(f"{value.rstrip()}, expecting: {expected[macro_type].rstrip()}")
+                    print(f"{(value or "(none)").rstrip()}, expecting: {expected[macro_type].rstrip()}")
