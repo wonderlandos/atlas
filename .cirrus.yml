@@ -11,7 +11,7 @@ code_check_task:
     pip_cache:
         folder: /usr/local/lib/python3.10/site-packages
         fingerprint_script: cat .cirrus_requirements.txt
-        populate_script: pip install -r .cirrus_requirements.txt
+        populate_script: python3 -m ensurepip && pip install -r .cirrus_requirements.txt
     utils_script:
         - python3 -m yapf --style '.style.yapf' -e '*/third_party/*' -rpd utils
         - ./devutils/run_utils_pylint.py --hide-fixme
@@ -28,7 +28,7 @@ validate_with_source_task:
     pip_cache:
         folder: /usr/local/lib/python3.10/site-packages
         fingerprint_script: cat .cirrus_requirements.txt
-        populate_script: pip install -r .cirrus_requirements.txt
+        populate_script: python3 -m ensurepip && pip install -r .cirrus_requirements.txt
     chromium_download_script: |
         # These directories will not exist when this is called, unless cache retrieval
         # fails and leaves partially-complete files around.
