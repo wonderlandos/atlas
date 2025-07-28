@@ -63,7 +63,7 @@
 +#endif  /* CHROME_BROWSER_CHANNEL_SELECTION_H_ */
 --- a/chrome/browser/helium_flag_choices.h
 +++ b/chrome/browser/helium_flag_choices.h
-@@ -16,6 +16,12 @@ namespace helium {
+@@ -20,6 +20,12 @@ namespace helium {
      {"Disabled", kEnergySaverFrameRateCommandLine, "9001"},
    };
  
@@ -78,7 +78,8 @@
  #endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
 --- a/chrome/browser/helium_flag_entries.h
 +++ b/chrome/browser/helium_flag_entries.h
-@@ -1,5 +1,8 @@
+@@ -4,6 +4,9 @@
+ 
  #ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
  #define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
 +    {helium::kChannelCommandLine,
