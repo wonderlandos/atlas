@@ -10,12 +10,15 @@
  #include "chrome/browser/ip_protection/ip_protection_switches.h"
 --- /dev/null
 +++ b/chrome/browser/channel_selection.cc
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,28 @@
++// Copyright 2025 The Helium Authors
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
++
 +#include <string>
 +
 +#include "base/command_line.h"
 +#include "chrome/browser/channel_selection.h"
-+
 +
 +namespace helium {
 +
@@ -38,7 +41,11 @@
 +}  // namespace helium
 --- /dev/null
 +++ b/chrome/browser/channel_selection.h
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,19 @@
++// Copyright 2025 The Helium Authors
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
++
 +#ifndef CHROME_BROWSER_CHANNEL_SELECTION_H_
 +#define CHROME_BROWSER_CHANNEL_SELECTION_H_
 +

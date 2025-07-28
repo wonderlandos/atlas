@@ -16,7 +16,11 @@
  #include "build/chromeos_buildflags.h"
 --- /dev/null
 +++ b/chrome/browser/helium_flag_choices.h
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,16 @@
++// Copyright 2025 The Helium Authors
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
++
 +#ifndef CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
 +#define CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_
 +
@@ -31,7 +35,11 @@
 +#endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
 --- /dev/null
 +++ b/chrome/browser/helium_flag_entries.h
-@@ -0,0 +1,3 @@
+@@ -0,0 +1,7 @@
++// Copyright 2025 The Helium Authors
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
++
 +#ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
 +#define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
 +#endif  /* CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_ */

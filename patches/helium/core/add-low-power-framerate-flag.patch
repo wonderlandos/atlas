@@ -1,6 +1,6 @@
 --- a/chrome/browser/helium_flag_choices.h
 +++ b/chrome/browser/helium_flag_choices.h
-@@ -7,6 +7,15 @@
+@@ -11,6 +11,15 @@
  namespace helium {
    using namespace ::helium;
  
@@ -18,7 +18,8 @@
  #endif  /* CHROME_BROWSER_HELIUM_FLAG_CHOICES_H_ */
 --- a/chrome/browser/helium_flag_entries.h
 +++ b/chrome/browser/helium_flag_entries.h
-@@ -1,3 +1,7 @@
+@@ -4,4 +4,8 @@
+ 
  #ifndef CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
  #define CHROME_BROWSER_HELIUM_FLAG_ENTRIES_H_
 +    {helium::kEnergySaverFrameRateCommandLine,

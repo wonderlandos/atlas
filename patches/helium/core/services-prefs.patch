@@ -177,7 +177,11 @@
 +</div>
 --- /dev/null
 +++ b/chrome/browser/resources/settings/privacy_page/services_page.ts
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,74 @@
++// Copyright 2025 The Helium Authors
++// You can use, redistribute, and/or modify this source code under
++// the terms of the GPL-3.0 license that can be found in the LICENSE file.
++
 +import {HelpBubbleMixin} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
 +import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 +import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
