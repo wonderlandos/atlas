@@ -410,8 +410,8 @@
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#ifndef COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
-+#define COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
++#ifndef COMPONENTS_HELIUM_SERVICES_HELIUM_SERVICES_HELPERS_H_
++#define COMPONENTS_HELIUM_SERVICES_HELIUM_SERVICES_HELPERS_H_
 +
 +#include "base/functional/bind.h"
 +#include "components/prefs/pref_change_registrar.h"
@@ -433,7 +433,7 @@
 +                            PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
 +}  // namespace helium
 +
-+#endif  // COMPONENTS_HELIUM_SEREVICES_HELIUM_SERVICES_HELPERS_H_
++#endif  // COMPONENTS_HELIUM_SERVICES_HELIUM_SERVICES_HELPERS_H_
 --- /dev/null
 +++ b/components/helium_services/pref_names.h
 @@ -0,0 +1,18 @@

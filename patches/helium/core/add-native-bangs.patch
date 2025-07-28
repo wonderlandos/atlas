@@ -472,8 +472,8 @@
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
 +
-+#ifndef COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
-+#define COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
++#ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_BANG_MANAGER_H_
++#define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_BANG_MANAGER_H_
 +
 +#include <memory>
 +#include <string>
@@ -541,7 +541,7 @@
 +    };
 +}
 +
-+#endif  // COMPONENTS_SEARCH_ENGINES_BANG_PROVIDER_H_
++#endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_BANG_MANAGER_H_
 +
 --- a/components/omnibox/browser/autocomplete_input.cc
 +++ b/components/omnibox/browser/autocomplete_input.cc
