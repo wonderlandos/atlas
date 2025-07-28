@@ -66,10 +66,8 @@ def c_all_new_files_have_license_header():
             if any(p in file.path.lower() for p in LICENSE_HEADER_IGNORES):
                 continue
 
-            # TODO: convert into assert once all of them are resolved
-            if not any('terms of the GPL-3.0 license' in str(hunk) for hunk in file):
-                print(
-                    f"File {file.path} was added in {patch}, but contains no Helium license header")
+            assert any('terms of the GPL-3.0 license' in str(hunk) for hunk in file), \
+                   f"File {file.path} was added in {patch}, but contains no Helium license header"
 
 
 def c_all_new_headers_have_correct_guard():
@@ -88,8 +86,8 @@ def c_all_new_headers_have_correct_guard():
             assert len(file) == 1
 
             expected = {
-                "ifndef": f'#ifndef {expected_macro_name}\n',
-                "define": f'#define {expected_macro_name}\n'
+                "ifndef": f'#ifndef {expected_macro_name}',
+                "define": f'#define {expected_macro_name}'
             }
 
             found = {
@@ -109,9 +107,8 @@ def c_all_new_headers_have_correct_guard():
                     assert found["define"] is None
                     found["define"] = line
 
-            # TODO: convert into assert once all of them are resolved
             for macro_type, value in found.items():
-                if value != f"+{expected[macro_type]}":
-                    value_print = (value or '(none)').rstrip()
-                    print(f"Patch {patch} has unexpected {macro_type} in {file.path}:")
-                    print(f"{value_print}, expecting: {expected[macro_type].rstrip()}")
+                value_print = (value or '(none)').rstrip()
+                assert value == f"+{expected[macro_type]}\n", \
+                       f"Patch {patch} has unexpected {macro_type} in {file.path}:" \
+                       f"{value_print}, expecting: {expected[macro_type]}"
