@@ -67,7 +67,7 @@ def c_all_new_files_have_license_header(root):
                 continue
 
             # TODO: convert into assert once all of them are resolved
-            if any(map(lambda hunk: 'terms of the GPL-3.0 license' in str(hunk), file)):
+            if not any(map(lambda hunk: 'terms of the GPL-3.0 license' in str(hunk), file)):
                 print(
                     f"File {file.path} was added in {patch}, but contains no Helium license header")
 
