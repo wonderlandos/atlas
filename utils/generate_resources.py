@@ -37,8 +37,7 @@ def generate_resources(resource_list, resource_dir):
             line_parts = line.split()
 
             if len(line_parts) != 3:
-                print(f"Line {line_number} is invalid. Skipping.")
-                continue
+                raise ValueError(f"Line {line_number} in the resource file is invalid.")
 
             input_file = os.path.join(resource_dir, line_parts[0])
             size = int(line_parts[1])
