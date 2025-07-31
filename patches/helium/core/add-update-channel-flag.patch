@@ -87,7 +87,7 @@
 +     kOsAll, MULTI_VALUE_TYPE(helium::kChannelChoices)},
      {helium::kEnergySaverFrameRateCommandLine,
       "Maximum frame rate for Energy Saver",
-      "Configures the frame rate the browser is throttled to when Energy Saver is enabled. Helium flag",
+      "Configures the frame rate the browser is throttled to when Energy Saver is enabled. Helium flag.",
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
 @@ -281,6 +281,8 @@ static_library("browser") {
