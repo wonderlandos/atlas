@@ -1,0 +1,28 @@
+--- a/chrome/browser/resources/settings/a11y_page/a11y_page.html
++++ b/chrome/browser/resources/settings/a11y_page/a11y_page.html
+@@ -11,14 +11,7 @@
+ </if>
+ <if expr="not is_chromeos">
+         <template is="dom-if" if="[[captionSettingsOpensExternally_]]">
+-          <template is="dom-if" if="[[enableLiveCaption_]]">
+-            <settings-live-caption prefs="{{prefs}}"
+-                languages="[[languages]]"
+-                language-helper="[[languageHelper]]">
+-            </settings-live-caption>
+-          </template>
+           <cr-link-row id="captions"
+-              class="hr"
+               label="$i18n{captionsPreferencesTitle}"
+               sub-label="$i18n{captionsPreferencesSubtitle}"
+               on-click="onCaptionsClick_"
+--- a/chrome/browser/resources/settings/languages_page/spell_check_page.html
++++ b/chrome/browser/resources/settings/languages_page/spell_check_page.html
+@@ -57,7 +57,7 @@
+ <settings-animated-pages id="pages" section="spellCheck"
+     focus-config="[[focusConfig_]]">
+   <div route-path="default">
+-    <settings-toggle-button id="enableSpellcheckingToggle" class="hr"
++    <settings-toggle-button id="enableSpellcheckingToggle"
+         label="$i18n{offerToEnableSpellCheck}"
+         sub-label="[[getSpellCheckSubLabel_(spellCheckLanguages_)]]"
+         pref="{{prefs.browser.enable_spellchecking}}"

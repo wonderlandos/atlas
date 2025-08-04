@@ -160,6 +160,7 @@ helium/settings/remove-translate-section.patch
 helium/settings/remove-safety-hub-entry-points.patch
 helium/settings/reenable-update-status.patch
 helium/settings/privacy-page-tweaks.patch
+helium/settings/fix-section-separators.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
