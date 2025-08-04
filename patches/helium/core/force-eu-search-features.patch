@@ -28,7 +28,7 @@
 -      regional_capabilities->IsInEeaCountry()
 -          ? IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE
 -          : IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE_NON_EEA);
-+      IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE);
++      IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE_HELIUM);
  
    html_source->AddLocalizedString(
        "saveGuestChoiceText", IDS_SEARCH_ENGINE_CHOICE_GUEST_SESSION_CHECKBOX);
@@ -44,3 +44,16 @@
    // The `HasSearchEngineCountryListOverride()` check is here for compatibility
    // with the way EEA presence was checked from `search_engines`. But it should
    // logically be done only when the EEA presence is checked specifically for
+--- a/components/search_engine_choice_strings.grdp
++++ b/components/search_engine_choice_strings.grdp
+@@ -98,6 +98,10 @@
+     These search engines are popular in your region
+   </message>
+ 
++  <message name="IDS_SEARCH_ENGINE_CHOICE_SETTINGS_SUBTITLE_HELIUM" desc="This is the body text of a dialog where the user can change their default search engine. This string explains that the list of search engines is randomized (not in order of recommendation).">
++    This list of search engines is shown in random order.
++  </message>
++
+   <message name="IDS_SEARCH_ENGINE_CHOICE_SETTINGS_ENTRY_POINT_SUBTITLE" desc="This string is body text of a Chrome setting that lets a user select the search engine that they want to use. (A search engine provides answers to search queries; this is different from a browser, which displays web pages. A search engine powers many experiences within a browser.) The string explains how a search engine will impact their experience in Chrome. The “Learn more” link opens a help center article about the default search engine.">
+     The search engine you choose will be used for features like searching from the address bar and from images on web pages.
+   </message>
