@@ -7,8 +7,9 @@ Generates scaled resources for Helium branding
 
 import os
 import sys
-from PIL import Image
+
 from pathlib import Path
+from PIL import Image
 
 
 def scale_image(input_file, size, output_path):
