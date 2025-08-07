@@ -16,7 +16,9 @@ def scale_image(input_file, size, output_path):
     Scales the square image to provided size and saves it
     """
     img = Image.open(input_file)
-    img.thumbnail((size, size))
+
+    if size is not None:
+        img.thumbnail((size, size))
 
     # make sure output path exists
     os.makedirs(output_path.parent, exist_ok=True)
@@ -37,15 +39,21 @@ def generate_resources(resource_list, resource_dir):
 
             line_parts = line.split()
 
-            if len(line_parts) != 3:
+            input_file = resource_dir / line_parts[0]
+            size = None
+            output_file = None
+
+            if len(line_parts) == 2:
+                output_file = resource_dir / line_parts[1]
+            elif len(line_parts) == 3:
+                size = int(line_parts[1])
+                output_file = resource_dir / line_parts[2]
+            else:
                 raise ValueError(f"Line {line_number} in the resource file is invalid.")
 
-            input_file = resource_dir / line_parts[0]
-            size = int(line_parts[1])
-            output_file = resource_dir / line_parts[2]
-
             scale_image(input_file, size, output_file)
-            print(f"Created {line_parts[2]}")
+            size_str = "undefined" if size is None else f"{size}x{size}"
+            print(f"Created {output_file} (size {size_str})")
 
 
 def main():
