@@ -1,6 +1,6 @@
 --- a/chrome/browser/resources/side_panel/customize_chrome/app.ts
 +++ b/chrome/browser/resources/side_panel/customize_chrome/app.ts
-@@ -140,23 +140,6 @@ export class AppElement extends AppEleme
+@@ -148,23 +148,6 @@ export class AppElement extends AppEleme
                    element.scrollIntoView({behavior: 'auto'});
                  });
  
@@ -24,7 +24,7 @@
      this.pageHandler_.updateAttachedTabState();
  
      this.setThemeEditableId_ = CustomizeChromeApiProxy.getInstance()
-@@ -299,10 +282,6 @@ export class AppElement extends AppEleme
+@@ -337,10 +320,6 @@ export class AppElement extends AppEleme
      await this.updateComplete;
      page.focusOnBackButton();
    }
@@ -37,7 +37,7 @@
  declare global {
 --- a/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
 +++ b/chrome/browser/resources/side_panel/customize_chrome/appearance.ts
-@@ -138,12 +138,6 @@ export class AppearanceElement extends A
+@@ -141,12 +141,6 @@ export class AppearanceElement extends A
          });
      this.pageHandler_.updateTheme();
  

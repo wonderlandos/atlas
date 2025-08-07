@@ -22,7 +22,7 @@
  CLOSE
 --- a/chrome/browser/ui/views/BUILD.gn
 +++ b/chrome/browser/ui/views/BUILD.gn
-@@ -34,6 +34,7 @@ component("views") {
+@@ -35,6 +35,7 @@ component("views") {
      "//components/keep_alive_registry",
      "//components/lens",
      "//components/lens:buildflags",
@@ -40,7 +40,7 @@
  #include "third_party/omnibox_proto/types.pb.h"
  
  class ClipboardProvider;
-@@ -538,6 +539,8 @@ class AutocompleteController : public Au
+@@ -542,6 +543,8 @@ class AutocompleteController : public Au
    // A list of all providers.
    Providers providers_;
  
@@ -59,7 +59,7 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -1855,7 +1856,21 @@ void AutocompleteController::UpdateKeywo
+@@ -1885,7 +1886,21 @@ void AutocompleteController::UpdateKeywo
            // - For contextual search matches, the description indicates the
            //   alternative UX because they're opened in the side panel.
            i->description = template_url->AdjustedShortNameForLocaleDirection();
@@ -81,7 +81,7 @@
 +          } else if (is_contextual) {
              i->description = l10n_util::GetStringUTF16(
                  IDS_AUTOCOMPLETE_SEARCH_IN_SIDE_PANEL_DESCRIPTION);
-           } else if (template_url->type() !=
+           } else if (template_url->is_ask_starter_pack()) {
 --- a/components/omnibox/browser/keyword_provider.h
 +++ b/components/omnibox/browser/keyword_provider.h
 @@ -23,6 +23,7 @@
@@ -111,14 +111,13 @@
  #include "components/search_engines/template_url_service.h"
  #include "components/search_engines/template_url_starter_pack_data.h"
  #include "components/strings/grit/components_strings.h"
-@@ -423,9 +424,20 @@ void KeywordProvider::FillInURLAndConten
-     if (element_ref.SupportsReplacement(
-             GetTemplateURLService()->search_terms_data()) &&
-         (element->type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
-+
+@@ -427,8 +428,18 @@ void KeywordProvider::FillInUrlAndConten
+                    GetTemplateURLService()->search_terms_data()) &&
+                (turl->type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
+       // Substituting site search.
 +      int empty_id = IDS_EMPTY_KEYWORD_VALUE;
-+      if (element->bang_id() > 0) {
-+        switch (bang_manager_->GetCategoryForBang(element->bang_id())) {
++      if (turl->bang_id() > 0) {
++        switch (bang_manager_->GetCategoryForBang(turl->bang_id())) {
 +        case Bangs::BANG_CATEGORY_AI:
 +          empty_id = IDS_STARTER_PACK_PAGE_EMPTY_QUERY_MATCH_TEXT;
 +          break;
@@ -126,7 +125,6 @@
 +          break;
 +        }
 +      }
-       // No query input; return a generic, no-destination placeholder.
        match->contents.assign(
 -          l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
 +          l10n_util::GetStringUTF16(empty_id));
@@ -162,10 +160,10 @@
  #include "components/strings/grit/components_strings.h"
  #include "components/vector_icons/vector_icons.h"
  #include "ui/accessibility/ax_enums.mojom.h"
-@@ -118,6 +119,14 @@ void SelectedKeywordView::SetCustomImage
-       template_url->starter_pack_id() == TemplateURLStarterPackData::kGemini) {
-     vector_icon = &omnibox::kSparkIcon;
- 
+@@ -114,6 +115,14 @@ void SelectedKeywordView::SetCustomImage
+   } else if (template_url && template_url->starter_pack_id() ==
+                                  template_url_starter_pack_data::kAiMode) {
+     vector_icon = &omnibox::kSearchSparkIcon;
 +  } else if (template_url && template_url->bang_id() > 0) {
 +    switch (bang_manager_->GetCategoryForBang(template_url->bang_id())) {
 +    case Bangs::BANG_CATEGORY_AI:

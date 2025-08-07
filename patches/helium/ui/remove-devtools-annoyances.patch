@@ -1,14 +1,12 @@
 --- a/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
 +++ b/third_party/devtools-frontend/src/front_end/panels/recorder/RecorderController.ts
-@@ -1448,9 +1448,11 @@ export class RecorderController extends
+@@ -1448,9 +1448,6 @@ export class RecorderController extends
                }
              ></devtools-button>
              <div class="feedback">
-+              <!--
-               <x-link class="x-link" href=${
-                 FEEDBACK_URL
-               } jslog=${VisualLogging.link('feedback').track({click: true})}>${i18nString(UIStrings.sendFeedback)}</x-link>
-+              -->
+-              <x-link class="x-link" title=${i18nString(UIStrings.sendFeedback)} href=${
+-                FEEDBACK_URL
+-              } jslog=${VisualLogging.link('feedback').track({click: true})}>${i18nString(UIStrings.sendFeedback)}</x-link>
              </div>
              <div class="separator"></div>
              <devtools-shortcut-dialog
@@ -24,7 +22,7 @@
  import * as Main from '../main/main.js';
 --- a/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
 +++ b/third_party/devtools-frontend/src/front_end/entrypoints/main/MainImpl.ts
-@@ -946,8 +946,10 @@ export class MainMenuItem implements UI.
+@@ -948,8 +948,10 @@ export class MainMenuItem implements UI.
        }, {jslogContext: id});
      }
  

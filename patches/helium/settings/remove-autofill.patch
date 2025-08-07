@@ -5,29 +5,29 @@
            <cr-ripple></cr-ripple>
          </a>
 -        <a role="menuitem" id="autofill" href="/autofill"
--            hidden="[[!pageVisibility.autofill]]"
+-            hidden="[[!pageVisibility_.autofill]]"
 -            class="cr-nav-menu-item">
 -          <cr-icon icon="settings:assignment"></cr-icon>
 -          $i18n{autofillPageTitle}
 -          <cr-ripple></cr-ripple>
 -        </a>
          <a role="menuitem" href="/privacy"
-             hidden="[[!pageVisibility.privacy]]"
+             hidden="[[!pageVisibility_.privacy]]"
              class="cr-nav-menu-item">
 --- a/chrome/browser/resources/settings/basic_page/basic_page.html
 +++ b/chrome/browser/resources/settings/basic_page/basic_page.html
-@@ -53,7 +53,7 @@
+@@ -51,7 +51,7 @@
              </settings-section>
            </template>
          </template>
--        <template is="dom-if" if="[[showPage_(pageVisibility.autofill)]]"
+-        <template is="dom-if" if="[[showPage_(pageVisibility_.autofill)]]"
 +        <template is="dom-if" if="[[false]]"
              restamp>
            <settings-section page-title="$i18n{autofillPageTitle}"
                section="autofill">
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -230,7 +230,7 @@ function createRoutes(): SettingsRoutes
+@@ -222,7 +222,7 @@ function createRoutes(): SettingsRoutes
      r.FONTS = r.APPEARANCE.createChild('/fonts');
    }
  

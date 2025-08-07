@@ -34,16 +34,15 @@
    registry->RegisterBooleanPref(
 --- a/chrome/browser/ui/startup/startup_browser_creator_impl.cc
 +++ b/chrome/browser/ui/startup/startup_browser_creator_impl.cc
-@@ -49,6 +49,8 @@
- #include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
+@@ -51,6 +51,7 @@
  #include "chrome/common/chrome_switches.h"
  #include "chrome/common/pref_names.h"
-+#include "chrome/common/webui_url_constants.h"
+ #include "chrome/common/webui_url_constants.h"
 +#include "components/helium_services/pref_names.h"
  #include "components/custom_handlers/protocol_handler_registry.h"
  #include "components/prefs/pref_service.h"
  #include "components/privacy_sandbox/privacy_sandbox_features.h"
-@@ -473,6 +475,15 @@ StartupBrowserCreatorImpl::DetermineStar
+@@ -463,6 +464,15 @@ StartupBrowserCreatorImpl::DetermineStar
    LaunchResult launch_result =
        tabs.empty() ? LaunchResult::kNormally : LaunchResult::kWithGivenUrls;
  
@@ -61,7 +60,7 @@
      whats_new::LogStartupType(whats_new::StartupType::kIneligible);
 --- a/tools/gritsettings/resource_ids.spec
 +++ b/tools/gritsettings/resource_ids.spec
-@@ -1155,6 +1155,10 @@
+@@ -1162,6 +1162,10 @@
     "META": {"sizes": {"includes": [30],}},
      "includes": [7480],
    },
@@ -74,7 +73,7 @@
    # START ios/ section.
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -8601,6 +8601,7 @@ static_library("browser_generated_files"
+@@ -8679,6 +8679,7 @@ static_library("browser_generated_files"
      "//chrome/browser/v8_compile_hints/proto",
      "//chrome/browser/web_applications/mojom:mojom_web_apps_enum",
      "//chrome/common/request_header_integrity:buildflags",
@@ -84,7 +83,7 @@
    ]
 --- a/chrome/chrome_paks.gni
 +++ b/chrome/chrome_paks.gni
-@@ -452,11 +452,13 @@ template("chrome_extra_paks") {
+@@ -453,11 +453,13 @@ template("chrome_extra_paks") {
      if (!is_android && !is_chromeos) {
        sources += [
          "$root_gen_dir/chrome/intro_resources.pak",
@@ -100,7 +99,7 @@
  
 --- a/chrome/common/webui_url_constants.cc
 +++ b/chrome/common/webui_url_constants.cc
-@@ -117,6 +117,7 @@ base::span<const base::cstring_view> Chr
+@@ -118,6 +118,7 @@ base::span<const base::cstring_view> Chr
        kChromeUIPrefsInternalsHost,
        kChromeUIProfileInternalsHost,
        content::kChromeUIQuotaInternalsHost,
@@ -110,7 +109,7 @@
  #if !BUILDFLAG(IS_ANDROID)
 --- a/chrome/common/webui_url_constants.h
 +++ b/chrome/common/webui_url_constants.h
-@@ -587,6 +587,8 @@ inline constexpr char kChromeUIProfilePi
+@@ -588,6 +588,8 @@ inline constexpr char kChromeUIProfilePi
  inline constexpr char kChromeUIProfilePickerStartupQuery[] = "startup";
  inline constexpr char kChromeUIProfilePickerGlicQuery[] = "glic";
  inline constexpr char kChromeUIProfilePickerUrl[] = "chrome://profile-picker/";
@@ -121,7 +120,7 @@
      "chrome://history-sync-optin/";
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -210,6 +210,10 @@ static_library("ui") {
+@@ -200,6 +200,10 @@ static_library("ui") {
      "webui/net_internals/net_internals_ui.h",
      "webui/ntp_tiles_internals_ui.cc",
      "webui/ntp_tiles_internals_ui.h",
@@ -142,7 +141,7 @@
  #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
  #include "chrome/browser/ui/webui/policy/policy_ui.h"
  #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
-@@ -414,6 +415,7 @@ void RegisterChromeWebUIConfigs() {
+@@ -407,6 +408,7 @@ void RegisterChromeWebUIConfigs() {
  #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
    map.AddWebUIConfig(std::make_unique<ManagedUserProfileNoticeUIConfig>());
    map.AddWebUIConfig(std::make_unique<IntroUIConfig>());
@@ -499,7 +498,7 @@
  }
 --- a/chrome/browser/ui/browser_navigator.cc
 +++ b/chrome/browser/ui/browser_navigator.cc
-@@ -578,7 +578,8 @@ bool IsHostAllowedInIncognito(const GURL
+@@ -579,7 +579,8 @@ bool IsHostAllowedInIncognito(const GURL
           host != chrome::kChromeUIHelpHost &&
           host != chrome::kChromeUIHistoryHost &&
           host != chrome::kChromeUIExtensionsHost &&

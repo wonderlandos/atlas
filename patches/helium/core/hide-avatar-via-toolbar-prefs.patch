@@ -1,6 +1,6 @@
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -223,6 +223,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -224,6 +224,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
    (*s_allowlist)[::prefs::kPinSplitTabButton] =
        settings_api::PrefType::kBoolean;
  
@@ -13,7 +13,7 @@
    (*s_allowlist)[::prefs::kPinnedActions] = settings_api::PrefType::kList;
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -546,6 +546,7 @@
+@@ -548,6 +548,7 @@
  #define TOOLBAR_PINNABLE_ACTION_IDS \
    E(kActionHome, IDC_HOME) \
    E(kActionForward, IDC_FORWARD) \
@@ -85,7 +85,7 @@
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1260,6 +1270,10 @@ void ToolbarView::OnShowHomeButtonChange
+@@ -1262,6 +1272,10 @@ void ToolbarView::OnShowHomeButtonChange
    home_->SetVisible(show_home_button_.GetValue());
  }
  
@@ -107,7 +107,7 @@
    void OnTouchUiChanged();
  
    void UpdateClipPath();
-@@ -338,6 +340,8 @@ class ToolbarView : public views::Access
+@@ -340,6 +342,8 @@ class ToolbarView : public views::Access
    // Controls whether or not a home button should be shown on the toolbar.
    BooleanPrefMember show_home_button_;
  

@@ -236,7 +236,7 @@
  }
 --- a/ui/webui/resources/cr_elements/cr_shared_style_lit.css
 +++ b/ui/webui/resources/cr_elements/cr_shared_style_lit.css
-@@ -65,10 +65,10 @@ iron-list.cr-separators > *:not([first])
+@@ -67,10 +67,10 @@ iron-list.cr-separators > *:not([first])
  }
  
  .cr-container-shadow {

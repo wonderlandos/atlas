@@ -13,7 +13,7 @@
  <if expr="not chromeos_ash">
          <template is="dom-if" if="[[signinAllowed_]]">
            <cr-link-row id="manage-google-account"
-@@ -159,28 +153,6 @@ shown on non-ChromeOS platforms -->
+@@ -159,26 +153,6 @@ shown on non-ChromeOS platforms -->
  </if>
  
        </div>
@@ -24,7 +24,6 @@
 -            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
 -          <settings-sync-page
 -              sync-status="[[syncStatus]]" prefs="{{prefs}}"
--              page-visibility="[[pageVisibility.privacy]]"
 -              focus-config="[[focusConfig_]]">
 -          </settings-sync-page>
 -        </settings-subpage>
@@ -38,10 +37,9 @@
 -          </settings-sync-controls>
 -        </settings-subpage>
 -      </template>
--
+ 
  <if expr="not chromeos_ash">
        <template is="dom-if" route-path="/manageProfile">
-         <settings-subpage
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.html
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.html
 @@ -113,15 +113,6 @@
@@ -62,24 +60,24 @@
          it is alays selected but disabled. -->
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.ts
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-@@ -252,14 +252,6 @@ export class SettingsPersonalizationOpti
+@@ -250,14 +250,6 @@ export class SettingsPersonalizationOpti
    }
    // </if>
  
 -  private showSearchSuggestToggle_(): boolean {
--    if (this.pageVisibility === undefined) {
+-    if (pageVisibility?.privacy === undefined) {
 -      // pageVisibility isn't defined in non-Guest profiles (crbug.com/1288911).
 -      return true;
 -    }
--    return this.pageVisibility.searchPrediction;
+-    return (pageVisibility.privacy as PrivacyPageVisibility).searchPrediction;
 -  }
 -
+   // <if expr="chromeos_ash">
    private navigateTo_(url: string): void {
      window.location.href = url;
-   }
 --- a/chrome/browser/resources/settings/route.ts
 +++ b/chrome/browser/resources/settings/route.ts
-@@ -190,9 +190,6 @@ function createRoutes(): SettingsRoutes
+@@ -182,9 +182,6 @@ function createRoutes(): SettingsRoutes
      r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
      r.IMPORT_DATA.isNavigableDialog = true;
      // </if>
@@ -89,7 +87,7 @@
    }
  
    const visibility = pageVisibility || {};
-@@ -203,9 +200,6 @@ function createRoutes(): SettingsRoutes
+@@ -195,9 +192,6 @@ function createRoutes(): SettingsRoutes
      if (loadTimeData.getBoolean('showTabOrganizationControl')) {
        r.AI_TAB_ORGANIZATION = r.AI.createChild('/ai/tabOrganizer');
      }

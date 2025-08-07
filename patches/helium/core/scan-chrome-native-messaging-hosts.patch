@@ -37,7 +37,7 @@
      case chrome::DIR_USER_DOCUMENTS:
        if (!GetUserDocumentsDirectory(&cur)) {
          return false;
-@@ -579,11 +584,28 @@ bool PathProvider(int key, base::FilePat
+@@ -580,11 +585,28 @@ bool PathProvider(int key, base::FilePat
  #endif  // !BUILDFLAG(IS_MAC)
        break;
  
@@ -64,8 +64,8 @@
 +      }
 +      cur = cur.Append(FILE_PATH_LITERAL("NativeMessagingHosts"));
        break;
- #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
- #if !BUILDFLAG(IS_ANDROID)
+ #endif  // BUILDFLAG(ENABLE_EXTENSIONS_CORE) && (BUILDFLAG(IS_LINUX) ||
+         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID))
 --- a/chrome/common/chrome_paths.h
 +++ b/chrome/common/chrome_paths.h
 @@ -24,6 +24,7 @@ enum {
@@ -76,7 +76,7 @@
    DIR_CRASH_METRICS,      // Directory where crash metrics are written.
    DIR_CRASH_DUMPS,        // Directory where crash dumps are written.
    DIR_LOCAL_TRACES,       // Directory where local traces are written.
-@@ -117,6 +118,9 @@ enum {
+@@ -118,6 +119,9 @@ enum {
                                // manifest files are stored.
    DIR_USER_NATIVE_MESSAGING,  // Directory with Native Messaging Hosts
                                // installed per-user.
@@ -88,7 +88,7 @@
    DIR_GLOBAL_GCM_STORE,  // Directory where the global GCM instance
 --- a/chrome/common/chrome_paths_android.cc
 +++ b/chrome/common/chrome_paths_android.cc
-@@ -20,6 +20,11 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -19,6 +19,11 @@ bool GetDefaultUserDataDirectory(base::F
    return base::PathService::Get(base::DIR_ANDROID_APP_DATA, result);
  }
  

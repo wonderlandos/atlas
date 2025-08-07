@@ -1,6 +1,6 @@
 --- a/chrome/browser/user_education/user_education_service_factory.cc
 +++ b/chrome/browser/user_education/user_education_service_factory.cc
-@@ -109,6 +109,7 @@ UserEducationServiceFactory::BuildServic
+@@ -113,6 +113,7 @@ UserEducationServiceFactory::BuildServic
  
  // static
  bool UserEducationServiceFactory::ProfileAllowsUserEducation(Profile* profile) {

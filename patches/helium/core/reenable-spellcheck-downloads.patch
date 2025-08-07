@@ -1,6 +1,6 @@
 --- a/chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc
 +++ b/chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc
-@@ -21,8 +21,10 @@
+@@ -22,8 +22,10 @@
  #include "base/task/thread_pool.h"
  #include "base/threading/scoped_blocking_call.h"
  #include "build/build_config.h"
@@ -11,7 +11,7 @@
  #include "components/spellcheck/browser/spellcheck_platform.h"
  #include "components/spellcheck/common/spellcheck_common.h"
  #include "components/spellcheck/common/spellcheck_features.h"
-@@ -272,15 +274,26 @@ GURL SpellcheckHunspellDictionary::GetDi
+@@ -273,15 +275,26 @@ GURL SpellcheckHunspellDictionary::GetDi
    std::string bdict_file = dictionary_file_.path.BaseName().MaybeAsASCII();
    DCHECK(!bdict_file.empty());
  
@@ -96,7 +96,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -8168,6 +8168,8 @@ static_library("browser") {
+@@ -8233,6 +8233,8 @@ static_library("browser") {
      deps += [
        "//components/spellcheck/browser",
        "//components/spellcheck/common",
@@ -107,7 +107,7 @@
      if (!is_android) {
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -351,6 +351,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -352,6 +352,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
        settings_api::PrefType::kBoolean;
    (*s_allowlist)[::prefs::kHeliumBangsEnabled] =
        settings_api::PrefType::kBoolean;
@@ -144,7 +144,7 @@
  </div>
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -1864,6 +1864,12 @@
+@@ -1896,6 +1896,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading bangs">
      Helium will fetch a list of bangs that help you browse the Internet faster, such as !w or !gh. When disabled, bangs will not work.
    </message>
@@ -159,7 +159,7 @@
    </message>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1857,6 +1857,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1899,6 +1899,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumBangsToggle", IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE},
        {"heliumBangsToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_BANGS_TOGGLE_DESCRIPTION},
@@ -171,7 +171,7 @@
        {"heliumExtProxyToggleDescription",
 --- a/chrome/common/features.gni
 +++ b/chrome/common/features.gni
-@@ -11,6 +11,7 @@ import("//components/nacl/features.gni")
+@@ -10,6 +10,7 @@ import("//components/compose/features.gn
  import("//components/safe_browsing/buildflags.gni")
  import("//components/sharing_message/buildflags.gni")
  import("//components/signin/features.gni")

@@ -1,6 +1,6 @@
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -561,15 +561,7 @@ class ContentsSeparator : public views::
+@@ -547,15 +547,7 @@ class ContentsSeparator : public views::
    METADATA_HEADER(ContentsSeparator, views::View)
  
   public:
@@ -17,16 +17,14 @@
  };
  
  BEGIN_METADATA(ContentsSeparator)
-@@ -833,8 +825,7 @@ class BrowserViewLayoutDelegateImpl : pu
-     // will enable BrowserViewLayout to hide the contents separator on its own
-     // using the same logic used by normal BrowserViews.
-     // The separator should not be shown when in split view.
--    return !browser_view_->browser()->app_controller() &&
--           !browser_view_->IsInSplitView();
-+    return false;
+@@ -806,6 +798,7 @@ class BrowserViewLayoutDelegateImpl : pu
    }
  
-   bool IsInSplitView() const override { return browser_view_->IsInSplitView(); }
+   bool IsContentsSeparatorEnabled() const override {
++    return false;
+     // Web app windows manage their own separator.
+     // TODO(crbug.com/40102629): Make PWAs set the visibility of the ToolbarView
+     // based on whether it is visible instead of setting the height to 0px. This
 --- a/chrome/browser/ui/views/frame/top_container_background.cc
 +++ b/chrome/browser/ui/views/frame/top_container_background.cc
 @@ -6,6 +6,7 @@

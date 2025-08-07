@@ -1,6 +1,6 @@
 --- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
 +++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -226,6 +226,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
+@@ -227,6 +227,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil
    // Custom toolbar button settings.
    (*s_allowlist)[::prefs::kShowAvatarButton] =
        settings_api::PrefType::kBoolean;
@@ -11,7 +11,7 @@
    (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -547,6 +547,7 @@
+@@ -549,6 +549,7 @@
    E(kActionHome, IDC_HOME) \
    E(kActionForward, IDC_FORWARD) \
    E(kActionAvatar, IDC_SHOW_AVATAR_MENU) \
@@ -67,7 +67,7 @@
    {
      views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
        ->toolbar_button_provider()->GetAppMenuButton();
-@@ -956,7 +958,9 @@ void ExtensionsToolbarContainer::UpdateC
+@@ -971,7 +973,9 @@ void ExtensionsToolbarContainer::UpdateC
  }
  
  bool ExtensionsToolbarContainer::ShouldContainerBeVisible() const {
@@ -95,7 +95,7 @@
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1274,6 +1282,10 @@ void ToolbarView::OnShowAvatarButtonChan
+@@ -1276,6 +1284,10 @@ void ToolbarView::OnShowAvatarButtonChan
    avatar_->SetVisible(show_avatar_button_.GetValue());
  }
  
@@ -117,7 +117,7 @@
    void OnTouchUiChanged();
  
    void UpdateClipPath();
-@@ -342,6 +344,8 @@ class ToolbarView : public views::Access
+@@ -344,6 +346,8 @@ class ToolbarView : public views::Access
  
    BooleanPrefMember show_avatar_button_;
  

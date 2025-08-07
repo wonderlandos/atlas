@@ -62,7 +62,7 @@
    // Prevent future modification of the scheme lists. This is to prevent
 --- a/content/renderer/render_thread_impl.cc
 +++ b/content/renderer/render_thread_impl.cc
-@@ -954,10 +954,18 @@ void RenderThreadImpl::RegisterSchemes()
+@@ -949,10 +949,18 @@ void RenderThreadImpl::RegisterSchemes()
        chrome_scheme);
    WebSecurityPolicy::RegisterURLSchemeAsWebUI(chrome_scheme);
  
@@ -93,7 +93,7 @@
        url.SchemeIs(url::kTraceScheme) ||
 --- a/chrome/browser/ui/browser_navigator.cc
 +++ b/chrome/browser/ui/browser_navigator.cc
-@@ -549,7 +549,8 @@ std::unique_ptr<content::WebContents> Cr
+@@ -550,7 +550,8 @@ std::unique_ptr<content::WebContents> Cr
  bool IsHostAllowedInIncognito(const GURL& url) {
    std::string scheme = url.scheme();
    std::string_view host = url.host_piece();
@@ -103,7 +103,7 @@
      return true;
    }
  
-@@ -633,6 +634,12 @@ base::WeakPtr<content::NavigationHandle>
+@@ -634,6 +635,12 @@ base::WeakPtr<content::NavigationHandle>
      }
    }
  
@@ -118,7 +118,7 @@
    // handling.
 --- a/chrome/browser/extensions/extension_tab_util.cc
 +++ b/chrome/browser/extensions/extension_tab_util.cc
-@@ -1113,7 +1113,8 @@ bool ExtensionTabUtil::IsKillURL(const G
+@@ -1174,7 +1174,8 @@ bool ExtensionTabUtil::IsKillURL(const G
      return true;
    }
  
@@ -130,7 +130,7 @@
  
 --- a/chrome/browser/ui/browser.cc
 +++ b/chrome/browser/ui/browser.cc
-@@ -2280,6 +2280,13 @@ void Browser::SetContentsBounds(WebConte
+@@ -2267,6 +2267,13 @@ void Browser::SetContentsBounds(WebConte
  }
  
  void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
@@ -144,7 +144,7 @@
    std::vector<StatusBubble*> status_bubbles = GetStatusBubbles();
    for (StatusBubble* status_bubble : status_bubbles) {
      StatusBubbleViews* status_bubble_views =
-@@ -2287,7 +2294,7 @@ void Browser::UpdateTargetURL(WebContent
+@@ -2274,7 +2281,7 @@ void Browser::UpdateTargetURL(WebContent
      ContentsWebView* anchor =
          static_cast<ContentsWebView*>(status_bubble_views->base_view());
      if (source == anchor->GetWebContents()) {
@@ -153,18 +153,18 @@
        break;
      }
    }
---- a/components/omnibox/browser/omnibox_edit_model.cc
-+++ b/components/omnibox/browser/omnibox_edit_model.cc
-@@ -69,6 +69,7 @@
- #include "components/search_engines/template_url_service.h"
- #include "components/search_engines/template_url_starter_pack_data.h"
- #include "components/strings/grit/components_strings.h"
+--- a/components/omnibox/browser/omnibox_text_util.cc
++++ b/components/omnibox/browser/omnibox_text_util.cc
+@@ -12,6 +12,7 @@
+ #include "components/omnibox/browser/autocomplete_classifier.h"
+ #include "components/omnibox/browser/autocomplete_match.h"
+ #include "components/omnibox/browser/omnibox_client.h"
 +#include "content/public/common/url_constants.h"
- #include "net/cookies/cookie_util.h"
- #include "third_party/icu/source/common/unicode/ubidi.h"
- #include "third_party/metrics_proto/omnibox_event.pb.h"
-@@ -509,6 +510,12 @@ void OmniboxEditModel::AdjustTextForCopy
-     *url_from_text = controller_->client()->GetNavigationEntryURL();
+ #include "url/gurl.h"
+ #include "url/url_constants.h"
+ 
+@@ -152,6 +153,12 @@ void AdjustTextForCopy(int sel_min,
+     *url_from_text = client->GetNavigationEntryURL();
      *write_url = true;
  
 +    if (url_from_text->scheme() == content::kChromeUIScheme) {
@@ -270,25 +270,27 @@
  const char kDevToolsScheme[] = "devtools";
  const char kChromeUIDefaultHost[] = "version";
  const char kViewSourceScheme[] = "view-source";
-@@ -486,7 +487,7 @@ std::string SegmentURLInternal(std::stri
-                scheme.c_str(),
-                url::Component(0, static_cast<int>(scheme.length()))) ||
-            scheme == url::kAboutScheme || scheme == kChromeUIScheme ||
--           scheme == url::kFileScheme)) {
-+           scheme == kHeliumUIScheme || scheme == url::kFileScheme)) {
+@@ -483,7 +484,8 @@ std::string SegmentURLInternal(std::stri
+       (*text)[semicolon] = ':';
+       if (GetValidScheme(*text, &parts->scheme, &scheme) &&
+           (url::IsStandard(scheme) || scheme == url::kAboutScheme ||
+-           scheme == kChromeUIScheme || scheme == url::kFileScheme)) {
++           scheme == kChromeUIScheme || scheme == kHeliumUIScheme ||
++           scheme == url::kFileScheme)) {
          found_scheme = true;
        } else {
          (*text)[semicolon] = ';';
-@@ -502,7 +503,7 @@ std::string SegmentURLInternal(std::stri
+@@ -499,7 +501,8 @@ std::string SegmentURLInternal(std::stri
    // Proceed with about, chrome, and devtools schemes,
    // but not file or nonstandard schemes.
    if ((scheme != url::kAboutScheme) && (scheme != kChromeUIScheme) &&
--      (scheme != kDevToolsScheme) &&
+-      (scheme != kDevToolsScheme) && !url::IsStandard(scheme)) {
 +      (scheme != kHeliumUIScheme) && (scheme != kDevToolsScheme) &&
-       !url::IsStandard(scheme.c_str(),
-                        url::Component(0, static_cast<int>(scheme.length())))) {
++      !url::IsStandard(scheme)) {
      return scheme;
-@@ -637,7 +638,9 @@ GURL FixupURLInternal(const std::string&
+   }
+ 
+@@ -632,7 +635,9 @@ GURL FixupURLInternal(const std::string&
  
    // For some schemes whose layouts we understand, we rebuild the URL.
    bool chrome_url =
@@ -297,9 +299,9 @@
 +      || (scheme == kChromeUIScheme)
 +      || (scheme == kHeliumUIScheme);
    bool devtools_url = (scheme == kDevToolsScheme);
-   if (chrome_url || devtools_url ||
-       url::IsStandard(scheme.c_str(),
-@@ -765,7 +768,9 @@ bool IsEquivalentScheme(const std::strin
+   if (chrome_url || devtools_url || url::IsStandard(scheme)) {
+     // Replace the about: scheme with the chrome: scheme.
+@@ -758,7 +763,9 @@ bool IsEquivalentScheme(const std::strin
                          const std::string& scheme2) {
    return scheme1 == scheme2 ||
           (scheme1 == url::kAboutScheme && scheme2 == kChromeUIScheme) ||
