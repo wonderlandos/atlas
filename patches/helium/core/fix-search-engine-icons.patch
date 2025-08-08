@@ -1,12 +1,8 @@
---- a/components/resources/search_engine_choice_scaled_resources.grdp
-+++ b/components/resources/search_engine_choice_scaled_resources.grdp
-@@ -1,7 +1,5 @@
- <?xml version="1.0" encoding="utf-8"?>
- <grit-part>
--  <if expr="_google_chrome">
--    <structure type="chrome_scaled_image" name="IDR_GOOGLE_COM_PNG" file="google_chrome/google_search_logo.png" />
--    <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_GOOGLE_IMAGE" file="google_chrome/google_search_logo.png" />
--  </if>
-+  <structure type="chrome_scaled_image" name="IDR_GOOGLE_COM_PNG" file="search_engine_choice/google_com.png" />
-+  <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_GOOGLE_IMAGE" file="search_engine_choice/google_com.png" />
- </grit-part>
+--- a/build/config/chrome_build.gni
++++ b/build/config/chrome_build.gni
+@@ -88,4 +88,4 @@ declare_args() {
+ 
+ # Whether to enable built-in branding assets (logos & marketing snippets) for
+ # search providers in choice UIs.
+-enable_builtin_search_provider_assets = is_chrome_branded && !is_android
++enable_builtin_search_provider_assets = !is_android
