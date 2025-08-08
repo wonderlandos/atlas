@@ -89,7 +89,7 @@
  
 -constexpr int kContentCornerRadius = 6;
 -constexpr int kContentOutlineCornerRadius = 8;
-+constexpr int kContentCornerRadius = 8;
++constexpr gfx::RoundedCornersF kContentCornerRadius{8};
 +constexpr int kContentOutlineCornerRadius = 9;
  constexpr int kContentOutlineThickness = 1;
 -constexpr int kSplitViewContentPadding = 4;
@@ -106,25 +106,36 @@
  }
  
  void ContentsContainerView::UpdateBorderAndOverlay(bool is_in_split,
-@@ -48,7 +45,6 @@ void ContentsContainerView::UpdateBorder
+@@ -47,8 +44,9 @@ void ContentsContainerView::UpdateBorder
+   // split.
    if (!is_in_split) {
      SetBorder(nullptr);
-     contents_view_->layer()->SetRoundedCornerRadius(gfx::RoundedCornersF{0});
+-    contents_view_->layer()->SetRoundedCornerRadius(gfx::RoundedCornersF{0});
 -    mini_toolbar_->SetVisible(false);
++    contents_view_->holder()->SetCornerRadii(gfx::RoundedCornersF{0});
++    contents_view_->SetBackgroundRadii(gfx::RoundedCornersF{0});
++    scrim_view_->SetRoundedCorners(gfx::RoundedCornersF{0});
      scrim_view_->SetVisible(false);
      return;
    }
-@@ -66,9 +62,6 @@ void ContentsContainerView::UpdateBorder
+@@ -64,11 +62,11 @@ void ContentsContainerView::UpdateBorder
+       views::CreateRoundedRectBorder(kContentOutlineThickness,
+                                      kContentOutlineCornerRadius, color),
        gfx::Insets(kSplitViewContentPadding)));
-   contents_view_->layer()->SetRoundedCornerRadius(
-       gfx::RoundedCornersF{kContentCornerRadius});
+-  contents_view_->layer()->SetRoundedCornerRadius(
+-      gfx::RoundedCornersF{kContentCornerRadius});
 -  // Mini toolbar should only be visible for the inactive contents
 -  // container view or both depending on configuration.
 -  mini_toolbar_->UpdateState(is_active);
++
++  contents_view_->holder()->SetCornerRadii(kContentCornerRadius);
++  contents_view_->SetBackgroundRadii(kContentCornerRadius);
++  scrim_view_->SetRoundedCorners(kContentCornerRadius);
++
    // Scrim should only be allowed to show the scrim for inactive contents
    // container view.
    scrim_view_->SetVisible(!is_active && show_scrim);
-@@ -94,20 +87,6 @@ views::ProposedLayout ContentsContainerV
+@@ -94,20 +92,6 @@ views::ProposedLayout ContentsContainerV
    layouts.child_layouts.emplace_back(scrim_view_.get(),
                                       scrim_view_->GetVisible(), contents_rect);
  
@@ -171,3 +182,15 @@
  };
  
  #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_VIEW_H_
+--- a/ui/views/controls/native/native_view_host.cc
++++ b/ui/views/controls/native/native_view_host.cc
+@@ -75,6 +75,9 @@ gfx::NativeViewAccessible NativeViewHost
+ }
+ 
+ bool NativeViewHost::SetCornerRadii(const gfx::RoundedCornersF& corner_radii) {
++  if (!native_wrapper_) {
++    return false;
++  }
+   return native_wrapper_->SetCornerRadii(corner_radii);
+ }
+ 
