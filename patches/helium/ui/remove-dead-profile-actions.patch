@@ -1,18 +1,18 @@
 --- a/chrome/browser/ui/views/profiles/profile_menu_view.cc
 +++ b/chrome/browser/ui/views/profiles/profile_menu_view.cc
-@@ -805,6 +805,7 @@ void ProfileMenuView::BuildHistorySyncOp
+@@ -810,6 +810,7 @@ void ProfileMenuView::MaybeBuildBatchUpl
  }
  
  void ProfileMenuView::BuildAutofillSettingsButton() {
 +  return;
-   CHECK(!browser()->profile()->IsGuestSession());
+   CHECK(!profile().IsGuestSession());
    AddFeatureButton(
        l10n_util::GetStringUTF16(IDS_PROFILE_MENU_AUTOFILL_SETTINGS_BUTTON),
-@@ -858,6 +859,7 @@ void ProfileMenuView::MaybeBuildChromeAc
+@@ -862,6 +863,7 @@ void ProfileMenuView::MaybeBuildChromeAc
  }
  
  void ProfileMenuView::MaybeBuildManageGoogleAccountButton() {
 +  return;
-   Profile* profile = browser()->profile();
-   CHECK(!profile->IsGuestSession());
+   CHECK(!profile().IsGuestSession());
    signin::IdentityManager* identity_manager =
+       IdentityManagerFactory::GetForProfile(&profile());

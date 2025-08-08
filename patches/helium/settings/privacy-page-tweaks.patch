@@ -1,6 +1,6 @@
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -1837,6 +1837,12 @@
+@@ -1869,6 +1869,12 @@
    users to manage security settings">
      Security
    </message>
@@ -15,7 +15,7 @@
    </message>
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1846,9 +1846,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1888,9 +1888,9 @@ void AddPrivacyStrings(content::WebUIDat
         IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_LEARN_MORE_ACCESSIBILITY_LABEL},
        // TODO(crbug.com/40122957): This string is no longer used. Remove.
        {"permissionsPageTitle", IDS_SETTINGS_PERMISSIONS},
@@ -29,7 +29,7 @@
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
 --- a/chrome/browser/resources/settings/privacy_page/privacy_page.html
 +++ b/chrome/browser/resources/settings/privacy_page/privacy_page.html
-@@ -51,6 +51,7 @@
+@@ -52,6 +52,7 @@
              label="$i18n{clearBrowsingData}"
              sub-label="$i18n{clearBrowsingDataDescription}"
              on-click="onClearBrowsingDataClick_"></cr-link-row>
@@ -37,7 +37,7 @@
          <cr-link-row id="thirdPartyCookiesLinkRow"
              start-icon="privacy:cookie"
              class="hr" label="$i18n{thirdPartyCookiesLinkRowLabel}"
-@@ -61,6 +62,7 @@
+@@ -62,6 +63,7 @@
              on-click="onCookiesClick_"
              role-description="$i18n{subpageArrowRoleDescription}">
          </cr-link-row>
@@ -45,7 +45,7 @@
          <template is="dom-if" if="[[enableIncognitoTrackingProtections_]]">
            <cr-link-row id="incognitoTrackingProtectionsLinkRow" class="hr"
                start-icon="settings:visibility-off"
-@@ -85,16 +87,16 @@
+@@ -86,16 +88,16 @@
                role-description="$i18n{subpageArrowRoleDescription}">
            </cr-link-row>
          </template>

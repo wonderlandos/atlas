@@ -23,7 +23,7 @@
      if (tab_search_action.has_value()) {
 --- a/chrome/browser/ui/ui_features.cc
 +++ b/chrome/browser/ui/ui_features.cc
-@@ -420,7 +420,7 @@ BASE_FEATURE(kTabStripBrowserApi,
+@@ -359,7 +359,7 @@ BASE_FEATURE(kTabStripBrowserApi,
  
  BASE_FEATURE(kTabstripComboButton,
               "TabstripComboButton",
@@ -32,12 +32,21 @@
  
  BASE_FEATURE(kLaunchedTabSearchToolbarButton,
               "LaunchedTabSearchToolbarButton",
-@@ -438,7 +438,7 @@ const base::FeatureParam<bool> kTabstrip
-     &kTabstripComboButton, "reverse_button_order", false};
+@@ -387,6 +387,8 @@ bool IsTabSearchMoving() {
+     return false;
+   }
  
- const base::FeatureParam<bool> kTabSearchToolbarButton{
--    &kTabstripComboButton, "tab_search_toolbar_button", false};
-+    &kTabstripComboButton, "tab_search_toolbar_button", true};
++  return true;
++
+   static const bool is_tab_search_moving = [] {
+     if (GetCountryCode() == "us" &&
+         base::FeatureList::IsEnabled(
+@@ -412,6 +414,8 @@ bool HasTabstripComboButtonWithReverseBu
+ }
  
- static std::string GetCountryCode() {
-   if (!g_browser_process || !g_browser_process->variations_service()) {
+ bool HasTabSearchToolbarButton() {
++  return true;
++
+   static const bool has_tab_search_toolbar_button = [] {
+     if (!IsTabSearchMoving()) {
+       return false;

@@ -33,7 +33,7 @@
      path.addRoundRect(gfx::RectToSkRect(rect), radii, radii);
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -1036,7 +1036,7 @@ void ToolbarView::LayoutCommon() {
+@@ -1038,7 +1038,7 @@ void ToolbarView::LayoutCommon() {
      views::ManualLayoutUtil(layout_manager_)
          .SetViewHidden(toolbar_divider_, !extensions_container_->GetVisible());
      const SkColor toolbar_extension_separator_color =

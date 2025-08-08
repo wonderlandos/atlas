@@ -62,7 +62,7 @@
  // static
 --- a/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_result_view.cc
-@@ -190,9 +190,6 @@ OmniboxResultView::OmniboxResultView(Omn
+@@ -192,9 +192,6 @@ OmniboxResultView::OmniboxResultView(Omn
  
    SetLayoutManager(std::make_unique<views::FillLayout>());
  
@@ -72,7 +72,7 @@
    local_answer_header_and_suggestion_and_buttons_ =
        AddChildView(std::make_unique<views::View>());
    local_answer_header_and_suggestion_and_buttons_
-@@ -296,7 +293,7 @@ OmniboxResultView::OmniboxResultView(Omn
+@@ -304,7 +301,7 @@ OmniboxResultView::OmniboxResultView(Omn
                &OmniboxResultView::ButtonPressed, base::Unretained(this),
                OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION)));
    remove_suggestion_button_->SetProperty(views::kMarginsKey,
@@ -81,7 +81,7 @@
    views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
    auto* const remove_focus_ring =
        views::FocusRing::Get(remove_suggestion_button_);
-@@ -351,10 +348,9 @@ std::unique_ptr<views::Background> Omnib
+@@ -359,10 +356,9 @@ std::unique_ptr<views::Background> Omnib
          /*for_border_thickness=*/0);
    }
  
@@ -94,7 +94,7 @@
  }
  
  void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
-@@ -490,14 +486,6 @@ void OmniboxResultView::ApplyThemeAndRef
+@@ -499,14 +495,6 @@ void OmniboxResultView::ApplyThemeAndRef
            popup_view_->controller()->client()->GetTemplateURLService())) {
      const OmniboxPopupSelection::LineState line_state =
          popup_view_->GetSelection().state;
@@ -111,23 +111,18 @@
    if (suggestion_view_->iph_link_view()->GetVisible()) {
 --- a/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_row_view.cc
-@@ -105,12 +105,7 @@ views::View* OmniboxRowView::GetActiveAu
+@@ -106,6 +106,8 @@ views::View* OmniboxRowView::GetActiveAu
  }
  
  gfx::Insets OmniboxRowView::GetInsets() const {
--  if (result_view_->GetThemeState() == OmniboxPartState::IPH) {
--    int LRInsets = OmniboxMatchCellView::kIphOffset;
--    return gfx::Insets::TLBR(8, LRInsets, 8, LRInsets);
--  }
--
--  return gfx::Insets::TLBR(0, 0, 0, 16);
 +  return gfx::Insets::TLBR(2, 4, 0, 4);
- }
- 
- BEGIN_METADATA(OmniboxRowView)
++
+   if (result_view_->GetThemeState() == OmniboxPartState::IPH) {
+     int LRInsets = OmniboxMatchCellView::kIphOffset;
+     return gfx::Insets::TLBR(8, LRInsets, 8, LRInsets);
 --- a/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
 +++ b/chrome/browser/ui/views/omnibox/omnibox_match_cell_view.cc
-@@ -347,8 +347,7 @@ void OmniboxMatchCellView::SetIcon(const
+@@ -353,8 +353,7 @@ void OmniboxMatchCellView::SetIcon(const
        match.type == AutocompleteMatchType::HISTORY_CLUSTER;
    const bool is_instant_keyword_row =
        AutocompleteMatch::IsFeaturedSearchType(match.type);
@@ -137,25 +132,25 @@
      // When a PEDAL suggestion has been split out to its own row, apply a square
      // background with a distinctive color to the respective icon. Journeys
      // suggestion rows should also receive the same treatment.
-@@ -568,7 +567,7 @@ gfx::Size OmniboxMatchCellView::Calculat
-     }
-   } else if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
-     // IPH suggestions have extra height.
+@@ -577,7 +576,7 @@ gfx::Size OmniboxMatchCellView::Calculat
+   } else if (layout_style_ == LayoutStyle::IPH_SUGGESTION ||
+              layout_style_ == LayoutStyle::TOOLBELT) {
+     // IPH and toolbelt suggestions have extra height.
 -    height = kRowHeight + 4;
 +    height = kRowHeight;
    } else {
      // The height for traditional 1-line matches.
      height = kRowHeight;
-@@ -584,7 +583,7 @@ int OmniboxMatchCellView::GetImageIndent
-   // align with any other UI; it's just arbitrarily chosen by UX. Hence, it's
+@@ -594,7 +593,7 @@ int OmniboxMatchCellView::GetImageIndent
    // not derived from other matches' `indent` below.
-   if (layout_style_ == LayoutStyle::IPH_SUGGESTION) {
+   if (layout_style_ == LayoutStyle::IPH_SUGGESTION ||
+       layout_style_ == LayoutStyle::TOOLBELT) {
 -    return 2;
 +    return -3;
    }
  
    // The entity, answer, and icon images are horizontally centered within their
-@@ -595,7 +594,7 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -605,7 +604,7 @@ int OmniboxMatchCellView::GetImageIndent
    // b) Entities, answers, and icons continue to be center-aligned.
    // c) Regardless of the state of those other features and their widths.
    // This applies to both touch-UI and non-touch-UI.
@@ -164,7 +159,7 @@
  
    indent += omnibox_feature_configs::AdjustOmniboxIndent()
                  .Get()
-@@ -605,6 +604,8 @@ int OmniboxMatchCellView::GetImageIndent
+@@ -615,6 +614,8 @@ int OmniboxMatchCellView::GetImageIndent
  }
  
  int OmniboxMatchCellView::GetTextIndent() const {

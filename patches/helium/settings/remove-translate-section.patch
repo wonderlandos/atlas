@@ -1,6 +1,6 @@
 --- a/chrome/browser/resources/settings/basic_page/basic_page.html
 +++ b/chrome/browser/resources/settings/basic_page/basic_page.html
-@@ -210,6 +210,7 @@
+@@ -206,6 +206,7 @@
                  </settings-spell-check-page>
                </settings-section>
              </template>
@@ -8,12 +8,12 @@
              <settings-section page-title="$i18n{translatePageTitle}"
                  section="translate" nest-under-section="languages">
                <settings-translate-page prefs="{{prefs}}"
-@@ -218,6 +219,7 @@
+@@ -214,6 +215,7 @@
                </settings-translate-page>
              </settings-section>
  </if>
 +</if>
-             <template is="dom-if" if="[[showPage_(pageVisibility.downloads)]]"
+             <template is="dom-if" if="[[showPage_(pageVisibility_.downloads)]]"
                  restamp>
                <settings-section page-title="$i18n{downloadsPageTitle}"
 --- a/chrome/browser/resources/settings/languages_page/languages_page.html
