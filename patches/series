@@ -151,7 +151,6 @@ helium/core/add-low-power-framerate-flag.patch
 helium/core/add-update-channel-flag.patch
 helium/core/add-updater-preference.patch
 helium/core/add-disable-ech-flag.patch
-helium/core/disable-google-ai-starterpack-options.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
