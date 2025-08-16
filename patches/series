@@ -180,11 +180,12 @@ helium/ui/tab-strip-controls.patch
 helium/ui/toolbar.patch
 helium/ui/omnibox.patch
 helium/ui/app-menu-style.patch
+helium/ui/app-menu-model.patch
+helium/ui/remove-reading-list-from-app-menu.patch
 helium/ui/fix-customize-side-panel.patch
 helium/ui/immersive-padding.patch
 helium/ui/side-panel.patch
 helium/ui/layout-provider.patch
-helium/ui/app-menu-model.patch
 helium/ui/remove-dead-toolbar-actions.patch
 helium/ui/remove-dead-profile-actions.patch
 helium/ui/clean-up-installed-extension-bubble.patch
@@ -198,7 +199,6 @@ helium/ui/square-ntp-monograms.patch
 helium/ui/set-gray-as-default-theme.patch
 helium/ui/improve-toast.patch
 helium/ui/square-interstitial-buttons.patch
-helium/ui/remove-reading-list-from-app-menu.patch
 helium/ui/center-window-on-launch.patch
 helium/ui/remove-devtools-annoyances.patch
 helium/ui/bookmarks-bar-padding.patch
