@@ -181,6 +181,7 @@ helium/ui/toolbar.patch
 helium/ui/omnibox.patch
 helium/ui/app-menu-style.patch
 helium/ui/app-menu-model.patch
+helium/ui/app-menu-button.patch
 helium/ui/remove-reading-list-from-app-menu.patch
 helium/ui/fix-customize-side-panel.patch
 helium/ui/immersive-padding.patch
