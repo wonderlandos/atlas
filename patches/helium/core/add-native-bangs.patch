@@ -267,7 +267,7 @@
    // This closure is run when the default search provider is set to Google.
 --- /dev/null
 +++ b/components/search_engines/template_url_bang_manager.cc
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,215 @@
 +// Copyright 2025 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -427,9 +427,25 @@
 +
 +        auto dict = std::move(bang).TakeDict();
 +        auto bname = dict.FindString("s");
-+        auto bbang = dict.FindString("t");
++
++        std::vector<const std::string*> triggers;
++        if (auto bbang = dict.FindString("t")) {
++            triggers.push_back(bbang);
++        }
++
++        if (auto bbangs = dict.FindList("ts")) {
++            triggers.reserve(triggers.size() + bbangs->size());
++
++            for (const auto& trigger : *bbangs) {
++                const std::string* value = trigger.GetIfString();
++                if (!value) continue;
++
++                triggers.push_back(value);
++            }
++        }
++
 +        auto burl_template = dict.FindString("u");
-+        if (!bname || !bbang || !burl_template) {
++        if (!bname || !burl_template || triggers.empty()) {
 +            continue;
 +        }
 +
@@ -444,10 +460,12 @@
 +            category_map_[index] = GetCategoryFromJSONObject(*bcategory);
 +        }
 +
-+        // We need to pass the URL here as-is, because otherwise URLs
-+        // which have the template in the path will have it %-encoded,
-+        // which will break everything.
-+        bangs_.emplace_back(index++, *bname, *bbang, *burl_template);
++        for (auto trigger : triggers) {
++            // We need to pass the URL here as-is, because otherwise URLs
++            // which have the template in the path will have it %-encoded,
++            // which will break everything.
++            bangs_.emplace_back(index++, *bname, *trigger, *burl_template);
++        }
 +    }
 +
 +    LOG(INFO) << bangs_.size() << " bangs loaded";
