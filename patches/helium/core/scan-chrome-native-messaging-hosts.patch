@@ -114,17 +114,18 @@
  // DIR_ROAMING_USER_DATA has been overridden by a command-line option.
 --- a/chrome/common/chrome_paths_linux.cc
 +++ b/chrome/common/chrome_paths_linux.cc
-@@ -101,6 +101,23 @@ bool GetDefaultUserDataDirectory(base::F
+@@ -101,6 +101,24 @@ bool GetDefaultUserDataDirectory(base::F
    return true;
  }
  
 +bool GetChromeUserDataDirectory(base::FilePath* result) {
 +  std::unique_ptr<base::Environment> env(base::Environment::Create());
 +  base::FilePath config_dir;
-+  std::string chrome_config_home_str;
-+  if (env->GetVar("CHROME_CONFIG_HOME", &chrome_config_home_str) &&
-+      base::IsStringUTF8(chrome_config_home_str)) {
-+    config_dir = base::FilePath::FromUTF8Unsafe(chrome_config_home_str);
++  std::optional<std::string> chrome_config_home_str =
++      env->GetVar("CHROME_CONFIG_HOME");
++
++  if (chrome_config_home_str && base::IsStringUTF8(*chrome_config_home_str)) {
++    config_dir = base::FilePath::FromUTF8Unsafe(*chrome_config_home_str);
 +  } else {
 +    config_dir =
 +        GetXDGDirectory(env.get(), kXdgConfigHomeEnvVar, kDotConfigDir);
