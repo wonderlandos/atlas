@@ -59,3 +59,14 @@
    ${this.colors_.map((item, index) => html`
      <cr-theme-color
          class="chrome-color"
+--- a/chrome/browser/themes/theme_service.cc
++++ b/chrome/browser/themes/theme_service.cc
+@@ -378,6 +378,8 @@ void ThemeService::UseDefaultTheme() {
+   }
+ 
+   ClearThemeData(/*clear_ntp_background=*/true);
++  profile_->GetPrefs()->SetBoolean(prefs::kGrayscaleThemeEnabled, true);
++
+   NotifyThemeChanged();
+ }
+ 
