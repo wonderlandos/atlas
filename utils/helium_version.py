@@ -39,7 +39,7 @@ def parse_args():
     """Argument parsing"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--tree", type=Path, required=True)
-    parser.add_argument("--platform-tree", type=Path, required=True)
+    parser.add_argument("--platform-tree", type=Path)
     parser.add_argument("--chromium-tree", type=Path)
     parser.add_argument("--print", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -52,13 +52,15 @@ def get_version_parts(tree, platform_tree):
         "HELIUM_MAJOR": tree / "version.txt",
         "HELIUM_MINOR": tree / "chromium_version.txt",
         "HELIUM_PATCH": tree / "revision.txt",
-        "HELIUM_PLATFORM": platform_tree / "revision.txt",
     }
+
+    if platform_tree is not None:
+        version_paths["HELIUM_PLATFORM"] = platform_tree / "revision.txt"
 
     version_parts = {}
     for name, path in version_paths.items():
         delta = 0 if name != "HELIUM_MINOR" else -CHROME_VERSION_BASE
-        version_parts[name] = get_version_part(path) + delta
+        version_parts[name] = str(get_version_part(path) + delta)
     return version_parts
 
 
@@ -68,8 +70,7 @@ def main():
 
     version_parts = get_version_parts(tree, platform_tree)
     if should_print:
-        print(f"{version_parts['HELIUM_MAJOR']}.{version_parts['HELIUM_MINOR']}." + \
-              f"{version_parts['HELIUM_PATCH']}.{version_parts['HELIUM_PLATFORM']}")
+        print('.'.join(version_parts.values()))
     else:
         chrome_version_path = chromium_tree / "chrome/VERSION"
         check_existing_version(chrome_version_path)
