@@ -43,12 +43,10 @@ jobs:
       - name: Create Release
         if: steps.info.outputs.version
         id: create_release
-        uses: actions/create-release@latest
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.info.outputs.version }}
-          release_name: ${{ steps.info.outputs.version }}
+          name: ${{ steps.info.outputs.version }}
           body_path: body.md
-          draft: false
-          prerelease: false
