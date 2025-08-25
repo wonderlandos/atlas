@@ -165,6 +165,7 @@ helium/settings/reenable-update-status.patch
 helium/settings/privacy-page-tweaks.patch
 helium/settings/fix-section-separators.patch
 helium/settings/fix-text-on-cookies-page.patch
+helium/settings/update-search-suggest-text.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
