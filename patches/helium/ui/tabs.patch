@@ -126,3 +126,34 @@
    return path;
  }
  
+--- a/chrome/browser/ui/views/tabs/tab_close_button.cc
++++ b/chrome/browser/ui/views/tabs/tab_close_button.cc
+@@ -41,6 +41,8 @@
+ namespace {
+ constexpr int kIconSize = 16;
+ constexpr gfx::Size kButtonSize = {28, 28};
++const gfx::Insets kInkDropInsets = gfx::Insets::VH(1, 0);
++constexpr int kCornerRadius = 4;
+ }  // namespace
+ 
+ TabCloseButton::TabCloseButton(PressedCallback pressed_callback,
+@@ -69,8 +71,9 @@ TabCloseButton::TabCloseButton(PressedCa
+   // but needs to be explicitly mirrored for RTL.
+   // TODO(http://crbug.com/1056490): Make ink drops in RTL work the same way as
+   // focus rings.
++
+   auto ink_drop_highlight_path =
+-      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
++      std::make_unique<views::RoundRectHighlightPathGenerator>(kInkDropInsets, kCornerRadius);
+   ink_drop_highlight_path->set_use_contents_bounds(true);
+   ink_drop_highlight_path->set_use_mirrored_rect(true);
+   views::HighlightPathGenerator::Install(this,
+@@ -80,7 +83,7 @@ TabCloseButton::TabCloseButton(PressedCa
+   // TODO(http://crbug.com/1056490): Once this bug is solved and explicit
+   // mirroring for ink drops is not needed, we can combine these two.
+   auto ring_highlight_path =
+-      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
++      std::make_unique<views::RoundRectHighlightPathGenerator>(kInkDropInsets, kCornerRadius);
+   ring_highlight_path->set_use_contents_bounds(true);
+   views::FocusRing::Get(this)->SetPathGenerator(std::move(ring_highlight_path));
+ 
