@@ -72,16 +72,19 @@
    local_answer_header_and_suggestion_and_buttons_ =
        AddChildView(std::make_unique<views::View>());
    local_answer_header_and_suggestion_and_buttons_
-@@ -304,7 +301,7 @@ OmniboxResultView::OmniboxResultView(Omn
+@@ -304,8 +301,9 @@ OmniboxResultView::OmniboxResultView(Omn
                &OmniboxResultView::ButtonPressed, base::Unretained(this),
                OmniboxPopupSelection::FOCUSED_BUTTON_REMOVE_SUGGESTION)));
    remove_suggestion_button_->SetProperty(views::kMarginsKey,
 -                                         gfx::Insets::TLBR(0, 0, 0, 16));
+-  views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
 +                                         gfx::Insets::TLBR(0, 0, 0, 4));
-   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
++  views::InstallRoundRectHighlightPathGenerator(remove_suggestion_button_,
++                                                gfx::Insets::VH(1, 1), 5);
    auto* const remove_focus_ring =
        views::FocusRing::Get(remove_suggestion_button_);
-@@ -359,10 +356,9 @@ std::unique_ptr<views::Background> Omnib
+   remove_focus_ring->SetHasFocusPredicate(base::BindRepeating(
+@@ -359,10 +357,9 @@ std::unique_ptr<views::Background> Omnib
          /*for_border_thickness=*/0);
    }
  
@@ -94,7 +97,7 @@
  }
  
  void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
-@@ -499,14 +495,6 @@ void OmniboxResultView::ApplyThemeAndRef
+@@ -499,14 +496,6 @@ void OmniboxResultView::ApplyThemeAndRef
            popup_view_->controller()->client()->GetTemplateURLService())) {
      const OmniboxPopupSelection::LineState line_state =
          popup_view_->GetSelection().state;
