@@ -103,7 +103,7 @@ def dry_run_check(patch_path, tree_path, patch_bin_path=None):
     return result.returncode, result.stdout, result.stderr
 
 
-def apply_patches(patch_path_iter, tree_path, reverse=False, patch_bin_path=None):
+def apply_patches(patch_path_iter, tree_path, reverse=False, patch_bin_path=None, fuzz=True):
     """
     Applies or reverses a list of patches
 
@@ -133,6 +133,11 @@ def apply_patches(patch_path_iter, tree_path, reverse=False, patch_bin_path=None
         else:
             cmd.append('--forward')
             log_word = 'Applying'
+
+        if not fuzz:
+            cmd.append('--fuzz=0')
+            log_word = log_word + ' strictly'
+
         logger.info('* %s %s (%s/%s)', log_word, patch_path.name, patch_num, len(patch_paths))
         logger.debug(' '.join(cmd))
         subprocess.run(cmd, check=True)
@@ -201,7 +206,8 @@ def _apply_callback(args, parser_error):
         logger.info('Applying patches from %s', patch_dir)
         apply_patches(generate_patches_from_series(patch_dir, resolve=True),
                       args.target,
-                      patch_bin_path=patch_bin_path)
+                      patch_bin_path=patch_bin_path,
+                      fuzz=args.fuzz)
 
 
 def _merge_callback(args, _):
@@ -224,6 +230,10 @@ def main():
         type=Path,
         nargs='+',
         help='The directories containing patches to apply. They must be in GNU quilt format')
+    apply_parser.add_argument('--fuzz',
+                              action=argparse.BooleanOptionalAction,
+                              default=True,
+                              help='Enable or disable applying with fuzz (default: enabled)')
     apply_parser.set_defaults(callback=_apply_callback)
 
     merge_parser = subparsers.add_parser('merge',
