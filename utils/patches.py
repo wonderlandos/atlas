@@ -91,9 +91,16 @@ def dry_run_check(patch_path, tree_path, patch_bin_path=None):
     Returns the status code, stdout, and stderr of patch --dry-run
     """
     cmd = [
-        str(find_and_check_patch(patch_bin_path)), '-p1', '--ignore-whitespace', '-i',
-        str(patch_path), '-d',
-        str(tree_path), '--no-backup-if-mismatch', '--dry-run'
+        str(find_and_check_patch(patch_bin_path)),
+        '-p1',
+        '--ignore-whitespace',
+        '-i',
+        str(patch_path),
+        '-d',
+        str(tree_path),
+        '--no-backup-if-mismatch',
+        '--dry-run',
+        '--fuzz=0',
     ]
     result = subprocess.run(cmd,
                             stdout=subprocess.PIPE,
