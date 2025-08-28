@@ -26,4 +26,6 @@ export QUILT_PATCHES_ARGS="--color=auto"
 export LC_ALL=C
 # When non-default less options are used, add the -R option so that less outputs
 # ANSI color escape codes "raw".
-[ -n "$LESS" -a -z "${QUILT_PAGER+x}" ] && export QUILT_PAGER="less -FRX"
+if [ -n "${LESS-}" -a -z "${QUILT_PAGER+x}" ]; then
+    export QUILT_PAGER="less -FRX"
+fi
