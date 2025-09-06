@@ -57,8 +57,8 @@
  bool ShouldFetchBangs(const PrefService& prefs) {
      return ShouldAccessServices(prefs) &&
              prefs.GetBoolean(prefs::kHeliumBangsEnabled);
-@@ -79,6 +84,14 @@ GURL GetExtensionUpdateURL(const PrefSer
-     return GetServicesBaseURL(prefs).Resolve("/ext");
+@@ -88,6 +93,14 @@ GURL GetWebstoreSnippetURL(const PrefSer
+         base::StringPrintf("/ext/cws_snippet?id=%s", id));
  }
  
 +GURL GetSpellcheckURL(const PrefService& prefs) {
@@ -74,10 +74,10 @@
    registrar.Add(prefs::kHeliumServicesEnabled, observer);
 --- a/components/helium_services/helium_services_helpers.h
 +++ b/components/helium_services/helium_services_helpers.h
-@@ -23,6 +23,7 @@ COMPONENT_EXPORT(HELIUM) bool ShouldAcce
- COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
+@@ -24,6 +24,7 @@ COMPONENT_EXPORT(HELIUM) GURL GetService
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
  COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetWebstoreSnippetURL(const PrefService& prefs, std::string_view id);
 +COMPONENT_EXPORT(HELIUM) GURL GetSpellcheckURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
  COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,

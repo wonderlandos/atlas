@@ -14,7 +14,7 @@ TODO: guard services_page.html with is_mac
  
 --- a/components/helium_services/helium_services_helpers.h
 +++ b/components/helium_services/helium_services_helpers.h
-@@ -20,10 +20,12 @@ const char kHeliumDummyOrigin[] =
+@@ -20,11 +20,13 @@ const char kHeliumDummyOrigin[] =
  
  COMPONENT_EXPORT(HELIUM) bool ShouldFetchBangs(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) bool ShouldAccessExtensionService(const PrefService& prefs);
@@ -22,6 +22,7 @@ TODO: guard services_page.html with is_mac
  COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
  COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
+ COMPONENT_EXPORT(HELIUM) GURL GetWebstoreSnippetURL(const PrefService& prefs, std::string_view id);
  COMPONENT_EXPORT(HELIUM) GURL GetSpellcheckURL(const PrefService& prefs);
 +COMPONENT_EXPORT(HELIUM) GURL GetBrowserUpdateURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
@@ -62,7 +63,7 @@ TODO: guard services_page.html with is_mac
  GURL GetExtensionUpdateURL(const PrefService& prefs) {
      if (!ShouldAccessExtensionService(prefs)) {
          return GetDummyURL();
-@@ -92,6 +104,20 @@ GURL GetSpellcheckURL(const PrefService&
+@@ -101,6 +113,20 @@ GURL GetSpellcheckURL(const PrefService&
      return GetServicesBaseURL(prefs).Resolve("/dict/");
  }
  
