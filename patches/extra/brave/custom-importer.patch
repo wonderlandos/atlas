@@ -382,7 +382,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      "firefox_profile_lock.cc",
 --- a/chrome/browser/importer/external_process_importer_host.h
 +++ b/chrome/browser/importer/external_process_importer_host.h
-@@ -79,8 +79,9 @@ class ExternalProcessImporterHost
+@@ -79,8 +79,13 @@ class ExternalProcessImporterHost
    void NotifyImportStarted();
    void NotifyImportItemStarted(user_data_importer::ImportItem item);
    void NotifyImportItemEnded(user_data_importer::ImportItem item);
@@ -390,6 +390,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  void virtual NotifyImportEnded();
  
 +  friend class BraveExternalProcessImporterHost;
++  void set_parent_view(gfx::NativeView parent_view) {
++    parent_view_ = parent_view;
++  }
++  gfx::NativeView parent_view_ = gfx::NativeView();
   private:
    // ExternalProcessImporterHost deletes itself in OnImportEnded().
    ~ExternalProcessImporterHost() override;
@@ -575,3 +579,89 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
    // These variables store data being collected from the importer until the
    // entire group has been collected and is ready to be written to the profile.
+--- a/chrome/app/generated_resources.grd
++++ b/chrome/app/generated_resources.grd
+@@ -11002,6 +11002,15 @@ Check your passwords anytime in <ph name
+             Microsoft Edge
+           </message>
+         </if>
++        <message name="IDS_IMPORTED_FROM_BOOKMARK_FOLDER" desc="Name for bookmark panel folder imported from another browser">
++          Imported from <ph name="BROWSER_NAME">$1<ex>Chrome</ex></ph>.
++        </message>
++        <message name="IDS_EXTENSIONS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
++          Import profile still in use
++        </message>
++        <message name="IDS_EXTENSIONS_IMPORTER_LOCK_TEXT" desc="The message to be displayed in the importer-lock dialog">
++          To import extensions or other settings, please first close the browser you're importing from.
++        </message>
+         <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
+           Mozilla Firefox
+         </message>
+--- a/chrome/browser/importer/importer_lock_dialog.h
++++ b/chrome/browser/importer/importer_lock_dialog.h
+@@ -21,6 +21,11 @@ void ShowImportLockDialog(gfx::NativeWin
+                           base::OnceCallback<void(bool)> callback,
+                           int importer_lock_title_id = IDS_IMPORTER_LOCK_TITLE,
+                           int importer_lock_text_id = IDS_IMPORTER_LOCK_TEXT);
++void ShowImportLockDialog(gfx::NativeView parent_view,
++                          gfx::NativeWindow parent,
++                          base::OnceCallback<void(bool)> callback,
++                          int importer_lock_title_id = IDS_IMPORTER_LOCK_TITLE,
++                          int importer_lock_text_id = IDS_IMPORTER_LOCK_TEXT);
+ 
+ }  // namespace importer
+ 
+--- a/chrome/browser/ui/views/importer/import_lock_dialog_view.cc
++++ b/chrome/browser/ui/views/importer/import_lock_dialog_view.cc
+@@ -27,8 +27,36 @@ void ShowImportLockDialog(gfx::NativeWin
+                              importer_lock_title_id, importer_lock_text_id);
+ }
+ 
++void ShowImportLockDialog(gfx::NativeView parent_view,
++                          gfx::NativeWindow parent,
++                          base::OnceCallback<void(bool)> callback,
++                          int importer_lock_title_id,
++                          int importer_lock_text_id) {
++  ImportLockDialogView::Show(parent_view, parent, std::move(callback),
++                             importer_lock_title_id, importer_lock_text_id);
++}
++
+ }  // namespace importer
+ 
++
++// static
++void ImportLockDialogView::Show(gfx::NativeView parent_view,
++                                gfx::NativeWindow parent,
++                                base::OnceCallback<void(bool)> callback,
++                                int importer_lock_title_id,
++                                int importer_lock_text_id) {
++  views::DialogDelegate::CreateDialogWidget(
++      new ImportLockDialogView(std::move(callback), importer_lock_title_id,
++                               importer_lock_text_id),
++      parent, parent_view)
++      ->Show();
++  base::RecordAction(UserMetricsAction("ImportLockDialogView_Shown"));
++}
++
++ui::mojom::ModalType ImportLockDialogView::GetModalType() const {
++  return ui::mojom::ModalType::kChild;
++}
++
+ // static
+ void ImportLockDialogView::Show(gfx::NativeWindow parent,
+                                 base::OnceCallback<void(bool)> callback,
+--- a/chrome/browser/ui/views/importer/import_lock_dialog_view.h
++++ b/chrome/browser/ui/views/importer/import_lock_dialog_view.h
+@@ -23,6 +23,12 @@ class ImportLockDialogView : public view
+                    base::OnceCallback<void(bool)> callback,
+                    int importer_lock_title_id = IDS_IMPORTER_LOCK_TITLE,
+                    int importer_lock_text_id = IDS_IMPORTER_LOCK_TEXT);
++  static void Show(gfx::NativeView parent_view,
++                   gfx::NativeWindow parent,
++                   base::OnceCallback<void(bool)> callback,
++                   int importer_lock_title_id = IDS_IMPORTER_LOCK_TITLE,
++                   int importer_lock_text_id = IDS_IMPORTER_LOCK_TEXT);
++  ui::mojom::ModalType GetModalType() const override;
+ 
+  private:
+   ImportLockDialogView(base::OnceCallback<void(bool)> callback,

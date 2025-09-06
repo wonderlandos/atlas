@@ -25,13 +25,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,143 @@
+@@ -0,0 +1,147 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
 + * You can obtain one at https://mozilla.org/MPL/2.0/. */
 +
 +#include "chrome/browser/importer/importer_list.h"
++
++#include "base/check.h"
 +#include "base/files/file_path.h"
 +#include "base/strings/strcat.h"
 +#include "base/strings/utf_string_conversions.h"
@@ -39,20 +41,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "base/values.h"
 +#include "chrome/common/importer/chrome_importer_utils.h"
 +#include "chrome/common/importer/importer_constants.h"
-+#include "components/user_data_importer/common/importer_type.h"
 +#include "chrome/grit/generated_resources.h"
++#include "components/user_data_importer/common/importer_type.h"
 +#include "ui/base/l10n/l10n_util.h"
 +
 +namespace {
-+void AddChromeToProfiles(std::vector<user_data_importer::SourceProfile>* profiles,
-+                         base::Value::List chrome_profiles,
-+                         const base::FilePath& user_data_folder,
-+                         const std::string& brand,
-+                         user_data_importer::ImporterType type) {
++void AddChromeToProfiles(
++    std::vector<user_data_importer::SourceProfile>* profiles,
++    base::Value::List chrome_profiles,
++    const base::FilePath& user_data_folder,
++    const std::string& brand,
++    user_data_importer::ImporterType type) {
 +  for (const auto& value : chrome_profiles) {
 +    const auto* dict = value.GetIfDict();
-+    if (!dict)
++    if (!dict) {
 +      continue;
++    }
 +    uint16_t items = user_data_importer::NONE;
 +    auto* profile = dict->FindString("id");
 +    auto* name = dict->FindString("name");
@@ -61,34 +65,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    base::FilePath path = user_data_folder;
 +    if (!ChromeImporterCanImport(path.Append(base::FilePath::StringType(
 +                                     profile->begin(), profile->end())),
-+                                 &items))
++                                 type, &items)) {
 +      continue;
-+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
-+    // We can import password from Whale only on macOS.
-+    // Decryption failed on Windows and Linux.
-+    if (type == user_data_importer::TYPE_WHALE && (items & user_data_importer::PASSWORDS)) {
-+      items ^= user_data_importer::PASSWORDS;
 +    }
-+#endif
 +    user_data_importer::SourceProfile chrome;
 +    chrome.importer_name = base::UTF8ToUTF16(brand);
 +    chrome.importer_type = type;
++    chrome.services_supported = items;
 +    chrome.source_path = user_data_folder.Append(
 +        base::FilePath::StringType(profile->begin(), profile->end()));
-+    chrome.services_supported = items;
 +    chrome.profile = base::UTF8ToUTF16(*name);
 +    profiles->push_back(chrome);
 +  }
 +}
 +
-+void DetectChromeProfiles(std::vector<user_data_importer::SourceProfile>* profiles) {
++void DetectChromeProfiles(
++    std::vector<user_data_importer::SourceProfile>* profiles) {
 +  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
 +                                                base::BlockingType::WILL_BLOCK);
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromeUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetChromeUserDataFolder(), kGoogleChromeBrowser, user_data_importer::TYPE_CHROME);
++      GetChromeUserDataFolder(), kGoogleChromeBrowser,
++      user_data_importer::TYPE_CHROME);
 +  AddChromeToProfiles(
 +      profiles,
 +      GetChromeSourceProfiles(GetChromeBetaUserDataFolder().Append(
@@ -119,7 +119,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      profiles,
 +      GetChromeSourceProfiles(GetChromiumUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetChromiumUserDataFolder(), kChromiumBrowser, user_data_importer::TYPE_CHROME);
++      GetChromiumUserDataFolder(), kChromiumBrowser,
++      user_data_importer::TYPE_CHROME);
 +
 +  AddChromeToProfiles(
 +      profiles,
@@ -132,7 +133,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      profiles,
 +      GetChromeSourceProfiles(GetVivaldiUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetVivaldiUserDataFolder(), kVivaldiBrowser, user_data_importer::TYPE_VIVALDI);
++      GetVivaldiUserDataFolder(), kVivaldiBrowser,
++      user_data_importer::TYPE_VIVALDI);
 +
 +  AddChromeToProfiles(
 +      profiles,
@@ -144,7 +146,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      profiles,
 +      GetChromeSourceProfiles(GetYandexUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetYandexUserDataFolder(), kYandexBrowser, user_data_importer::TYPE_YANDEX);
++      GetYandexUserDataFolder(), kYandexBrowser,
++      user_data_importer::TYPE_YANDEX);
 +
 +  AddChromeToProfiles(
 +      profiles,
@@ -164,14 +167,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      profiles,
 +      GetChromeSourceProfiles(GetOperaSnapUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-+      GetOperaSnapUserDataFolder(), kOperaBrowser, user_data_importer::TYPE_OPERA);
++      GetOperaSnapUserDataFolder(), kOperaBrowser,
++      user_data_importer::TYPE_OPERA);
 +#endif
 +}
 +
 +}  // namespace
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.cc
-@@ -0,0 +1,216 @@
+@@ -0,0 +1,241 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -183,6 +187,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include <optional>
 +#include <utility>
 +
++#include "base/check.h"
 +#include "base/files/file_path.h"
 +#include "base/files/file_util.h"
 +#include "base/json/json_reader.h"
@@ -244,12 +249,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    if (dict.FindBool("was_installed_by_default").value_or(true))
 +      continue;
 +
-+    // `"state": 0` means disabled state
-+    if (!dict.FindInt("state").value_or(false))
++    const auto state = dict.FindInt("state");
++    if (state.has_value()) {
++      // If `state` exists, probably it is an old browser version.
++      if (state == 0) {
++        // explicit `"state": 0` means disabled state
++        continue;
++      }
++    } else if (const auto* disable_reasons = dict.FindList("disable_reasons");
++               disable_reasons && !disable_reasons->empty()) {
++      // For new browsers an extension is enabled if there is no disable reason.
 +      continue;
++    }
 +
-+    if (!dict.FindBool("from_webstore").value_or(false))
++    if (!dict.FindBool("from_webstore").value_or(false)) {
 +      continue;
++    }
 +
 +    if (auto* manifest_dict = dict.FindDict("manifest")) {
 +      if (Manifest::GetTypeFromManifestValue(*manifest_dict) ==
@@ -290,6 +305,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      return true;
 +    }
 +  }
++  return false;
++}
++
++bool CanImportPasswordsForType(user_data_importer::ImporterType type) {
 +  return false;
 +}
 +
@@ -352,25 +371,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +
 +bool ChromeImporterCanImport(const base::FilePath& profile,
++                             user_data_importer::ImporterType type,
 +                             uint16_t* services_supported) {
 +  DCHECK(services_supported);
 +  *services_supported = user_data_importer::NONE;
 +
-+  base::FilePath bookmarks =
-+    profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("Bookmarks")));
-+  base::FilePath history =
-+    profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("History")));
-+  base::FilePath passwords = profile.Append(
-+      base::FilePath::StringType(FILE_PATH_LITERAL("Login Data")));
-+  base::FilePath passwords_for_account = profile.Append(
-+      base::FilePath::StringType(FILE_PATH_LITERAL("Login Data For Account")));
-+  if (base::PathExists(bookmarks))
++  base::FilePath bookmarks = profile.Append(
++      base::FilePath::StringType(FILE_PATH_LITERAL("Bookmarks")));
++  if (base::PathExists(bookmarks)) {
 +    *services_supported |= user_data_importer::FAVORITES;
-+  if (base::PathExists(history))
-+    *services_supported |= user_data_importer::HISTORY;
-+  if (base::PathExists(passwords) || base::PathExists(passwords_for_account)) {
-+    *services_supported |= user_data_importer::PASSWORDS;
 +  }
++
++  base::FilePath history =
++      profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("History")));
++  if (base::PathExists(history)) {
++    *services_supported |= user_data_importer::HISTORY;
++  }
++
++  if (CanImportPasswordsForType(type)) {
++    base::FilePath passwords = profile.Append(
++        base::FilePath::StringType(FILE_PATH_LITERAL("Login Data")));
++    base::FilePath passwords_for_account =
++        profile.Append(base::FilePath::StringType(
++            FILE_PATH_LITERAL("Login Data For Account")));
++    if (base::PathExists(passwords) ||
++        base::PathExists(passwords_for_account)) {
++      *services_supported |= user_data_importer::PASSWORDS;
++    }
++  }
++
 +#if BUILDFLAG(ENABLE_EXTENSIONS)
 +  if (HasImportableExtensions(profile))
 +    *services_supported |= user_data_importer::EXTENSIONS;
@@ -390,7 +419,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.h
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,56 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -405,6 +434,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +#include "base/values.h"
 +#include "build/build_config.h"
++#include "components/user_data_importer/common/importer_type.h"
 +#include "extensions/buildflags/buildflags.h"
 +
 +namespace base {
@@ -437,6 +467,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif
 +base::Value::List GetChromeSourceProfiles(const base::FilePath& local_state);
 +bool ChromeImporterCanImport(const base::FilePath& profile,
++                             user_data_importer::ImporterType type,
 +                             uint16_t* services_supported);
 +
 +#if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -448,7 +479,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --- /dev/null
 +++ b/chrome/common/importer/importer_constants.h
 @@ -0,0 +1,36 @@
-+/* Copyright (c) 2020 The Brave Authors, 2025 imput. All rights reserved.
++/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
 + * You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -898,7 +929,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 --- /dev/null
 +++ b/chrome/browser/ui/webui/settings/brave_import_data_handler.cc
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,219 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -910,6 +941,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include <string>
 +#include <utility>
 +
++#include "base/check.h"
++#include "base/logging.h"
 +#include "chrome/browser/importer/brave_external_process_importer_host.h"
 +#include "chrome/browser/importer/importer_list.h"
 +#include "chrome/browser/importer/profile_writer.h"
@@ -969,8 +1002,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +void BraveImportDataHandler::StartImport(
 +    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t imported_items) {
-+  if (!imported_items)
++  if (!imported_items) {
 +    return;
++  }
 +  Profile* profile = Profile::FromWebUI(web_ui());
 +#if BUILDFLAG(IS_MAC)
 +  CheckDiskAccess(imported_items, source_profile.source_path,
@@ -988,8 +1022,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    uint16_t imported_items,
 +    Profile* profile) {
 +  // If another import is already ongoing, let it finish silently.
-+  if (import_observers_.count(source_profile.source_path))
++  if (import_observers_.count(source_profile.source_path)) {
 +    import_observers_.erase(source_profile.source_path);
++  }
++
++  FireWebUIListener("import-data-status-changed", base::Value("inProgress"));
 +
 +  // Using weak pointers because it destroys itself when finshed.
 +  auto* importer_host = new BraveExternalProcessImporterHost();
@@ -999,6 +1036,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +          base::BindRepeating(&BraveImportDataHandler::NotifyImportProgress,
 +                              weak_factory_.GetWeakPtr()));
 +
++  importer_host->set_parent_window(
++      web_ui()->GetWebContents()->GetTopLevelNativeWindow());
++  importer_host->set_parent_view(web_ui()->GetWebContents()->GetNativeView());
++
 +  importer_host->StartImportSettings(source_profile, profile, imported_items,
 +                                     new ProfileWriter(profile));
 +}
@@ -1007,8 +1048,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    const user_data_importer::SourceProfile& source_profile,
 +    const base::Value::Dict& info) {
 +  const std::string* event = info.FindString("event");
-+  if (!event)
++  if (!event) {
 +    return;
++  }
 +  if (*event == "ImportItemEnded") {
 +    import_did_succeed_ = true;
 +  } else if (*event == "ImportEnded") {
@@ -1030,8 +1072,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +                                                    : kImportStatusFailed));
 +}
 +
-+const user_data_importer::SourceProfile& BraveImportDataHandler::GetSourceProfileAt(
-+    int browser_index) {
++void BraveImportDataHandler::OnJavascriptDisallowed() {
++  ImportDataHandler::OnJavascriptDisallowed();
++
++  // When the WebUI is unloading, we ignore all further updates from the host as
++  // ImportDataHandler does.
++  import_observers_.clear();
++}
++
++const user_data_importer::SourceProfile&
++BraveImportDataHandler::GetSourceProfileAt(int browser_index) {
 +  return importer_list_->GetSourceProfileAt(browser_index);
 +}
 +
@@ -1068,8 +1118,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    // to guide full disk access information to users.
 +    // Guide dialog will be opened after import dialog is closed.
 +    FireWebUIListener("import-data-status-changed", base::Value("failed"));
-+    if (import_observers_.count(source_path))
++    if (import_observers_.count(source_path)) {
 +      import_observers_[source_path]->ImportEnded();
++    }
 +    // Observing web_contents is started here to know the closing timing of
 +    // import dialog.
 +    Observe(web_ui()->GetWebContents());
@@ -1084,8 +1135,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +void BraveImportDataHandler::DidStopLoading() {
 +  Observe(nullptr);
 +
-+  if (!guide_dialog_is_requested_)
++  if (!guide_dialog_is_requested_) {
 +    return;
++  }
 +
 +  guide_dialog_is_requested_ = false;
 +
@@ -1099,7 +1151,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}  // namespace settings
 --- /dev/null
 +++ b/chrome/browser/ui/webui/settings/brave_import_data_handler.h
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,86 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1143,7 +1195,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + protected:
 +  using ContinueImportCallback = base::OnceCallback<void()>;
 +
-+  const user_data_importer::SourceProfile& GetSourceProfileAt(int browser_index);
++  const user_data_importer::SourceProfile& GetSourceProfileAt(
++      int browser_index);
 +  void HandleImportData(const base::Value::List& args);
 +  // ImportDataHandler overrides:
 +  void StartImport(const user_data_importer::SourceProfile& source_profile,
@@ -1155,7 +1208,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  virtual void NotifyImportProgress(
 +      const user_data_importer::SourceProfile& source_profile,
 +      const base::Value::Dict& info);
-+  virtual void OnImportEnded(const user_data_importer::SourceProfile& source_profile);
++  virtual void OnImportEnded(
++      const user_data_importer::SourceProfile& source_profile);
++
++  void OnJavascriptDisallowed() override;
 +
 +  void OnStartImport(const user_data_importer::SourceProfile& source_profile,
 +                     uint16_t imported_items);
@@ -1184,7 +1240,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORT_DATA_HANDLER_H_
 --- /dev/null
 +++ b/chrome/browser/ui/webui/settings/brave_importer_observer.cc
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,85 @@
 +/* Copyright (c) 2022 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1194,7 +1250,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +#include <utility>
 +
-+#include "base/logging.h"
++#include "base/check.h"
 +#include "chrome/browser/importer/external_process_importer_host.h"
 +
 +BraveImporterObserver::BraveImporterObserver(
@@ -1228,7 +1284,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  callback_.Run(source_profile_, data);
 +}
 +
-+void BraveImporterObserver::ImportItemStarted(user_data_importer::ImportItem item) {
++void BraveImporterObserver::ImportItemStarted(
++    user_data_importer::ImportItem item) {
 +  base::Value::Dict data;
 +  data.Set("importer_name", source_profile_.importer_name);
 +  data.Set("importer_type", source_profile_.importer_type);
@@ -1238,7 +1295,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  callback_.Run(source_profile_, data);
 +}
 +
-+void BraveImporterObserver::ImportItemEnded(user_data_importer::ImportItem item) {
++void BraveImporterObserver::ImportItemEnded(
++    user_data_importer::ImportItem item) {
 +  base::Value::Dict data;
 +  data.Set("importer_name", source_profile_.importer_name);
 +  data.Set("importer_type", source_profile_.importer_type);
@@ -1323,7 +1381,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORTER_OBSERVER_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.cc
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,112 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1367,8 +1425,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    const user_data_importer::SourceProfile& source_profile,
 +    uint16_t items,
 +    InProcessImporterBridge* bridge)
-+    : ExternalProcessImporterClient(
-+          importer_host, source_profile, items, bridge) {}
++    : ExternalProcessImporterClient(importer_host,
++                                    source_profile,
++                                    items,
++                                    bridge) {}
 +
 +BraveExternalProcessImporterClient::
 +    ~BraveExternalProcessImporterClient() = default;
@@ -1436,11 +1496,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.h
-@@ -0,0 +1,46 @@
-+/* Copyright 2020 The Brave Authors. All rights reserved.
+@@ -0,0 +1,47 @@
++/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
-+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 +
 +#ifndef BRAVE_BROWSER_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_CLIENT_H_
 +#define BRAVE_BROWSER_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_CLIENT_H_
@@ -1471,7 +1531,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  void Start() override;
 +  void Cancel() override;
 +  void CloseMojoHandles() override;
-+  void OnImportItemFinished(user_data_importer::ImportItem import_item) override;
++  void OnImportItemFinished(
++      user_data_importer::ImportItem import_item) override;
 +
 + protected:
 +  ~BraveExternalProcessImporterClient() override;
@@ -1485,7 +1546,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_CLIENT_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_host.cc
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,126 @@
 +/* Copyright (c) 2019 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1493,143 +1554,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +#include "chrome/browser/importer/brave_external_process_importer_host.h"
 +
-+#include <memory>
-+#include <optional>
-+#include <string>
-+#include <utility>
-+#include <vector>
-+
-+#include "base/files/file_util.h"
-+#include "base/functional/bind.h"
-+#include "base/json/json_reader.h"
-+#include "base/task/thread_pool.h"
-+#include "chrome/common/importer/chrome_importer_utils.h"
-+#include "chrome/common/importer/importer_constants.h"
-+#include "chrome/browser/profiles/profile.h"
-+#include "content/public/browser/browser_task_traits.h"
-+#include "content/public/browser/browser_thread.h"
-+
-+#if BUILDFLAG(ENABLE_EXTENSIONS)
++#include "base/check.h"
 +#include "chrome/browser/importer/extensions_import_helpers.h"
-+#include "chrome/browser/extensions/webstore_install_with_prompt.h"
-+#include "chrome/common/extensions/webstore_install_result.h"
-+#include "extensions/browser/extension_file_task_runner.h"
-+#endif
-+
-+namespace {
-+
-+#if BUILDFLAG(ENABLE_EXTENSIONS)
-+
-+// Silent installer via websotre w/o any prompt or bubble.
-+class WebstoreInstallerForImporting
-+    : public extensions::WebstoreInstallWithPrompt {
-+ public:
-+  using WebstoreInstallWithPrompt::WebstoreInstallWithPrompt;
-+
-+ private:
-+  ~WebstoreInstallerForImporting() override = default;
-+
-+  std::unique_ptr<ExtensionInstallPrompt::Prompt>
-+      CreateInstallPrompt() const override {
-+    return nullptr;
-+  }
-+  bool ShouldShowPostInstallUI() const override { return false; }
-+};
-+#endif
-+
-+}  // namespace
++#include "chrome/browser/importer/importer_lock_dialog.h"
++#include "chrome/grit/generated_resources.h"
 +
 +BraveExternalProcessImporterHost::BraveExternalProcessImporterHost()
 +    : weak_ptr_factory_(this) {}
 +BraveExternalProcessImporterHost::~BraveExternalProcessImporterHost() = default;
-+
-+#if BUILDFLAG(ENABLE_EXTENSIONS)
-+void BraveExternalProcessImporterHost::LaunchExtensionsImport() {
-+  base::ThreadPool::PostTaskAndReplyWithResult(
-+      FROM_HERE,
-+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-+      base::BindOnce(&GetImportableChromeExtensionsList,
-+                     source_profile_.source_path),
-+      base::BindOnce(
-+          &BraveExternalProcessImporterHost::OnGetChromeExtensionsList,
-+          weak_ptr_factory_.GetWeakPtr()));
-+}
-+
-+void BraveExternalProcessImporterHost::OnExtensionInstalled(
-+    const std::string& extension_id,
-+    bool success,
-+    const std::string& error,
-+    extensions::webstore_install::Result result) {
-+  if (success) {
-+    return;
-+  }
-+  VLOG(1) << "Extension " << extension_id << " import failed";
-+  extensions::GetExtensionFileTaskRunner()->PostTaskAndReply(
-+      FROM_HERE,
-+      base::BindOnce(&brave::RemoveExtensionsSettings, profile_->GetPath(),
-+                     extension_id),
-+      base::BindOnce(
-+          &BraveExternalProcessImporterHost::OnExtensionSettingsRemoved,
-+          weak_ptr_factory_.GetWeakPtr(), extension_id));
-+}
-+
-+void BraveExternalProcessImporterHost::OnExtensionSettingsRemoved(
-+    const std::string& extension_id) {
-+  if (settings_removed_callback_for_testing_)
-+    settings_removed_callback_for_testing_.Run();
-+}
-+
-+void BraveExternalProcessImporterHost::SetSettingsRemovedCallbackForTesting(
-+    base::RepeatingClosure callback) {
-+  settings_removed_callback_for_testing_ = std::move(callback);
-+}
-+
-+void BraveExternalProcessImporterHost::InstallExtension(const std::string& id) {
-+  if (install_extension_callback_for_testing_) {
-+    install_extension_callback_for_testing_.Run(id);
-+    return;
-+  }
-+
-+  scoped_refptr<WebstoreInstallerForImporting> installer =
-+      new WebstoreInstallerForImporting(
-+          id, profile_, /*parent_window=*/gfx::NativeWindow(),
-+          base::BindOnce(
-+              &BraveExternalProcessImporterHost::OnExtensionInstalled,
-+              weak_ptr_factory_.GetWeakPtr(), id));
-+  installer->BeginInstall();
-+}
-+
-+void BraveExternalProcessImporterHost::ImportExtensions(
-+    std::vector<std::string> ids) {
-+  for (const auto& id : ids) {
-+    InstallExtension(id);
-+  }
-+
-+  if (!ids.empty() && observer_)
-+    observer_->ImportItemEnded(user_data_importer::EXTENSIONS);
-+
-+  ExternalProcessImporterHost::NotifyImportEnded();
-+}
-+
-+void BraveExternalProcessImporterHost::OnGetChromeExtensionsList(
-+    std::optional<std::vector<std::string>> extensions_list) {
-+  if (!extensions_list.has_value()) {
-+    ExternalProcessImporterHost::NotifyImportEnded();
-+    return;
-+  }
-+  const auto ids = extensions_list.value();
-+  if (ids.empty()) {
-+    ExternalProcessImporterHost::NotifyImportEnded();
-+    return;
-+  }
-+  extensions::GetExtensionFileTaskRunner()->PostTaskAndReply(
-+      FROM_HERE,
-+      base::BindOnce(&brave::ImportStorages, source_profile_.source_path,
-+                     profile_->GetPath(), ids),
-+      base::BindOnce(&BraveExternalProcessImporterHost::ImportExtensions,
-+                     weak_ptr_factory_.GetWeakPtr(), ids));
-+}
 +
 +void BraveExternalProcessImporterHost::NotifyImportEnded() {
 +  // If user chooses extension importing, start importing extensions.
@@ -1637,28 +1569,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  // Handling extensions importing after finishing all other properties makes
 +  // logic simpler.
 +  // Don't import if cancelled.
-+  if (!cancelled_ && (items_ & user_data_importer::EXTENSIONS)) {
-+    LaunchExtensionsImport();
-+    return;
++#if BUILDFLAG(ENABLE_EXTENSIONS)
++  if (NeedToImportExtensions() && extensions_importer_) {
++    NotifyImportItemStarted(user_data_importer::EXTENSIONS);
++    if (extensions_importer_->Import(base::BindRepeating(
++            &BraveExternalProcessImporterHost::OnExtensionImported,
++            weak_ptr_factory_.GetWeakPtr()))) {
++      return;
++    }
 +  }
++#endif
++  // Force tests to fail if |this| is deleted.
++  DCHECK(weak_ptr_factory_.GetWeakPtr());
 +
 +  // Otherwise, notifying here and importing is finished.
 +  ExternalProcessImporterHost::NotifyImportEnded();
 +}
 +
 +void BraveExternalProcessImporterHost::LaunchImportIfReady() {
-+  if (do_not_launch_import_for_testing_)
-+    return;
-+  ExternalProcessImporterHost::LaunchImportIfReady();
++#if BUILDFLAG(ENABLE_EXTENSIONS)
++  if (NeedToImportExtensions()) {
++    if (!extensions_importer_) {
++      extensions_importer_ =
++          std::make_unique<extensions_import::ExtensionsImporter>(
++              source_profile_.source_path, profile_);
++      extensions_importer_->Prepare(base::BindOnce(
++          &BraveExternalProcessImporterHost::OnExtensionsImportReady,
++          weak_ptr_factory_.GetWeakPtr()));
++      return;
++    }
++    if (!extensions_import_ready_) {
++      return;
++    }
++  }
++#endif
++
++  if (!do_not_launch_import_for_testing_) {
++    CHECK(!client_);
++    ExternalProcessImporterHost::LaunchImportIfReady();
++  } else {
++    NotifyImportEnded();
++  }
 +}
 +
 +void BraveExternalProcessImporterHost::DoNotLaunchImportForTesting() {
 +  do_not_launch_import_for_testing_ = true;
-+}
-+
-+void BraveExternalProcessImporterHost::SetInstallExtensionCallbackForTesting(
-+    MockedInstallCallback callback) {
-+  install_extension_callback_for_testing_ = std::move(callback);
 +}
 +
 +void BraveExternalProcessImporterHost::NotifyImportEndedForTesting() {
@@ -1670,10 +1625,57 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  return observer_;
 +}
 +
++#if BUILDFLAG(ENABLE_EXTENSIONS)
++
++bool BraveExternalProcessImporterHost::NeedToImportExtensions() const {
++  return !cancelled_ && (items_ & user_data_importer::EXTENSIONS) ==
++                            user_data_importer::EXTENSIONS;
++}
++
++void BraveExternalProcessImporterHost::OnExtensionsImportReady(bool ready) {
++  if (cancelled_) {
++    return;
++  }
++  if (!ready) {
++    extensions_importer_.reset();
++    importer::ShowImportLockDialog(
++        parent_view_, parent_window_,
++        base::BindOnce(
++            &BraveExternalProcessImporterHost::OnExtensionsImportLockDialogEnd,
++            weak_ptr_factory_.GetWeakPtr()),
++        IDS_EXTENSIONS_IMPORTER_LOCK_TITLE, IDS_EXTENSIONS_IMPORTER_LOCK_TEXT);
++  } else {
++    extensions_import_ready_ = true;
++    LaunchImportIfReady();
++  }
++}
++
++void BraveExternalProcessImporterHost::OnExtensionsImportLockDialogEnd(
++    bool is_continue) {
++  DCHECK(!extensions_importer_);
++  if (is_continue) {
++    LaunchImportIfReady();
++  } else {
++    NotifyImportEnded();
++  }
++}
++
++void BraveExternalProcessImporterHost::OnExtensionImported(
++    const std::string& extension_id,
++    extensions_import::ExtensionImportStatus status) {
++  if (!extensions_importer_ || !extensions_importer_->IsImportInProgress()) {
++    extensions_importer_.reset();
++    if (observer_) {
++      NotifyImportItemEnded(user_data_importer::EXTENSIONS);
++    }
++    ExternalProcessImporterHost::NotifyImportEnded();
++  }
++}
++
 +#endif
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_host.h
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,66 @@
 +/* Copyright (c) 2019 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1682,16 +1684,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#ifndef BRAVE_BROWSER_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_HOST_H_
 +#define BRAVE_BROWSER_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_HOST_H_
 +
-+#include <optional>
++#include <memory>
 +#include <string>
-+#include <vector>
 +
 +#include "base/gtest_prod_util.h"
 +#include "base/memory/weak_ptr.h"
-+#include "base/values.h"
 +#include "chrome/browser/importer/external_process_importer_host.h"
-+#include "chrome/common/extensions/webstore_install_result.h"
 +#include "extensions/buildflags/buildflags.h"
++
++#if BUILDFLAG(ENABLE_EXTENSIONS)
++namespace extensions_import {
++class ExtensionsImporter;
++enum class ExtensionImportStatus : int32_t;
++}  // namespace extensions_import
++#endif
 +
 +class BraveExternalProcessImporterHost : public ExternalProcessImporterHost {
 + public:
@@ -1700,8 +1706,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      delete;
 +  BraveExternalProcessImporterHost& operator=(
 +      const BraveExternalProcessImporterHost&) = delete;
-+  using MockedInstallCallback =
-+      base::RepeatingCallback<void(const std::string&)>;
 +
 + private:
 +  friend class ExternalProcessImporterHost;
@@ -1711,31 +1715,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  FRIEND_TEST_ALL_PREFIXES(BraveImporterObserverUnitTest, DestroyObserverEarly);
 +
 +  ~BraveExternalProcessImporterHost() override;
-+  void OnExtensionInstalled(const std::string& extension_id,
-+                            bool success,
-+                            const std::string& error,
-+                            extensions::webstore_install::Result result);
-+  void ImportExtensions(std::vector<std::string> extensions_list);
-+  void InstallExtension(const std::string& id);
-+  void OnExtensionSettingsRemoved(const std::string& extension_id);
 +
 +  void DoNotLaunchImportForTesting();
-+  void SetInstallExtensionCallbackForTesting(MockedInstallCallback callback);
-+  void SetSettingsRemovedCallbackForTesting(base::RepeatingClosure callback);
 +  void NotifyImportEndedForTesting();
 +  importer::ImporterProgressObserver* GetObserverForTesting();
 +
 +  // ExternalProcessImporterHost overrides:
 +  void NotifyImportEnded() override;
 +  void LaunchImportIfReady() override;
++
 +#if BUILDFLAG(ENABLE_EXTENSIONS)
-+  void LaunchExtensionsImport();
-+  void OnGetChromeExtensionsList(
-+      std::optional<std::vector<std::string>> extensions_list);
++  bool NeedToImportExtensions() const;
++
++  void OnExtensionsImportReady(bool ready);
++  void OnExtensionsImportLockDialogEnd(bool is_continue);
++  void OnExtensionImported(const std::string& extension_id,
++                           extensions_import::ExtensionImportStatus status);
++
++  std::unique_ptr<extensions_import::ExtensionsImporter> extensions_importer_;
++  bool extensions_import_ready_ = false;
 +#endif
++
 +  bool do_not_launch_import_for_testing_ = false;
-+  MockedInstallCallback install_extension_callback_for_testing_;
-+  base::RepeatingClosure settings_removed_callback_for_testing_;
 +  // Vends weak pointers for the importer to call us back.
 +  base::WeakPtrFactory<BraveExternalProcessImporterHost> weak_ptr_factory_;
 +};
@@ -1790,7 +1791,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_FULL_DISK_ACCESS_CONFIRM_DIALOG_DELEGATE_H_
 --- /dev/null
 +++ b/chrome/browser/ui/webui/settings/brave_full_disk_access_confirm_dialog_delegate_mac.mm
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,62 @@
 +/* Copyright (c) 2022 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1808,8 +1809,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 +#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 +#include "chrome/grit/generated_resources.h"
-+#include "content/public/browser/web_ui.h"
 +#include "components/user_data_importer/common/importer_data_types.h"
++#include "content/public/browser/web_ui.h"
++#include "ui/base/l10n/l10n_util.h"
 +#include "ui/base/ui_base_types.h"
 +#include "url/gurl.h"
 +
@@ -1855,10 +1857,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --- /dev/null
 +++ b/chrome/common/importer/chrome_profile_import.mojom
 @@ -0,0 +1,26 @@
-+// Copyright 2020 The Brave Authors. All rights reserved.
-+// This Source Code Form is subject to the terms of the Mozilla Public
-+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
-+// You can obtain one at http://mozilla.org/MPL/2.0/.
++/* Copyright (c) 2020 The Brave Authors. All rights reserved.
++ * This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 +
 +module chrome.mojom;
 +
@@ -1867,7 +1869,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +// This interface is used to control the import process.
 +interface ChromeProfileImport {
-+  // Start the importer. |items| is a bitmask of importer::ImportItem of items
++  // Start the importer. |items| is a bitmask of user_data_importer::ImportItem of items
 +  // to import.
 +  StartImport(
 +      chrome.mojom.SourceProfile source_profile,
@@ -1924,7 +1926,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_IMPORTER_BRAVE_IN_PROCESS_IMPORTER_BRIDGE_H_
 --- /dev/null
 +++ b/chrome/browser/importer/extensions_import_helpers.cc
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,383 @@
 +/* Copyright (c) 2022 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1932,98 +1934,385 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +#include "chrome/browser/importer/extensions_import_helpers.h"
 +
++#include <algorithm>
 +#include <memory>
++#include <optional>
++#include <utility>
 +
-+#include "base/containers/flat_map.h"
++#include "base/check.h"
++#include "base/check_is_test.h"
++#include "base/check_op.h"
++#include "base/files/file_enumerator.h"
 +#include "base/files/file_util.h"
-+#include "base/logging.h"
-+#include "base/task/thread_pool.h"
-+#include "chrome/common/importer/importer_constants.h"
++#include "base/task/sequenced_task_runner.h"
++#include "chrome/common/importer/chrome_importer_utils.h"
++#include "chrome/browser/extensions/webstore_install_with_prompt.h"
++#include "chrome/browser/profiles/profile.h"
 +#include "components/value_store/value_store.h"
 +#include "components/value_store/value_store_factory.h"
 +#include "components/value_store/value_store_factory_impl.h"
 +#include "extensions/browser/api/storage/value_store_util.h"
 +#include "extensions/browser/extension_file_task_runner.h"
++#include "extensions/browser/extension_registrar.h"
++#include "extensions/browser/extension_registry.h"
 +#include "extensions/common/constants.h"
 +
-+namespace brave {
++namespace extensions_import {
++
 +namespace {
-+using ExtensionStorageMap =
-+    base::flat_map<std::string, std::unique_ptr<value_store::ValueStore>>;
 +
-+std::vector<std::string> GetChromeExtensionsSettingsList(
++InstallExtensionFnForTesting* g_extension_installer_for_testing = nullptr;
++
++}
++
++// Silent installer via webstore w/o any prompt or bubble.
++class WebstoreInstallerForImporting
++    : public extensions::WebstoreInstallWithPrompt {
++ public:
++  using WebstoreInstallWithPrompt::AbortInstall;
++  using WebstoreInstallWithPrompt::WebstoreInstallWithPrompt;
++
++ private:
++  ~WebstoreInstallerForImporting() override = default;
++
++  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreateInstallPrompt()
++      const override {
++    return nullptr;
++  }
++  bool ShouldShowPostInstallUI() const override { return false; }
++};
++
++base::expected<std::vector<ImportingExtension>, bool> GetExtensionsList(
 +    const base::FilePath& source_profile,
-+    std::vector<std::string> extensions_ids) {
-+  auto store_factory_source =
++    const base::FilePath& target_profile) {
++  std::vector<ImportingExtension> result;
++  const auto extensions = GetImportableChromeExtensionsList(source_profile);
++  if (!extensions || extensions->empty()) {
++    return base::ok(std::move(result));
++  }
++
++  auto source_store_factory =
 +      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(source_profile);
-+  std::vector<std::string> result;
-+  for (const auto& id : extensions_ids) {
-+    if (!store_factory_source->HasValueStore(
++
++  for (const auto& extension_id : *extensions) {
++    const auto value_store =
++        base::FilePath(extensions::kLocalExtensionSettingsDirectoryName)
++            .AppendASCII(extension_id);
++
++    bool has_local_settings = false;
++
++    if (source_store_factory->HasValueStore(
 +            base::FilePath(extensions::kLocalExtensionSettingsDirectoryName)
-+                .AppendASCII(id)))
-+      continue;
-+    result.push_back(id);
-+  }
-+  return result;
-+}
-+
-+ExtensionStorageMap CreateStorages(
-+    std::vector<std::string> ids,
-+    bool skip_if_exists,
-+    scoped_refptr<value_store::ValueStoreFactory> factory) {
-+  ExtensionStorageMap storages;
-+  for (const auto& id : ids) {
-+    if (skip_if_exists &&
-+        extensions::value_store_util::HasValueStore(
-+            extensions::settings_namespace::LOCAL,
-+            extensions::value_store_util::ModelType::EXTENSION, id, factory)) {
-+      continue;
++                .AppendASCII(extension_id))) {
++      auto store = extensions::value_store_util::CreateSettingsStore(
++          extensions::settings_namespace::LOCAL,
++          extensions::value_store_util::ModelType::EXTENSION, extension_id,
++          source_store_factory);
++      const auto settings = store->Get();
++      if (!settings.status().ok()) {
++        if (!settings.status().IsCorrupted()) {
++          return base::unexpected(false);
++        }
++      } else {
++        has_local_settings = true;
++      }
 +    }
-+    storages[id] = extensions::value_store_util::CreateSettingsStore(
-+        extensions::settings_namespace::LOCAL,
-+        extensions::value_store_util::ModelType::EXTENSION, id, factory);
++    ImportingExtension e;
++    e.id = extension_id;
++    e.has_local_settings = has_local_settings;
++    result.push_back(std::move(e));
 +  }
-+  return storages;
++
++  return base::ok(std::move(result));
 +}
 +
-+}  // namespace
++bool ImportLocalExtensionSettings(const std::string& extension_id,
++                                  const base::FilePath& source_profile,
++                                  const base::FilePath& target_profile) {
++  auto source_store_factory =
++      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(source_profile);
++  auto source_store = extensions::value_store_util::CreateSettingsStore(
++      extensions::settings_namespace::LOCAL,
++      extensions::value_store_util::ModelType::EXTENSION, extension_id,
++      source_store_factory);
 +
-+void ImportStorages(base::FilePath source_profile,
-+                    base::FilePath target_profile,
-+                    std::vector<std::string> extensions_ids) {
-+  DCHECK(
-+      extensions::GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-+  const auto ids_with_settings =
-+      GetChromeExtensionsSettingsList(source_profile, extensions_ids);
-+  const auto source_storages = CreateStorages(
-+      ids_with_settings, false,
-+      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(source_profile));
-+  auto target_storages = CreateStorages(
-+      ids_with_settings, true,
-+      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(target_profile));
-+  for (const auto& source_store : source_storages) {
-+    auto content = source_store.second->Get();
-+    if (!content.status().ok() || !target_storages.count(source_store.first))
-+      continue;
-+    target_storages[source_store.first]->Set(value_store::ValueStore::DEFAULTS,
-+                                             content.PassSettings());
++  auto settings = source_store->Get();
++  if (!settings.status().ok()) {
++    return false;
 +  }
-+}
 +
-+void RemoveExtensionsSettings(base::FilePath target_profile,
-+                              const std::string& extension_id) {
-+  DCHECK(
-+      extensions::GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
++  auto target_store_factory =
++      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(target_profile);
++
++  // First delete the settings in the target profile because we are going to
++  // overwrite them from the source profile.
 +  extensions::value_store_util::DeleteValueStore(
 +      extensions::settings_namespace::LOCAL,
 +      extensions::value_store_util::ModelType::EXTENSION, extension_id,
-+      base::MakeRefCounted<value_store::ValueStoreFactoryImpl>(target_profile));
++      target_store_factory);
++
++  auto target_store = extensions::value_store_util::CreateSettingsStore(
++      extensions::settings_namespace::LOCAL,
++      extensions::value_store_util::ModelType::EXTENSION, extension_id,
++      target_store_factory);
++
++  const auto result = target_store->Set(value_store::ValueStore::DEFAULTS,
++                                        settings.PassSettings());
++  return result.status().ok();
 +}
 +
-+}  // namespace brave
++bool ImportIndexedDBExtensionSettings(const std::string& extension_id,
++                                      const base::FilePath& source_profile,
++                                      const base::FilePath& target_profile) {
++  constexpr char kIndexedDBDir[] = "IndexedDB";
++
++  const base::FilePath pattern = base::FilePath::FromASCII(
++      base::StrCat({"chrome-extension_", extension_id, "_*indexeddb*"}));
++
++  base::FileEnumerator target_enumerator(
++      target_profile.AppendASCII(kIndexedDBDir), false,
++      base::FileEnumerator::DIRECTORIES, pattern.value());
++  // Clear the target profile.
++  target_enumerator.ForEach(
++      [](const base::FilePath& path) { base::DeletePathRecursively(path); });
++
++  base::FileEnumerator source_enumerator(
++      source_profile.AppendASCII(kIndexedDBDir), false,
++      base::FileEnumerator::DIRECTORIES, pattern.value());
++  // Copy settings.
++  source_enumerator.ForEach([&target_profile,
++                             &kIndexedDBDir](const base::FilePath& path) {
++    base::CreateDirectory(target_profile.AppendASCII(kIndexedDBDir));
++    base::CopyDirectory(
++        path, target_profile.AppendASCII(kIndexedDBDir).Append(path.BaseName()),
++        true);
++  });
++
++  return true;
++}
++
++bool ImportExtensionSettings(const std::string& extension_id,
++                             const base::FilePath& source_profile,
++                             const base::FilePath& target_profile) {
++  if (!ImportLocalExtensionSettings(extension_id, source_profile,
++                                    target_profile)) {
++    return false;
++  }
++  if (!ImportIndexedDBExtensionSettings(extension_id, source_profile,
++                                        target_profile)) {
++    return false;
++  }
++  return true;
++}
++
++ImportingExtension::ImportingExtension() = default;
++ImportingExtension::ImportingExtension(ImportingExtension&&) = default;
++ImportingExtension& ImportingExtension::operator=(ImportingExtension&&) =
++    default;
++
++ImportingExtension::~ImportingExtension() {
++  if (installer) {
++    installer->AbortInstall();
++  }
++}
++
++ExtensionsImporter::ExtensionsImporter(const base::FilePath& source_profile,
++                                       Profile* target_profile)
++    : source_profile_(source_profile), target_profile_(target_profile) {
++  CHECK(target_profile_);
++  CHECK_NE(source_profile_, target_profile_->GetPath());
++}
++
++ExtensionsImporter::~ExtensionsImporter() = default;
++
++void ExtensionsImporter::Prepare(OnReady on_ready) {
++  CHECK(extensions_.empty());
++  extensions::GetExtensionFileTaskRunner()->PostTaskAndReplyWithResult(
++      FROM_HERE,
++      base::BindOnce(&GetExtensionsList, source_profile_,
++                     target_profile_->GetPath()),
++      base::BindOnce(&ExtensionsImporter::OnGetExtensionsForImport,
++                     weak_factory_.GetWeakPtr(), std::move(on_ready)));
++}
++
++bool ExtensionsImporter::Import(OnExtensionImported on_extension) {
++  CHECK(!IsImportInProgress());
++
++  if (extensions_.empty()) {
++    return false;
++  }
++
++  in_progress_count_ = extensions_.size();
++  for (auto& extension : extensions_) {
++    if (extension.is_installed) {
++      // Force tests to fail if |this| is deleted while enumerating extensions.
++      DCHECK(weak_factory_.GetWeakPtr());
++      --in_progress_count_;
++      on_extension.Run(extension.id, ExtensionImportStatus::kOk);
++      continue;
++    }
++
++    auto done_callback = base::BindOnce(
++        [](base::WeakPtr<ExtensionsImporter> self, OnExtensionImported callback,
++           const std::string& id, ExtensionImportStatus status) {
++          if (self) {
++            --self->in_progress_count_;
++            callback.Run(id, status);
++          }
++        },
++        weak_factory_.GetWeakPtr(), on_extension);
++
++    StartExtensionInstall(extension, std::move(done_callback));
++  }
++
++  return true;
++}
++
++const ImportingExtension* ExtensionsImporter::GetExtension(
++    const std::string& id) const {
++  auto fnd = std::ranges::find(extensions_, id, &ImportingExtension::id);
++  if (fnd == extensions_.end()) {
++    return nullptr;
++  }
++  return &(*fnd);
++}
++
++bool ExtensionsImporter::IsImportInProgress() const {
++  return in_progress_count_ > 0;
++}
++
++// static [[nodiscard]]
++base::AutoReset<InstallExtensionFnForTesting*>
++ExtensionsImporter::OverrideExtensionInstallerForTesting(
++    InstallExtensionFnForTesting* installer) {
++  base::AutoReset result(&g_extension_installer_for_testing, installer);
++  return result;
++}
++
++void ExtensionsImporter::StartExtensionInstall(
++    ImportingExtension& extension,
++    base::OnceCallback<void(const std::string& id,
++                            ExtensionImportStatus status)> done_callback) {
++  if (!g_extension_installer_for_testing) {
++    // In production, start installation from the Web Store.
++    extension.installer = base::MakeRefCounted<WebstoreInstallerForImporting>(
++        extension.id, target_profile_, /*parent_window=*/gfx::NativeWindow(),
++        base::BindOnce(&ExtensionsImporter::OnExtensionInstalled,
++                       weak_factory_.GetWeakPtr(), extension.id,
++                       std::move(done_callback)));
++    extension.installer->BeginInstall();
++  } else {
++    // In tests, we don't have access to the Web Store and we already know the
++    // installation result from test expectations, so we emulate an async
++    // installation process.
++    CHECK_IS_TEST();
++    const auto status = g_extension_installer_for_testing->Run(extension.id);
++    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
++        FROM_HERE,
++        base::BindOnce(&ExtensionsImporter::OnExtensionInstalled,
++                       weak_factory_.GetWeakPtr(), extension.id,
++                       std::move(done_callback),
++                       status == ExtensionImportStatus::kOk, "",
++                       extensions::webstore_install::Result::SUCCESS));
++  }
++}
++
++ImportingExtension* ExtensionsImporter::FindExtension(const std::string& id) {
++  auto fnd = std::ranges::find(extensions_, id, &ImportingExtension::id);
++  if (fnd == extensions_.end()) {
++    return nullptr;
++  }
++  return &(*fnd);
++}
++
++void ExtensionsImporter::OnGetExtensionsForImport(OnReady on_ready,
++                                                  ExtensionsListResult result) {
++  if (!result.has_value()) {
++    return std::move(on_ready).Run(false);
++  }
++  extensions_ = std::move(result).value();
++
++  auto* registry = extensions::ExtensionRegistry::Get(target_profile_);
++  for (auto& extension : extensions_) {
++    extension.is_installed =
++        registry->GetInstalledExtension(extension.id) != nullptr;
++  }
++
++  std::move(on_ready).Run(true);
++}
++
++void ExtensionsImporter::OnExtensionInstalled(
++    const std::string& extension_id,
++    OnOneExtensionImported on_extension,
++    bool success,
++    const std::string& error,
++    extensions::webstore_install::Result result) {
++  auto* extension = FindExtension(extension_id);
++  if (!extension) {
++    return std::move(on_extension)
++        .Run(extension_id, ExtensionImportStatus::kFailedToInstall);
++  }
++
++  extension->is_installed = success;
++  extension->installer.reset();
++
++  if (!success) {
++    return std::move(on_extension)
++        .Run(extension->id, ExtensionImportStatus::kFailedToInstall);
++  }
++
++  if (!extension->has_local_settings) {
++    return std::move(on_extension)
++        .Run(extension->id, ExtensionImportStatus::kOk);
++  }
++  extensions::ExtensionRegistrar::Get(target_profile_)
++      ->DisableExtension(extension->id,
++                         {extensions::disable_reason::DISABLE_RELOAD});
++  ImportExtensionSettings(extension->id, std::move(on_extension));
++}
++
++void ExtensionsImporter::ImportExtensionSettings(
++    const std::string& extension_id,
++    OnOneExtensionImported on_extension) {
++  auto* extension = FindExtension(extension_id);
++  if (!extension) {
++    return std::move(on_extension)
++        .Run(extension->id, ExtensionImportStatus::kFailedToImportSettings);
++  }
++  CHECK(extension->has_local_settings);
++  extensions::GetExtensionFileTaskRunner()->PostTaskAndReplyWithResult(
++      FROM_HERE,
++      base::BindOnce(&extensions_import::ImportExtensionSettings, extension->id,
++                     source_profile_, target_profile_->GetPath()),
++      base::BindOnce(&ExtensionsImporter::OnExtensionSettingsImported,
++                     weak_factory_.GetWeakPtr(), extension->id,
++                     std::move(on_extension)));
++}
++
++void ExtensionsImporter::OnExtensionSettingsImported(
++    const std::string& extension_id,
++    OnOneExtensionImported on_extension,
++    bool success) {
++  auto* extension = FindExtension(extension_id);
++  if (!extension) {
++    return std::move(on_extension)
++        .Run(extension->id, ExtensionImportStatus::kFailedToImportSettings);
++  }
++  extensions::ExtensionRegistrar::Get(target_profile_)
++      ->EnableExtension(extension->id);
++
++  if (!success) {
++    return std::move(on_extension)
++        .Run(extension->id, ExtensionImportStatus::kFailedToImportSettings);
++  }
++
++  std::move(on_extension).Run(extension->id, ExtensionImportStatus::kOk);
++}
++
++}  // namespace extensions_import
 --- /dev/null
 +++ b/chrome/browser/importer/extensions_import_helpers.h
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,104 @@
 +/* Copyright (c) 2022 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2035,22 +2324,102 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include <string>
 +#include <vector>
 +
-+#include "base/files/file_util.h"
-+#include "base/values.h"
++#include "base/auto_reset.h"
++#include "base/files/file_path.h"
++#include "base/functional/callback_forward.h"
++#include "base/memory/raw_ptr.h"
++#include "base/memory/weak_ptr.h"
++#include "base/types/expected.h"
++#include "chrome/common/extensions/webstore_install_result.h"
 +
-+namespace brave {
-+void ImportStorages(base::FilePath source_profile,
-+                    base::FilePath target_profile,
-+                    std::vector<std::string> extensions_ids);
++class Profile;
 +
-+void RemoveExtensionsSettings(base::FilePath target_profile,
-+                              const std::string& extension_id);
-+}  // namespace brave
++namespace extensions_import {
++
++struct ImportingExtension {
++  ImportingExtension();
++  ImportingExtension(ImportingExtension&&);
++  ImportingExtension& operator=(ImportingExtension&&);
++  ~ImportingExtension();
++
++  std::string id;
++  bool is_installed = false;
++  bool has_local_settings = false;
++  scoped_refptr<class WebstoreInstallerForImporting> installer;
++};
++
++enum class ExtensionImportStatus : int32_t {
++  kOk = 0,
++  kFailedToInstall,
++  kFailedToImportSettings,
++};
++
++using InstallExtensionFnForTesting =
++    base::RepeatingCallback<ExtensionImportStatus(
++        const std::string& extension_id)>;
++
++class ExtensionsImporter {
++ public:
++  using OnReady = base::OnceCallback<void(bool ready)>;
++  using OnExtensionImported =
++      base::RepeatingCallback<void(const std::string& id,
++                                   ExtensionImportStatus status)>;
++
++  ExtensionsImporter(const base::FilePath& source_profile,
++                     Profile* target_profile);
++  ~ExtensionsImporter();
++
++  void Prepare(OnReady on_ready);
++  bool Import(OnExtensionImported on_extension);
++
++  const ImportingExtension* GetExtension(const std::string& id) const;
++  bool IsImportInProgress() const;
++
++  [[nodiscard]] static base::AutoReset<InstallExtensionFnForTesting*>
++  OverrideExtensionInstallerForTesting(InstallExtensionFnForTesting* installer);
++
++ private:
++  using ExtensionsListResult =
++      base::expected<std::vector<ImportingExtension>, bool>;
++  using OnOneExtensionImported =
++      base::OnceCallback<void(const std::string& id,
++                              ExtensionImportStatus status)>;
++
++  void StartExtensionInstall(
++      ImportingExtension& extension,
++      base::OnceCallback<void(const std::string& id,
++                              ExtensionImportStatus status)> done_callback);
++
++  ImportingExtension* FindExtension(const std::string& id);
++
++  void OnGetExtensionsForImport(OnReady on_ready, ExtensionsListResult result);
++  void OnExtensionInstalled(const std::string& extension_id,
++                            OnOneExtensionImported on_extension,
++                            bool success,
++                            const std::string& error,
++                            extensions::webstore_install::Result result);
++
++  void ImportExtensionSettings(const std::string& extension_id,
++                               OnOneExtensionImported on_extension);
++  void OnExtensionSettingsImported(const std::string& extension_id,
++                                   OnOneExtensionImported on_extension,
++                                   bool success);
++
++  const base::FilePath source_profile_;
++  raw_ptr<Profile> target_profile_ = nullptr;
++
++  std::vector<ImportingExtension> extensions_;
++  size_t in_progress_count_ = 0;
++
++  base::WeakPtrFactory<ExtensionsImporter> weak_factory_{this};
++};
++
++}  // namespace extensions_import
 +
 +#endif  // BRAVE_BROWSER_IMPORTER_EXTENSIONS_IMPORT_HELPERS_H_
 --- /dev/null
 +++ b/chrome/utility/importer/brave_profile_import_impl.cc
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,136 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2061,11 +2430,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#include <memory>
 +#include <utility>
 +
++#include "base/check.h"
 +#include "base/command_line.h"
 +#include "base/functional/bind.h"
 +#include "base/location.h"
 +#include "base/memory/ref_counted.h"
-+#include "base/strings/utf_string_conversions.h"
++#include "base/notreached.h"
 +#include "base/task/single_thread_task_runner.h"
 +#include "base/threading/thread.h"
 +#include "chrome/utility/importer/brave_external_process_importer_bridge.h"
@@ -2081,7 +2451,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +namespace {
 +
-+scoped_refptr<Importer> CreateImporterByType(user_data_importer::ImporterType type) {
++scoped_refptr<Importer> CreateImporterByType(
++    user_data_importer::ImporterType type) {
 +  switch (type) {
 +    case user_data_importer::TYPE_CHROME:
 +      return new ChromeImporter();
@@ -2122,7 +2493,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +  if (source_profile.importer_name.starts_with(u"Chrome")) {
 +    command_line->AppendSwitch("import-chrome");
-+  } else if (source_profile.importer_type == user_data_importer::TYPE_EDGE_CHROMIUM) {
++  } else if (source_profile.importer_type ==
++             user_data_importer::TYPE_EDGE_CHROMIUM) {
 +    command_line->AppendSwitch("import-edge");
 +  } else if (source_profile.importer_name.starts_with(u"Chromium")) {
 +    command_line->AppendSwitch("import-chromium");
@@ -2305,7 +2677,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_UTILITY_IMPORTER_BRAVE_EXTERNAL_PROCESS_IMPORTER_BRIDGE_H_
 --- /dev/null
 +++ b/chrome/utility/importer/chrome_importer.cc
-@@ -0,0 +1,475 @@
+@@ -0,0 +1,435 @@
 +/* Copyright (c) 2019 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2320,14 +2692,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +#include "base/files/file_util.h"
 +#include "base/json/json_reader.h"
++#include "base/logging.h"
 +#include "base/memory/ref_counted.h"
-+#include "base/strings/string_util.h"
 +#include "base/strings/utf_string_conversions.h"
++#include "chrome/common/importer/scoped_copy_file.h"
++#include "chrome/utility/importer/brave_external_process_importer_bridge.h"
 +#include "build/build_config.h"
 +#include "chrome/common/importer/importer_bridge.h"
-+#include "chrome/common/importer/scoped_copy_file.h"
 +#include "chrome/grit/generated_resources.h"
-+#include "chrome/utility/importer/brave_external_process_importer_bridge.h"
 +#include "components/os_crypt/sync/os_crypt.h"
 +#include "components/password_manager/core/browser/password_form.h"
 +#include "components/password_manager/core/browser/password_store/login_database.h"
@@ -2422,6 +2794,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 +#endif
 +
++[[maybe_unused]]
 +bool SetEncryptionKey(const base::FilePath& source_path) {
 +#if BUILDFLAG(IS_LINUX)
 +  // Set up crypt config.
@@ -2444,6 +2817,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif
 +}
 +
++[[maybe_unused]]
 +bool PasswordFormToImportedPasswordForm(
 +    const password_manager::PasswordForm& form,
 +    user_data_importer::ImportedPasswordForm& imported_form) {
@@ -2453,9 +2827,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +
 +  if (form.scheme == password_manager::PasswordForm::Scheme::kHtml) {
-+    imported_form.scheme = user_data_importer::ImportedPasswordForm::Scheme::kHtml;
++    imported_form.scheme =
++        user_data_importer::ImportedPasswordForm::Scheme::kHtml;
 +  } else {
-+    imported_form.scheme = user_data_importer::ImportedPasswordForm::Scheme::kBasic;
++    imported_form.scheme =
++        user_data_importer::ImportedPasswordForm::Scheme::kBasic;
++  }
++
++  if (form.blocked_by_user &&
++      (!form.username_value.empty() || !form.password_value.empty())) {
++    return false;
 +  }
 +
 +  imported_form.signon_realm = form.signon_realm;
@@ -2475,9 +2856,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +ChromeImporter::~ChromeImporter() = default;
 +
-+void ChromeImporter::StartImport(const user_data_importer::SourceProfile& source_profile,
-+                                 uint16_t items,
-+                                 ImporterBridge* bridge) {
++void ChromeImporter::StartImport(
++    const user_data_importer::SourceProfile& source_profile,
++    uint16_t items,
++    ImporterBridge* bridge) {
 +  bridge_ = bridge;
 +  source_path_ = source_profile.source_path;
 +  importer_name_ = source_profile.importer_name;
@@ -2497,21 +2879,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +
 +#if BUILDFLAG(IS_WIN)
-+  auto source_path = source_profile.importer_type == user_data_importer::TYPE_OPERA
-+                         ? source_path_
-+                         : source_path_.DirName();
++  auto source_path =
++      source_profile.importer_type == user_data_importer::TYPE_OPERA
++          ? source_path_
++          : source_path_.DirName();
 +#else
 +  auto source_path = source_path_;
 +#endif
-+  const bool set_encryption_key = SetEncryptionKey(source_path);
-+  if ((items & user_data_importer::PASSWORDS) && !cancelled() && set_encryption_key) {
-+    bridge_->NotifyItemStarted(user_data_importer::PASSWORDS);
-+    ImportPasswords(base::FilePath(FILE_PATH_LITERAL("Login Data")));
-+    ImportPasswords(
-+        base::FilePath(FILE_PATH_LITERAL("Login Data For Account")));
-+    bridge_->NotifyItemEnded(user_data_importer::PASSWORDS);
-+  }
-+
 +  bridge_->NotifyEnded();
 +}
 +
@@ -2561,7 +2935,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  }
 +
 +  if (!rows.empty() && !cancelled())
-+    bridge_->SetHistoryItems(rows, user_data_importer::VISIT_SOURCE_CHROME_IMPORTED);
++    bridge_->SetHistoryItems(rows,
++                             user_data_importer::VISIT_SOURCE_CHROME_IMPORTED);
 +}
 +
 +void ChromeImporter::ImportBookmarks() {
@@ -2738,52 +3113,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +double ChromeImporter::chromeTimeToDouble(int64_t time) {
 +  return ((time * 10 - 0x19DB1DED53E8000) / 10000) / 1000;
 +}
-+
-+void ChromeImporter::ImportPasswords(
-+    const base::FilePath& passwords_file_name) {
-+  base::FilePath passwords_path = source_path_.Append(passwords_file_name);
-+
-+  if (!base::PathExists(passwords_path))
-+    return;
-+
-+  ScopedCopyFile copy_password_file(passwords_path);
-+  if (!copy_password_file.copy_success())
-+    return;
-+
-+  password_manager::LoginDatabase database(
-+      copy_password_file.copied_file_path(),
-+      password_manager::IsAccountStore(false));
-+  if (!database.Init(
-+          /*on_undecryptable_passwords_removed=*/base::NullCallback(),
-+          /*encryptor=*/nullptr)) {
-+    LOG(ERROR) << "LoginDatabase Init() failed";
-+    return;
-+  }
-+
-+  std::vector<password_manager::PasswordForm> forms;
-+  bool success = database.GetAutofillableLogins(&forms);
-+  if (success) {
-+    for (auto& entry : forms) {
-+      user_data_importer::ImportedPasswordForm form;
-+      if (PasswordFormToImportedPasswordForm(entry, form)) {
-+        bridge_->SetPasswordForm(form);
-+      }
-+    }
-+  }
-+  std::vector<password_manager::PasswordForm> blocklist;
-+  success = database.GetBlocklistLogins(&blocklist);
-+  if (success) {
-+    for (auto& entry : blocklist) {
-+      user_data_importer::ImportedPasswordForm form;
-+      if (PasswordFormToImportedPasswordForm(entry, form)) {
-+        bridge_->SetPasswordForm(form);
-+      }
-+    }
-+  }
-+}
 --- /dev/null
 +++ b/chrome/utility/importer/chrome_importer.h
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,76 @@
 +/* Copyright (c) 2019 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2809,7 +3141,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +namespace user_data_importer {
 +struct ImportedBookmarkEntry;
-+}
++}  // namespace user_data_importer
 +
 +namespace sql {
 +class Database;
@@ -2831,7 +3163,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +
 +  void ImportBookmarks();
 +  void ImportHistory();
-+  void ImportPasswords(const base::FilePath& passwords_file_name);
 +
 +  double chromeTimeToDouble(int64_t time);
 +
@@ -2861,15 +3192,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +};
 +
 +#endif  // BRAVE_UTILITY_IMPORTER_CHROME_IMPORTER_H_
---- a/chrome/app/generated_resources.grd
-+++ b/chrome/app/generated_resources.grd
-@@ -11002,6 +11002,9 @@ Check your passwords anytime in <ph name
-             Microsoft Edge
-           </message>
-         </if>
-+        <message name="IDS_IMPORTED_FROM_BOOKMARK_FOLDER" desc="Name for bookmark panel folder imported from another browser">
-+          Imported from <ph name="BROWSER_NAME">$1<ex>Chrome</ex></ph>.
-+        </message>
-         <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
-           Mozilla Firefox
-         </message>
