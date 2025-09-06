@@ -164,6 +164,7 @@ helium/settings/fix-section-separators.patch
 helium/settings/fix-text-on-cookies-page.patch
 helium/settings/update-search-suggest-text.patch
 helium/settings/fix-appearance-page.patch
+helium/settings/remove-dead-imports.patch
 
 helium/hop/setup.patch
 helium/hop/disable-password-manager.patch
