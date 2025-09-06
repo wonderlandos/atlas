@@ -216,7 +216,7 @@
    //   produce the designed layout, but they should either be explained further
    //   here or specified with `ChromeLayoutProvider`.
 -  gfx::Insets row_insets_ = gfx::Insets::TLBR(6, 4, 6, 0);
-+  gfx::Insets row_insets_ = gfx::Insets::TLBR(0, 0, 0, 0);
++  gfx::Insets row_insets_ = gfx::Insets::TLBR(1, 4, 0, 0);
    gfx::Insets button_insets_ =
        gfx::Insets::TLBR(0, 0, 0,
                          ChromeLayoutProvider::Get()->GetDistanceMetric(
