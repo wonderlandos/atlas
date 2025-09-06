@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,147 @@
+@@ -0,0 +1,154 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -114,6 +114,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      GetChromeSourceProfiles(GetArcUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetArcUserDataFolder(), kArcBrowser, user_data_importer::TYPE_ARC);
++#endif
++#if BUILDFLAG(IS_MAC)
++  AddChromeToProfiles(
++      profiles,
++      GetChromeSourceProfiles(GetDiaUserDataFolder().Append(
++          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
++      GetDiaUserDataFolder(), kDiaBrowser, user_data_importer::TYPE_DIA);
 +#endif
 +  AddChromeToProfiles(
 +      profiles,
@@ -419,7 +426,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.h
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,65 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -449,9 +456,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#if !BUILDFLAG(IS_LINUX)
 +// Canary is not available on Linux
 +base::FilePath GetCanaryUserDataFolder();
++#endif
++
++#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 +// Arc only has Windows/Mac builds
 +base::FilePath GetArcUserDataFolder();
 +#endif
++
++#if BUILDFLAG(IS_MAC)
++// Dia only has Windows/Mac builds
++base::FilePath GetDiaUserDataFolder();
++#endif
++
 +base::FilePath GetChromiumUserDataFolder();
 +
 +base::FilePath GetEdgeUserDataFolder();
@@ -478,7 +494,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 --- /dev/null
 +++ b/chrome/common/importer/importer_constants.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,37 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -511,6 +527,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +inline constexpr char kYandexBrowser[] = "Yandex";
 +inline constexpr char kWhaleBrowser[] = "NAVER Whale";
 +inline constexpr char kArcBrowser[] = "Arc";
++inline constexpr char kDiaBrowser[] = "Dia";
 +inline constexpr char kBraveBrowser[] = "Brave";
 +// End of browser names section
 +
@@ -706,7 +723,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_mac.mm
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,77 @@
 +/* Copyright (c) 2018 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -773,6 +790,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +base::FilePath GetArcUserDataFolder() {
 +  base::FilePath result = base::apple::GetUserLibraryPath();
 +  return result.Append("Application Support").Append("Arc").Append("User Data");
++}
++
++base::FilePath GetDiaUserDataFolder() {
++  base::FilePath result = base::apple::GetUserLibraryPath();
++  return result.Append("Application Support").Append("Dia").Append("User Data");
 +}
 +
 +base::FilePath GetBraveUserDataFolder() {
@@ -1381,7 +1403,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORTER_OBSERVER_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.cc
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,113 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1406,6 +1428,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    case user_data_importer::TYPE_YANDEX:
 +    case user_data_importer::TYPE_WHALE:
 +    case user_data_importer::TYPE_ARC:
++    case user_data_importer::TYPE_DIA:
 +    case user_data_importer::TYPE_BRAVE:
 +      return true;
 +    default:
@@ -2419,7 +2442,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_IMPORTER_EXTENSIONS_IMPORT_HELPERS_H_
 --- /dev/null
 +++ b/chrome/utility/importer/brave_profile_import_impl.cc
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,140 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2468,6 +2491,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      return new ChromeImporter();
 +    case user_data_importer::TYPE_ARC:
 +      return new ChromeImporter();
++    case user_data_importer::TYPE_DIA:
++      return new ChromeImporter();
 +    case user_data_importer::TYPE_BRAVE:
 +      return new ChromeImporter();
 +    default:
@@ -2506,6 +2531,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    command_line->AppendSwitch("import-whale");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_ARC) {
 +    command_line->AppendSwitch("import-arc");
++  } else if (source_profile.importer_type == user_data_importer::TYPE_DIA) {
++    command_line->AppendSwitch("import-dia");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_BRAVE) {
 +    command_line->AppendSwitch("import-brave");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_VIVALDI) {
