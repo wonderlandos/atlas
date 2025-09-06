@@ -241,7 +241,7 @@
  #endif  // COMPONENTS_HELIUM_SERVICES_PREF_NAMES_H_
 --- a/components/helium_services/helium_services_helpers.cc
 +++ b/components/helium_services/helium_services_helpers.cc
-@@ -61,6 +61,19 @@ bool ShouldAccessServices(const PrefServ
+@@ -61,6 +61,28 @@ bool ShouldAccessServices(const PrefServ
             || prefs.HasPrefPath(prefs::kHeliumServicesEnabled));
  }
  
@@ -258,12 +258,21 @@
 +    return GetServicesBaseURL(prefs).Resolve("/ext");
 +}
 +
++GURL GetWebstoreSnippetURL(const PrefService& prefs, std::string_view id) {
++    if (!ShouldAccessExtensionService(prefs)) {
++        return GetDummyURL();
++    }
++
++    return GetServicesBaseURL(prefs).Resolve(
++        base::StringPrintf("/ext/cws_snippet?id=%s", id));
++}
++
  void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
      PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer) {
    registrar.Add(prefs::kHeliumServicesEnabled, observer);
 --- a/components/helium_services/helium_services_helpers.h
 +++ b/components/helium_services/helium_services_helpers.h
-@@ -18,8 +18,10 @@ const char kHeliumDefaultOrigin[] =
+@@ -18,8 +18,11 @@ const char kHeliumDefaultOrigin[] =
  const char kHeliumDummyOrigin[] =
      "https://helium-services-are-disabled.qjz9zk";
  
@@ -271,6 +280,7 @@
  COMPONENT_EXPORT(HELIUM) GURL GetServicesBaseURL(const PrefService& prefs);
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
 +COMPONENT_EXPORT(HELIUM) GURL GetExtensionUpdateURL(const PrefService& prefs);
++COMPONENT_EXPORT(HELIUM) GURL GetWebstoreSnippetURL(const PrefService& prefs, std::string_view id);
  COMPONENT_EXPORT(HELIUM) std::optional<GURL> GetValidUserOverridenURL(std::string_view user_url_);
  COMPONENT_EXPORT(HELIUM) void ConfigurePrefChangeRegistrarFor(std::string_view pref_name,
                              PrefChangeRegistrar& registrar, const base::RepeatingClosure& observer);
@@ -527,3 +537,62 @@
  
    // Adds an observer to the observer list.
    void AddObserver(Observer* observer);
+--- a/chrome/browser/extensions/webstore_data_fetcher.cc
++++ b/chrome/browser/extensions/webstore_data_fetcher.cc
+@@ -87,7 +87,8 @@ void WebstoreDataFetcher::SetMockItemSni
+ }
+ 
+ void WebstoreDataFetcher::Start(
+-    network::mojom::URLLoaderFactory* url_loader_factory) {
++    network::mojom::URLLoaderFactory* url_loader_factory,
++    GURL* snippet_url) {
+   if (g_mock_item_snippet_response_) {
+     g_mock_item_snippet_response_->set_item_id(id_);
+     delegate_->OnFetchItemSnippetParseSuccess(id_,
+@@ -95,7 +96,9 @@ void WebstoreDataFetcher::Start(
+     return;
+   }
+ 
+-  GURL webstore_data_url(extension_urls::GetWebstoreItemSnippetURL(id_));
++  GURL webstore_data_url(snippet_url
++                         ? *snippet_url
++                         : extension_urls::GetWebstoreItemSnippetURL(id_));
+ 
+   auto resource_request = std::make_unique<network::ResourceRequest>();
+   // A POST request is sent with an override to GET due to server requirements.
+--- a/chrome/browser/extensions/webstore_data_fetcher.h
++++ b/chrome/browser/extensions/webstore_data_fetcher.h
+@@ -50,7 +50,8 @@ class WebstoreDataFetcher {
+       FetchItemSnippetResponse* mock_response);
+ 
+   // Starts the request to fetch web store data using the item snippets API.
+-  void Start(network::mojom::URLLoaderFactory* url_loader_factory);
++  void Start(network::mojom::URLLoaderFactory* url_loader_factory,
++             GURL* snippet_url = nullptr);
+ 
+   void set_max_auto_retries(int max_retries) {
+     max_auto_retries_ = max_retries;
+--- a/chrome/browser/extensions/webstore_standalone_installer.cc
++++ b/chrome/browser/extensions/webstore_standalone_installer.cc
+@@ -21,6 +21,7 @@
+ #include "chrome/browser/extensions/webstore_data_fetcher.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "components/crx_file/id_util.h"
++#include "components/helium_services/helium_services_helpers.h"
+ #include "content/public/browser/storage_partition.h"
+ #include "content/public/browser/web_contents.h"
+ #include "extensions/browser/blocklist_extension_prefs.h"
+@@ -72,9 +73,12 @@ void WebstoreStandaloneInstaller::BeginI
+   webstore_data_fetcher_ =
+       std::make_unique<WebstoreDataFetcher>(this, GURL(), id_);
+ 
++  GURL snippet_url = helium::GetWebstoreSnippetURL(*profile_->GetPrefs(), id_);
++
+   webstore_data_fetcher_->Start(profile_->GetDefaultStoragePartition()
+                                     ->GetURLLoaderFactoryForBrowserProcess()
+-                                    .get());
++                                    .get(),
++                                &snippet_url);
+ }
+ 
+ //
