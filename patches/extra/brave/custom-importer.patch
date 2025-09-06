@@ -158,7 +158,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  if (!is_android) {
 --- a/components/user_data_importer/common/importer_type.h
 +++ b/components/user_data_importer/common/importer_type.h
-@@ -28,6 +28,15 @@ enum ImporterType {
+@@ -28,6 +28,16 @@ enum ImporterType {
  #if BUILDFLAG(IS_WIN)
    TYPE_EDGE = 6,
  #endif
@@ -171,6 +171,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  TYPE_ARC = 70,
 +  TYPE_BRAVE = 71,
 +  TYPE_DIA = 72,
++  TYPE_PERPLEXITY_COMET = 73,
  };
  
  }  // namespace user_data_importer

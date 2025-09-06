@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 --- /dev/null
 +++ b/chrome/browser/importer/chrome_importer_list.cc
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,161 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -121,6 +121,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      GetChromeSourceProfiles(GetDiaUserDataFolder().Append(
 +          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
 +      GetDiaUserDataFolder(), kDiaBrowser, user_data_importer::TYPE_DIA);
++#endif
++#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
++  AddChromeToProfiles(
++      profiles,
++      GetChromeSourceProfiles(GetCometUserDataFolder().Append(
++          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
++      GetCometUserDataFolder(), kPerplexityCometBrowser, user_data_importer::TYPE_PERPLEXITY_COMET);
 +#endif
 +  AddChromeToProfiles(
 +      profiles,
@@ -426,7 +433,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils.h
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,66 @@
 +/* Copyright (c) 2019 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -461,6 +468,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 +// Arc only has Windows/Mac builds
 +base::FilePath GetArcUserDataFolder();
++base::FilePath GetCometUserDataFolder();
 +#endif
 +
 +#if BUILDFLAG(IS_MAC)
@@ -494,7 +502,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 --- /dev/null
 +++ b/chrome/common/importer/importer_constants.h
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,38 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -528,6 +536,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +inline constexpr char kWhaleBrowser[] = "NAVER Whale";
 +inline constexpr char kArcBrowser[] = "Arc";
 +inline constexpr char kDiaBrowser[] = "Dia";
++inline constexpr char kPerplexityCometBrowser[] = "Perplexity Comet";
 +inline constexpr char kBraveBrowser[] = "Brave";
 +// End of browser names section
 +
@@ -723,7 +732,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_mac.mm
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,82 @@
 +/* Copyright (c) 2018 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -797,13 +806,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +  return result.Append("Application Support").Append("Dia").Append("User Data");
 +}
 +
++base::FilePath GetCometUserDataFolder() {
++  base::FilePath result = base::apple::GetUserLibraryPath();
++  return result.Append("Application Support").Append("Comet");
++}
++
 +base::FilePath GetBraveUserDataFolder() {
 +  base::FilePath result = base::apple::GetUserLibraryPath();
 +  return result.Append("Application Support").Append("BraveSoftware").Append("Brave-Browser");
 +}
 --- /dev/null
 +++ b/chrome/common/importer/chrome_importer_utils_win.cc
-@@ -0,0 +1,145 @@
+@@ -0,0 +1,155 @@
 +/* Copyright (c) 2021 The Brave Authors, 2025 imput. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -937,6 +951,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      .AppendASCII("TheBrowserCompany.Arc_ttt1ap7aakyb4")
 +      .AppendASCII("LocalCache")
 +      .AppendASCII("Local")
++      .AppendASCII("User Data");
++}
++
++base::FilePath GetCometUserDataFolder() {
++  base::FilePath result;
++  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &result))
++    return base::FilePath();
++
++  return result.AppendASCII("Perplexity")
++      .AppendASCII("Comet")
 +      .AppendASCII("User Data");
 +}
 +
@@ -1403,7 +1427,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORTER_OBSERVER_H_
 --- /dev/null
 +++ b/chrome/browser/importer/brave_external_process_importer_client.cc
-@@ -0,0 +1,113 @@
+@@ -0,0 +1,114 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -1429,6 +1453,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    case user_data_importer::TYPE_WHALE:
 +    case user_data_importer::TYPE_ARC:
 +    case user_data_importer::TYPE_DIA:
++    case user_data_importer::TYPE_PERPLEXITY_COMET:
 +    case user_data_importer::TYPE_BRAVE:
 +      return true;
 +    default:
@@ -2442,7 +2467,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +#endif  // BRAVE_BROWSER_IMPORTER_EXTENSIONS_IMPORT_HELPERS_H_
 --- /dev/null
 +++ b/chrome/utility/importer/brave_profile_import_impl.cc
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,144 @@
 +/* Copyright (c) 2020 The Brave Authors. All rights reserved.
 + * This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -2493,6 +2518,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +      return new ChromeImporter();
 +    case user_data_importer::TYPE_DIA:
 +      return new ChromeImporter();
++    case user_data_importer::TYPE_PERPLEXITY_COMET:
++      return new ChromeImporter();
 +    case user_data_importer::TYPE_BRAVE:
 +      return new ChromeImporter();
 +    default:
@@ -2533,6 +2560,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 +    command_line->AppendSwitch("import-arc");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_DIA) {
 +    command_line->AppendSwitch("import-dia");
++  } else if (source_profile.importer_type == user_data_importer::TYPE_PERPLEXITY_COMET) {
++    command_line->AppendSwitch("import-perplexity-comet");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_BRAVE) {
 +    command_line->AppendSwitch("import-brave");
 +  } else if (source_profile.importer_type == user_data_importer::TYPE_VIVALDI) {
