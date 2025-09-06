@@ -9,15 +9,35 @@
  
  // The delay before showing the drop target for the side-by-side drag-and-drop
  // entrypoint.
+@@ -128,7 +128,7 @@ BASE_FEATURE_PARAM(base::TimeDelta,
+                    kSideBySideShowDropTargetDelay,
+                    &kSideBySide,
+                    "drop_target_show_delay",
+-                   base::Milliseconds(500));
++                   base::Milliseconds(200));
+ BASE_FEATURE_PARAM(int,
+                    kSideBySideDropTargetMinWidth,
+                    &kSideBySide,
+@@ -169,7 +169,7 @@ BASE_FEATURE_PARAM(int,
+ // startup.
+ BASE_FEATURE(kSideBySideSessionRestore,
+              "SideBySideSessionRestore",
+-             base::FEATURE_DISABLED_BY_DEFAULT);
++             base::FEATURE_ENABLED_BY_DEFAULT);
+ 
+ bool IsRestoringSplitViewEnabled() {
+   return base::FeatureList::IsEnabled(features::kSideBySide) &&
 --- a/chrome/browser/ui/views/frame/multi_contents_resize_area.cc
 +++ b/chrome/browser/ui/views/frame/multi_contents_resize_area.cc
-@@ -22,8 +22,8 @@
+@@ -21,9 +21,9 @@
+ 
  namespace {
  const int kHandleCornerRadius = 2;
- const int kHandleHeight = 24;
+-const int kHandleHeight = 24;
 -const int kHandlePadding = 6;
 -const int kHandleWidth = 4;
-+const int kHandlePadding = 4;
++const int kHandleHeight = 32;
++const int kHandlePadding = 1;
 +const int kHandleWidth = 2;
  }  // namespace
  
@@ -37,7 +57,7 @@
    };
  
 -  static constexpr int kSplitViewContentInset = 8;
-+  static constexpr int kSplitViewContentInset = 3;
++  static constexpr int kSplitViewContentInset = 0;
  
    MultiContentsView(BrowserView* browser_view,
                      std::unique_ptr<MultiContentsViewDelegate> delegate);
@@ -83,7 +103,7 @@
  #include "chrome/browser/ui/views/frame/scrim_view.h"
  #include "chrome/browser/ui/views/new_tab_footer/footer_web_view.h"
  #include "chrome/common/chrome_features.h"
-@@ -30,18 +29,13 @@
+@@ -30,18 +29,8 @@
  #include "ui/views/layout/proposed_layout.h"
  #include "ui/views/view_class_properties.h"
  
@@ -94,18 +114,16 @@
 -
  namespace {
 -constexpr float kContentCornerRadius = 6;
-+constexpr float kContentCornerRadius = 8;
- constexpr gfx::RoundedCornersF kContentRoundedCorners{kContentCornerRadius};
- 
+-constexpr gfx::RoundedCornersF kContentRoundedCorners{kContentCornerRadius};
+-
 -constexpr int kContentOutlineCornerRadius = 8;
-+constexpr int kContentOutlineCornerRadius = 9;
- constexpr int kContentOutlineThickness = 1;
+-constexpr int kContentOutlineThickness = 1;
 -constexpr int kSplitViewContentPadding = 4;
-+constexpr int kSplitViewContentPadding = 0;
++constexpr gfx::RoundedCornersF kContentRoundedCorners{0};
  
  constexpr int kNewTabFooterSeparatorHeight = 1;
  constexpr int kNewTabFooterHeight = 56;
-@@ -78,31 +72,6 @@ ContentsContainerView::ContentsContainer
+@@ -78,89 +67,25 @@ ContentsContainerView::ContentsContainer
          AddChildView(std::make_unique<ScrimView>(kColorSplitViewScrim));
      inactive_split_scrim_view_->SetRoundedCorners(kContentRoundedCorners);
    }
@@ -137,25 +155,73 @@
  }
  
  void ContentsContainerView::UpdateBorderAndOverlay(bool is_in_split,
-@@ -114,7 +83,6 @@ void ContentsContainerView::UpdateBorder
-   if (!is_in_split) {
-     SetBorder(nullptr);
-     ClearBorderRoundedCorners();
+                                                    bool is_active,
+                                                    bool show_scrim) {
+   is_in_split_ = is_in_split;
+-  // The border, mini toolbar, and scrim should not be visible if not in a
+-  // split.
+-  if (!is_in_split) {
+-    SetBorder(nullptr);
+-    ClearBorderRoundedCorners();
 -    mini_toolbar_->SetVisible(false);
++
++  SetBorder(nullptr);
++  ClearBorderRoundedCorners();
++
++  if (is_in_split) {
++    inactive_split_scrim_view_->SetVisible(!is_active && show_scrim);
++  } else {
      inactive_split_scrim_view_->SetVisible(false);
-     return;
+-    return;
    }
-@@ -133,9 +101,6 @@ void ContentsContainerView::UpdateBorder
- 
-   UpdateBorderRoundedCorners();
- 
+-
+-  // Draw active/inactive outlines around the contents areas and updates mini
+-  // toolbar visibility.
+-  const SkColor color =
+-      is_active ? GetColorProvider()->GetColor(
+-                      kColorMulitContentsViewActiveContentOutline)
+-                : GetColorProvider()->GetColor(
+-                      kColorMulitContentsViewInactiveContentOutline);
+-  SetBorder(views::CreatePaddedBorder(
+-      views::CreateRoundedRectBorder(kContentOutlineThickness,
+-                                     kContentOutlineCornerRadius, color),
+-      gfx::Insets(kSplitViewContentPadding)));
+-
+-  UpdateBorderRoundedCorners();
+-
 -  // Mini toolbar should only be visible for the inactive contents
 -  // container view or both depending on configuration.
 -  mini_toolbar_->UpdateState(is_active);
-   // Scrim should only be allowed to show the scrim for inactive contents
-   // container view.
-   inactive_split_scrim_view_->SetVisible(!is_active && show_scrim);
-@@ -220,13 +185,6 @@ views::ProposedLayout ContentsContainerV
+-  // Scrim should only be allowed to show the scrim for inactive contents
+-  // container view.
+-  inactive_split_scrim_view_->SetVisible(!is_active && show_scrim);
+ }
+ 
+ void ContentsContainerView::UpdateBorderRoundedCorners() {
+-  constexpr gfx::RoundedCornersF kContentUpperRoundedCorners =
+-      gfx::RoundedCornersF{kContentCornerRadius, kContentCornerRadius, 0, 0};
+-  constexpr gfx::RoundedCornersF kContentLowerRoundedCorners =
+-      gfx::RoundedCornersF{0, 0, kContentCornerRadius, kContentCornerRadius};
+-
+-  auto radii = new_tab_footer_view_ && new_tab_footer_view_->GetVisible()
+-                   ? kContentUpperRoundedCorners
+-                   : kContentRoundedCorners;
+-
+-  contents_view_->holder()->SetCornerRadii(radii);
+-
+-  if (new_tab_footer_view_) {
+-    new_tab_footer_view_->holder()->SetCornerRadii(kContentLowerRoundedCorners);
+-  }
+-
+-  if (contents_scrim_view_->layer()->rounded_corner_radii() !=
+-      kContentRoundedCorners) {
+-    contents_scrim_view_->SetRoundedCorners(kContentRoundedCorners);
+-  }
++  return;
+ }
+ 
+ void ContentsContainerView::ClearBorderRoundedCorners() {
+@@ -220,13 +145,6 @@ views::ProposedLayout ContentsContainerV
    layouts.child_layouts.emplace_back(
        contents_view_.get(), contents_view_->GetVisible(), contents_rect);
  
@@ -169,7 +235,7 @@
    // The scrim view should cover the entire contents bounds.
    CHECK(contents_scrim_view_);
    layouts.child_layouts.emplace_back(contents_scrim_view_.get(),
-@@ -240,29 +198,6 @@ views::ProposedLayout ContentsContainerV
+@@ -240,29 +158,6 @@ views::ProposedLayout ContentsContainerV
                                         contents_bounds);
    }
  
@@ -286,3 +352,30 @@
    }
  
  #if !BUILDFLAG(IS_CHROMEOS)
+--- a/chrome/browser/ui/views/frame/multi_contents_drop_target_view.cc
++++ b/chrome/browser/ui/views/frame/multi_contents_drop_target_view.cc
+@@ -35,10 +35,10 @@
+ 
+ namespace {
+ 
+-constexpr float kInnerCornerRadius = 6;
+-constexpr int kOuterPadding = 8;
++constexpr float kInnerCornerRadius = 0;
++constexpr int kOuterPadding = 0;
+ constexpr int kIconSize = 24;
+-constexpr int kAnimationDurationMs = 450;
++constexpr int kAnimationDurationMs = 250;
+ 
+ }  // namespace
+ 
+--- a/components/omnibox/common/omnibox_features.cc
++++ b/components/omnibox/common/omnibox_features.cc
+@@ -380,7 +380,7 @@ BASE_FEATURE(kPreconnectNonSearchOmnibox
+ // "invisible focus".
+ BASE_FEATURE(kOmniboxRestoreInvisibleFocusOnly,
+              "OmniboxRestoreInvisibleFocusOnly",
+-             DISABLED);
++             ENABLED);
+ 
+ // Enabls adding an aim shortcut in the typed state.
+ BASE_FEATURE(kOmniboxAimShortcutTypedState,
