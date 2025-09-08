@@ -74,18 +74,16 @@
      float bottom_left_corner_radius = content_corner_radius;
 --- a/chrome/browser/ui/views/tabs/tab.cc
 +++ b/chrome/browser/ui/views/tabs/tab.cc
-@@ -1150,9 +1150,7 @@ void Tab::UpdateIconVisibility() {
+@@ -1150,7 +1150,7 @@ void Tab::UpdateIconVisibility() {
    // left that needs to be considered.
    const int close_button_width = GetLayoutConstant(TAB_CLOSE_BUTTON_SIZE) +
                                   GetLayoutConstant(TAB_AFTER_TITLE_PADDING);
 -  const bool large_enough_for_close_button =
--      available_width >= (touch_ui ? kTouchMinimumContentsWidthForCloseButtons
--                                   : kMinimumContentsWidthForCloseButtons);
-+  const bool large_enough_for_close_button = mouse_hovered_;
++  const bool large_enough_for_close_button = mouse_hovered_ &&
+       available_width >= (touch_ui ? kTouchMinimumContentsWidthForCloseButtons
+                                    : kMinimumContentsWidthForCloseButtons);
  
-   if (IsActive()) {
- #if BUILDFLAG(IS_CHROMEOS)
-@@ -1198,6 +1196,10 @@ void Tab::UpdateIconVisibility() {
+@@ -1198,6 +1198,10 @@ void Tab::UpdateIconVisibility() {
          large_enough_for_close_button;
      if (base::CommandLine::ForCurrentProcess()->HasSwitch("hide-tab-close-buttons"))
        showing_close_button_ = false;
@@ -96,6 +94,17 @@
      if (showing_close_button_) {
        available_width -= close_button_width;
      }
+--- a/chrome/browser/ui/views/tabs/tab.h
++++ b/chrome/browser/ui/views/tabs/tab.h
+@@ -69,7 +69,7 @@ class Tab : public gfx::AnimationDelegat
+   // When the content's width of the tab shrinks to below this size we should
+   // hide the close button on inactive tabs. Any smaller and they're too easy
+   // to hit on accident.
+-  static constexpr int kMinimumContentsWidthForCloseButtons = 68;
++  static constexpr int kMinimumContentsWidthForCloseButtons = 42;
+   static constexpr int kTouchMinimumContentsWidthForCloseButtons = 100;
+ 
+   // Sets whether hover cards should appear on mouse hover. Used in browser
 --- a/chrome/browser/ui/views/tabs/tab_group_highlight.cc
 +++ b/chrome/browser/ui/views/tabs/tab_group_highlight.cc
 @@ -53,27 +53,8 @@ SkPath TabGroupHighlight::GetPath() cons
