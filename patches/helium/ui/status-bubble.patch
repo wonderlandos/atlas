@@ -5,7 +5,7 @@
  
  // The roundedness of the edges of our bubble.
 -constexpr int kBubbleCornerRadius = 4;
-+constexpr int kBubbleCornerRadius = 6;
++constexpr int kBubbleCornerRadius = 7;
  
  // How close the mouse can get to the infobubble before it starts sliding
  // off-screen.
@@ -17,7 +17,7 @@
 +constexpr int kTextHorizPadding = 8;
 +constexpr int kTextVertPadding = 3;
 +
-+constexpr int kWindowMargin = 8;
++constexpr int kWindowMargin = 10;
  
  // Delays before we start hiding or showing the bubble after we receive a
  // show or hide request.
@@ -30,7 +30,26 @@
                           kShadowThickness + kTextHorizPadding);
  }
  
-@@ -450,45 +453,13 @@ void StatusView::OnPaint(gfx::Canvas* ca
+@@ -433,16 +436,12 @@ void StatusView::StartShowing() {
+ 
+ void StatusView::SetTextLabelColors(views::Label* text) {
+   const auto* color_provider = status_bubble_->base_view()->GetColorProvider();
+-  const bool active =
+-      status_bubble_->base_view()->GetWidget()->ShouldPaintAsActive();
+   SkColor bubble_color = color_provider->GetColor(
+-      active ? kColorStatusBubbleBackgroundFrameActive
+-             : kColorStatusBubbleBackgroundFrameInactive);
++      kColorStatusBubbleBackgroundFrameInactive);
+   text->SetBackgroundColor(bubble_color);
+   // Text color is the background tab text color, adjusted if required.
+   text->SetEnabledColor(color_provider->GetColor(
+-      active ? kColorStatusBubbleForegroundFrameActive
+-             : kColorStatusBubbleForegroundFrameInactive));
++      kColorStatusBubbleForegroundFrameInactive));
+ }
+ 
+ void StatusView::OnPaint(gfx::Canvas* canvas) {
+@@ -450,45 +449,13 @@ void StatusView::OnPaint(gfx::Canvas* ca
    float scale = canvas->UndoDeviceScaleFactor();
    const float radius = kBubbleCornerRadius * scale;
  
@@ -81,7 +100,7 @@
    // Snap to pixels to avoid shadow blurriness.
    gfx::Size scaled_size = gfx::ScaleToRoundedSize(size(), scale);
  
-@@ -497,20 +468,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
+@@ -497,20 +464,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
    // where the web content is visible.
    const int shadow_thickness_pixels = std::floor(kShadowThickness * scale);
  
@@ -102,7 +121,7 @@
    canvas->ClipRect(clip_rect);
  
    gfx::RectF bubble_rect{gfx::SizeF(scaled_size)};
-@@ -520,11 +478,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
+@@ -520,13 +474,7 @@ void StatusView::OnPaint(gfx::Canvas* ca
    // bubble bounds by 1 DIP minus 1 pixel. Failing to do this results in drawing
    // further and further outside the window as the scale increases.
    const int inset = shadow_thickness_pixels - 1;
@@ -111,12 +130,21 @@
 -          .set_left(style_ == BubbleStyle::kStandardRight ? 0 : inset)
 -          .set_right(style_ == BubbleStyle::kStandardRight ? inset : 0)
 -          .set_bottom(inset));
+-  // Align to pixel centers now that the layout is correct.
+-  bubble_rect.Inset(0.5);
 +  bubble_rect.Inset(gfx::InsetsF::VH(inset, inset));
-   // Align to pixel centers now that the layout is correct.
-   bubble_rect.Inset(0.5);
  
-@@ -551,9 +505,6 @@ void StatusView::OnPaint(gfx::Canvas* ca
-           : kColorStatusBubbleBackgroundFrameInactive;
+   SkPath path;
+   path.addRoundRect(gfx::RectFToSkRect(bubble_rect), rad);
+@@ -545,15 +493,9 @@ void StatusView::OnPaint(gfx::Canvas* ca
+   flags.setStyle(cc::PaintFlags::kFill_Style);
+ 
+   const auto* color_provider = status_bubble_->base_view()->GetColorProvider();
+-  const auto id =
+-      status_bubble_->base_view()->GetWidget()->ShouldPaintAsActive()
+-          ? kColorStatusBubbleBackgroundFrameActive
+-          : kColorStatusBubbleBackgroundFrameInactive;
++  const auto id = kColorStatusBubbleBackgroundFrameInactive;
    flags.setColor(color_provider->GetColor(id));
    canvas->sk_canvas()->drawPath(fill_path, flags);
 -
@@ -125,7 +153,7 @@
  }
  
  DEFINE_ENUM_CONVERTERS(StatusView::BubbleState,
-@@ -767,7 +718,9 @@ void StatusBubbleViews::Reposition() {
+@@ -767,7 +709,9 @@ void StatusBubbleViews::Reposition() {
    int overlap = kShadowThickness;
    int height = GetPreferredHeight();
    int base_view_height = base_view_->bounds().height();
@@ -136,7 +164,7 @@
    SetBounds(origin.x(), origin.y(), base_view_->bounds().width() / 3, height);
  }
  
-@@ -805,7 +758,7 @@ int StatusBubbleViews::GetWidthForURL(co
+@@ -805,7 +749,7 @@ int StatusBubbleViews::GetWidthForURL(co
    // Get the width of the elided url
    int elided_url_width = gfx::GetStringWidth(url_string, GetFont());
    // Add proper paddings
