@@ -21,6 +21,16 @@
        {"hoverCardTitle", IDS_SETTINGS_HOVER_CARD_TITLE},
        {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
        {"showHoverCardMemoryUsage", IDS_SETTINGS_SHOW_HOVER_CARD_MEMORY_USAGE},
+@@ -553,9 +553,7 @@ void AddAppearanceStrings(content::WebUI
+       {"classicTheme", IDS_SETTINGS_CLASSIC_THEME},
+       {"useClassicTheme", IDS_SETTINGS_USE_CLASSIC_THEME},
+ #endif
+-#if !BUILDFLAG(IS_LINUX)
+       {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
+-#endif
+       {"resetToolbarToDefault", IDS_SETTINGS_RESET_TOOLBAR_TO_DEFAULT},
+ #if BUILDFLAG(IS_LINUX)
+       {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
 --- a/chrome/browser/resources/settings/appearance_page/appearance_page.html
 +++ b/chrome/browser/resources/settings/appearance_page/appearance_page.html
 @@ -46,7 +46,6 @@
