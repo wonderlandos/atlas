@@ -34,7 +34,15 @@
        "saveGuestChoiceText", IDS_SEARCH_ENGINE_CHOICE_GUEST_SESSION_CHECKBOX);
 --- a/components/regional_capabilities/regional_capabilities_service.cc
 +++ b/components/regional_capabilities/regional_capabilities_service.cc
-@@ -258,6 +258,7 @@ bool RegionalCapabilitiesService::IsInSe
+@@ -164,6 +164,7 @@ std::pair<CountryId, LoadedCountrySource
+ }
+ 
+ const ProgramSettings* CountryIdToProgram(CountryId country_id) {
++  return &kWaffleSettings;
+ #if BUILDFLAG(IS_IOS)
+   // TODO(crbug.com/423883216): Update logic to support Android.
+   if (IsInProgramRegion(Program::kTaiyaki, country_id)) {
+@@ -258,6 +259,7 @@ bool RegionalCapabilitiesService::IsInSe
  }
  
  bool RegionalCapabilitiesService::IsInEeaCountry() {
