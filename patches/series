@@ -221,3 +221,4 @@ helium/ui/top-container.patch
 helium/ui/status-bubble.patch
 helium/ui/clean-incognito-guest-ntp.patch
 helium/ui/enable-fluent-scrollbar.patch
+helium/ui/helium-color-scheme.patch
