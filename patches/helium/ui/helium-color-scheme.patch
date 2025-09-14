@@ -383,3 +383,40 @@
      --cr-fallback-color-base-container: rgba(40, 40, 40, 1);
    }
  }
+--- a/ui/webui/resources/cr_components/theme_color_picker/color_utils.ts
++++ b/ui/webui/resources/cr_components/theme_color_picker/color_utils.ts
+@@ -29,26 +29,26 @@ export const DARK_DEFAULT_COLOR: Color =
+ };
+ 
+ export const LIGHT_BASELINE_BLUE_COLOR: Color = {
+-  background: {value: 0xff0b57d0},
+-  foreground: {value: 0xffd3e3fd},
++  background: {value: 0xff4c66d9},
++  foreground: {value: 0xffdde1ff},
+   base: {value: 0xffc7c7c7},
+ };
+ 
+ export const DARK_BASELINE_BLUE_COLOR: Color = {
+-  background: {value: 0xffa8c7fa},
+-  foreground: {value: 0xff0842a0},
++  background: {value: 0xffb9c3ff},
++  foreground: {value: 0xff314380},
+   base: {value: 0xff757575},
+ };
+ 
+ export const LIGHT_BASELINE_GREY_COLOR: Color = {
+-  background: {value: 0xff0b57d0},
+-  foreground: {value: 0xffe3e3e3},
++  background: {value: 0xff4c66d9},
++  foreground: {value: 0xffe2e2eD},
+   base: {value: 0xffc7c7c7},
+ };
+ 
+ export const DARK_BASELINE_GREY_COLOR: Color = {
+-  background: {value: 0xffa8c7fa},
+-  foreground: {value: 0xff474747},
++  background: {value: 0xffb9c3ff},
++  foreground: {value: 0xff484d5c},
+   base: {value: 0xff757575},
+ };
+ 
