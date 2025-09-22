@@ -160,6 +160,7 @@ helium/core/ublock-install-as-component.patch
 helium/core/ublock-reconfigure-defaults.patch
 helium/core/ublock-migrate-prefs.patch
 helium/core/ublock-helium-services.patch
+helium/core/clean-omnibox-suggestions.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
