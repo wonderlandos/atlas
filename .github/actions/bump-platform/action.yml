@@ -81,7 +81,7 @@ runs:
         popd
 
         # commit, push, make pr
-        TITLE="update: helium-chromium $version_after"
+        TITLE="update: helium $version_after"
 
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
