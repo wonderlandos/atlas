@@ -3,7 +3,7 @@
 @@ -0,0 +1,14 @@
 +Name: Helium
 +Short Name: helium
-+URL: https://github.com/imput/helium
++URL: https://github.com/imputnet/helium
 +License: GPL-3.0-only
 +License File: ../../components/helium_onboarding/LICENSE
 +Shipped: yes
