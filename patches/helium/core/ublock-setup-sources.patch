@@ -17,7 +17,7 @@
 +Patched out remote URLs from assets.json, patched in public key into manifest
 --- /dev/null
 +++ b/third_party/ublock/BUILD.gn
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,51 @@
 +# Copyright 2025 The Helium Authors
 +# You can use, redistribute, and/or modify this source code under
 +# the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -56,6 +56,7 @@
 +
 +    # Required because the .grd is generated.
 +    enable_input_discovery_for_gn_analyze = false
++    use_brotli = true
 +
 +    output_dir = "$target_gen_dir/resources"
 +
