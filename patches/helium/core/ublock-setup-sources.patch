@@ -79,14 +79,14 @@
 +from sys import argv
 +from pathlib import Path
 +
-+ublock_src = argv[1]
++ublock_src = Path(argv[1])
 +out_file = argv[2]
 +
 +with open(out_file, 'w') as f:
 +  f.write(json.dumps(
-+    { "base_dir": ublock_src,
-+      "files":   [ str((root / file).relative_to(ublock_src))
-+                   for root, _, files in Path(ublock_src).walk()
++    { "base_dir": ublock_src.as_posix(),
++      "files":   [ (root / file).relative_to(ublock_src).as_posix()
++                   for root, _, files in ublock_src.walk()
 +                   for file in files ]
 +    }
 +  ))
