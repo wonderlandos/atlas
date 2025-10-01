@@ -1,19 +1,19 @@
 --- a/chrome/browser/ui/omnibox/omnibox_pedal_implementations.cc
 +++ b/chrome/browser/ui/omnibox/omnibox_pedal_implementations.cc
-@@ -2011,12 +2011,7 @@ GetPedalImplementations(bool incognito,
+@@ -1990,12 +1990,7 @@ GetPedalImplementations(bool incognito,
    if (!incognito && !guest) {
      add(new OmniboxPedalClearBrowsingData(/*incognito=*/false));
    }
 -  add(new OmniboxPedalManagePasswords());
 -  add(new OmniboxPedalUpdateCreditCard());
    add(new OmniboxPedalLaunchIncognito());
--  if (!base::android::BuildInfo::GetInstance()->is_automotive()) {
+-  if (!base::android::device_info::is_automotive()) {
 -    add(new OmniboxPedalRunChromeSafetyCheck());
 -  }
    add(new OmniboxPedalPlayChromeDinoGame());
    add(new OmniboxPedalManageSiteSettings());
    add(new OmniboxPedalManageChromeSettings());
-@@ -2028,37 +2023,15 @@ GetPedalImplementations(bool incognito,
+@@ -2007,37 +2002,15 @@ GetPedalImplementations(bool incognito,
    if (!guest) {
      add(new OmniboxPedalClearBrowsingData(incognito));
    }

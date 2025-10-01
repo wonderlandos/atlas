@@ -207,7 +207,7 @@
  const char kIdKey[] = "id";
 --- a/components/policy_strings.grdp
 +++ b/components/policy_strings.grdp
-@@ -672,6 +672,9 @@ Additional details:
+@@ -687,6 +687,9 @@ Additional details:
    <message name="IDS_POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE" desc="Indicates that the policy originates from the restricted managed guest session override.">
      Restricted managed guest session override
    </message>
