@@ -161,6 +161,7 @@ helium/core/ublock-migrate-prefs.patch
 helium/core/ublock-helium-services.patch
 helium/core/clean-omnibox-suggestions.patch
 helium/core/remove-search-desc-snippet-deps.patch
+helium/core/increase-incognito-storage-quota.patch
 helium/core/mitigate-fingerprinting-canvas.patch
 
 helium/settings/move-search-suggest.patch
