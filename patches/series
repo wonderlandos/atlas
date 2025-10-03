@@ -166,6 +166,7 @@ helium/core/mitigate-fingerprinting-canvas.patch
 helium/core/mitigate-fingerprinting-audio-context.patch
 helium/core/reduce-accept-language-headers.patch
 helium/core/disable-ad-topics-and-etc.patch
+helium/core/enable-parallel-downloading.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
