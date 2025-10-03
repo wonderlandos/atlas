@@ -164,6 +164,7 @@ helium/core/remove-search-desc-snippet-deps.patch
 helium/core/increase-incognito-storage-quota.patch
 helium/core/mitigate-fingerprinting-canvas.patch
 helium/core/mitigate-fingerprinting-audio-context.patch
+helium/core/reduce-accept-language-headers.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
