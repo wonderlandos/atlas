@@ -167,6 +167,7 @@ helium/core/mitigate-fingerprinting-audio-context.patch
 helium/core/reduce-accept-language-headers.patch
 helium/core/disable-ad-topics-and-etc.patch
 helium/core/enable-parallel-downloading.patch
+helium/core/infinite-tab-freezing.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
