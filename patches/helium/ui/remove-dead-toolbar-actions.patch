@@ -232,3 +232,27 @@
  }
  
  }  // namespace
+--- a/chrome/browser/ui/web_applications/app_browser_controller.cc
++++ b/chrome/browser/ui/web_applications/app_browser_controller.cc
+@@ -357,8 +357,6 @@ std::vector<actions::ActionId> AppBrowse
+ #endif  // BUILDFLAG(IS_CHROMEOS)
+ 
+   std::vector<actions::ActionId> types_enabled = {
+-      kActionShowPasswordsBubbleOrPage,
+-      kActionShowTranslate,
+       kActionZoomNormal,
+       kActionShowFileSystemAccess,
+   };
+@@ -382,12 +380,9 @@ AppBrowserController::GetTitleBarPageAct
+ 
+   std::vector<PageActionIconType> types_enabled;
+   types_enabled.push_back(PageActionIconType::kFind);
+-  types_enabled.push_back(PageActionIconType::kManagePasswords);
+-  types_enabled.push_back(PageActionIconType::kTranslate);
+   types_enabled.push_back(PageActionIconType::kZoom);
+   types_enabled.push_back(PageActionIconType::kFileSystemAccess);
+   types_enabled.push_back(PageActionIconType::kCookieControls);
+-  types_enabled.push_back(PageActionIconType::kSaveCard);
+ 
+   return types_enabled;
+ }
