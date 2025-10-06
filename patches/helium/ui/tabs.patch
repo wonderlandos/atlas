@@ -94,6 +94,17 @@
      if (showing_close_button_) {
        available_width -= close_button_width;
      }
+@@ -1229,10 +1233,6 @@ void Tab::UpdateIconVisibility() {
+       }
+     }
+   }
+-
+-  extra_alert_indicator_padding_ = showing_alert_indicator_ &&
+-                                   showing_close_button_ &&
+-                                   large_enough_for_close_button;
+ }
+ 
+ bool Tab::ShouldRenderAsNormalTab() const {
 --- a/chrome/browser/ui/views/tabs/tab.h
 +++ b/chrome/browser/ui/views/tabs/tab.h
 @@ -69,7 +69,7 @@ class Tab : public gfx::AnimationDelegat
