@@ -676,7 +676,7 @@
  
 --- a/components/search_engines/template_url.cc
 +++ b/components/search_engines/template_url.cc
-@@ -1689,6 +1689,8 @@ bool TemplateURL::IsBetterThanConflictin
+@@ -1685,6 +1685,8 @@ bool TemplateURL::IsBetterThanConflictin
                                  : base::Time(),
          // Prefer engines that CANNOT be auto-replaced.
          !engine->safe_for_autoreplace(),
@@ -722,7 +722,7 @@
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1958,6 +1958,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1956,6 +1956,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
