@@ -99,7 +99,7 @@
 +  }
 +
 +  if (!manager->IsComponentExtensionResource(
-+        extension->path(), base::FilePath(path), &resource_id)) {
++        extension->path(), base::FilePath::FromUTF8Unsafe(path), &resource_id)) {
 +    return base::unexpected(base::StringPrintf(
 +        "%s/%s is not a component extension resource",
 +        base::UTF16ToUTF8(extension->path().LossyDisplayName()), path));
