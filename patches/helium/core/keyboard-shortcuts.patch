@@ -48,7 +48,7 @@
 +         command_id == IDC_SELECT_PREVIOUS_TAB || command_id == IDC_EXIT ||
 +         command_id == IDC_COPY_OR_INSPECT_SHORTCUT || command_id == IDC_DEV_TOOLS ||
 +         command_id == IDC_DEV_TOOLS_INSPECT || command_id == IDC_DEV_TOOLS_TOGGLE ||
-+         command_id == IDC_DEV_TOOLS_CONSOLE;
++         command_id == IDC_DEV_TOOLS_CONSOLE || command_id == IDC_TAB_SEARCH;
  }
  
  void BrowserCommandController::TabStateChanged() {
