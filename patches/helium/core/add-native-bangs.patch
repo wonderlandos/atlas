@@ -722,7 +722,7 @@
  COMPONENT_EXPORT(HELIUM) GURL GetDummyURL();
 --- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
 +++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -1956,6 +1956,9 @@ void AddPrivacyStrings(content::WebUIDat
+@@ -1957,6 +1957,9 @@ void AddPrivacyStrings(content::WebUIDat
        {"heliumServicesToggle", IDS_SETTINGS_HELIUM_SERVICES_TOGGLE},
        {"heliumServicesToggleDescription",
          IDS_SETTINGS_HELIUM_SERVICES_TOGGLE_DESCRIPTION},
@@ -734,7 +734,7 @@
        {"heliumExtProxyToggleDescription",
 --- a/chrome/app/settings_strings.grdp
 +++ b/chrome/app/settings_strings.grdp
-@@ -1921,6 +1921,12 @@
+@@ -1931,6 +1931,12 @@
    <message name="IDS_SETTINGS_HELIUM_SERVICES_EXT_PROXY_TOGGLE_DESCRIPTION" desc="Description of the toggle for enabling/disabling of downloading and proxying extensions">
      When enabled, Helium will proxy extension downloads and updates to protect your privacy. When disabled, downloading and updating extensions will not work.
    </message>
@@ -763,7 +763,7 @@
                  label="$i18n{heliumExtProxyToggle}"
 --- a/chrome/browser/ui/browser_ui_prefs.cc
 +++ b/chrome/browser/ui/browser_ui_prefs.cc
-@@ -200,6 +200,7 @@ void RegisterBrowserUserPrefs(user_prefs
+@@ -202,6 +202,7 @@ void RegisterBrowserUserPrefs(user_prefs
  
    {
      registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
