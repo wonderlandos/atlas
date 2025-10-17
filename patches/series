@@ -177,6 +177,7 @@ helium/core/disable-touch-ui.patch
 helium/core/open-new-tabs-next-to-active-tab-option.patch
 helium/core/disable-update-toast.patch
 helium/core/disable-fedcm-bubble.patch
+helium/core/add-middle-click-autoscroll-flag.patch
 
 helium/settings/move-search-suggest.patch
 helium/settings/remove-autofill.patch
