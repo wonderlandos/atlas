@@ -108,6 +108,8 @@ extra/brave/chrome-importer-files.patch
 extra/brave/custom-importer.patch
 extra/brave/fix-component-content-settings-store.patch
 
+helium/upstream-fixes/fix-tab-group-split-insertion.patch
+
 helium/core/add-zen-importer.patch
 helium/core/disable-unsupported-importers.patch
 helium/core/fix-building-without-safebrowsing.patch
