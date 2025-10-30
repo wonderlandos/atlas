@@ -28,3 +28,13 @@
    }
  }
  
+@@ -88,7 +90,8 @@ std::optional<SkColor> TopContainerBackg
+     const BrowserView* browser_view) {
+   const bool will_be_painted = WillPaintCustomImage(view);
+   if (!will_be_painted) {
+-    return view->GetColorProvider()->GetColor(kColorToolbar);
++    return browser_view->browser_widget()->GetFrameView()->GetFrameColor(
++        BrowserFrameActiveState::kUseCurrent);
+   }
+ 
+   return std::nullopt;
