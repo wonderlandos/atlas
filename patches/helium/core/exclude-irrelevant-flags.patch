@@ -1,6 +1,6 @@
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -13311,11 +13311,278 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -13399,11 +13399,278 @@ const FeatureEntry kFeatureEntries[] = {
      // AboutFlagsHistogramTest unit test to verify this process).
  };
  
@@ -280,7 +280,7 @@
    FlagsStateSingleton(const FlagsStateSingleton&) = delete;
    FlagsStateSingleton& operator=(const FlagsStateSingleton&) = delete;
    ~FlagsStateSingleton() override = default;
-@@ -13334,7 +13601,7 @@ class FlagsStateSingleton : public flags
+@@ -13422,7 +13689,7 @@ class FlagsStateSingleton : public flags
  
    void RestoreDefaultState() {
      flags_state_ =
@@ -289,7 +289,7 @@
    }
  
   private:
-@@ -13659,7 +13926,7 @@ base::span<const FeatureEntry> GetFeatur
+@@ -13747,7 +14014,7 @@ base::span<const FeatureEntry> GetFeatur
        !entries_for_testing->empty()) {
      return *entries_for_testing;
    }

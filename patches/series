@@ -32,6 +32,7 @@ core/ungoogled-chromium/disable-privacy-sandbox.patch
 core/ungoogled-chromium/doh-changes.patch
 core/ungoogled-chromium/extensions-manifestv2.patch
 core/ungoogled-chromium/remove-f1-shortcut.patch
+core/ungoogled-chromium/move-js-optimizer-unfamiliar-sites.patch
 core/bromite/disable-fetching-field-trials.patch
 
 extra/ungoogled-chromium/add-ungoogled-flag-headers.patch
@@ -107,8 +108,6 @@ extra/ungoogled-chromium/disable-ai-search-shortcuts.patch
 extra/brave/chrome-importer-files.patch
 extra/brave/custom-importer.patch
 extra/brave/fix-component-content-settings-store.patch
-
-helium/upstream-fixes/fix-tab-group-split-insertion.patch
 
 helium/core/add-zen-importer.patch
 helium/core/disable-unsupported-importers.patch
@@ -216,7 +215,6 @@ helium/ui/app-menu-model.patch
 helium/ui/app-menu-button.patch
 helium/ui/remove-reading-list-from-app-menu.patch
 helium/ui/fix-customize-side-panel.patch
-helium/ui/immersive-padding.patch
 helium/ui/side-panel.patch
 helium/ui/layout-provider.patch
 helium/ui/remove-dead-toolbar-actions.patch
