@@ -73,7 +73,7 @@
    overflow: hidden;
    text-overflow: ellipsis;
    white-space: nowrap;
-@@ -130,6 +130,7 @@ input {
+@@ -131,6 +131,7 @@ input {
    padding: 0 4px;
    text-align: center;
    width: 5ch;
