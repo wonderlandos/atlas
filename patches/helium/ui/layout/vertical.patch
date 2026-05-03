@@ -1,8 +1,11 @@
 --- a/chrome/browser/ui/layout_constants.cc
 +++ b/chrome/browser/ui/layout_constants.cc
-@@ -134,13 +134,13 @@ int GetLayoutConstant(LayoutConstant con
+@@ -132,15 +132,15 @@ int GetLayoutConstant(LayoutConstant con
+     case LayoutConstant::kVerticalTabHeight:
+       return 30;
      case LayoutConstant::kVerticalTabPinnedHeight:
-       return 32;
+-      return 32;
++      return 30;
      case LayoutConstant::kVerticalTabMinWidth:
 -      return 32;
 +      return 30;
@@ -11,10 +14,10 @@
 +      return 6;
      case LayoutConstant::kVerticalTabStripCollapsedHorizontalPadding:
 -      return 12;
-+      return 4;
++      return 3;
      case LayoutConstant::kVerticalTabStripCollapsedVerticalPadding:
 -      return 8;
-+      return 4;
++      return 3;
      case LayoutConstant::kVerticalTabStripCollapsedSeparatorPadding:
        return 12;
      case LayoutConstant::kVerticalTabStripComboButtonIconSize:
@@ -362,7 +365,7 @@
    // view.
    static constexpr int kUncollapsedMaxWidth = 400;
 -  static constexpr int kCollapsedWidth = 56;
-+  static constexpr int kCollapsedWidth = 38;
++  static constexpr int kCollapsedWidth = 36;
    // TODO(crbug.com/465833741): Determine snapping behavior.
    static constexpr int kCollapseSnapWidth =
        (kUncollapsedMinWidth + kCollapsedWidth) / 2;
@@ -670,6 +673,15 @@
  bool VerticalTabStripRegionView::IsFrameActive() const {
 --- a/chrome/browser/ui/views/tabs/vertical/vertical_tab_view.cc
 +++ b/chrome/browser/ui/views/tabs/vertical/vertical_tab_view.cc
+@@ -84,7 +84,7 @@
+ namespace {
+ constexpr int kIconDesignWidth = 16;
+ constexpr int kTitleMinWidth = 10;
+-constexpr int kHorizontalInset = 8;
++constexpr int kHorizontalInset = 7;
+ constexpr int kDefaultPadding = 4;
+ constexpr int kFocusRingInset = 0.0f;
+ 
 @@ -166,12 +166,12 @@ VerticalTabView::VerticalTabView(TabColl
        TabChildConfig(close_button_, kIconDesignWidth, kDefaultPadding,
                       /*align_leading=*/false,
@@ -735,7 +747,7 @@
      "vertical_tab_drag_handler.cc",
 --- /dev/null
 +++ b/chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.cc
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,99 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -752,7 +764,7 @@
 +
 +namespace {
 +
-+constexpr int kIconSize = 14;
++constexpr int kIconSize = 15;
 +constexpr int kBasePadding = 4;
 +
 +class VerticalNewTabButtonActionViewInterface
@@ -798,6 +810,10 @@
 +  SetBorder(views::CreateEmptyBorder(
 +      gfx::Insets::VH(kBasePadding, kBasePadding * 2)));
 +  SetImageLabelSpacing(kBasePadding * 2);
++
++  const int height = GetLayoutConstant(LayoutConstant::kVerticalTabHeight);
++
++  SetPreferredSize(gfx::Size(-1, height));
 +
 +  SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 +
@@ -1350,3 +1366,77 @@
               Animate(kTabStripWidth, FromValue(1.0), ToValue(0.0)),
               Sequence(kTopCorner, Keyframe(AtPercent(0), Value(1.0)),
                        Keyframe(AtPercent(kFirstCheckpoint), Value(0.0)),
+--- a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_view.cc
++++ b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_view.cc
+@@ -106,9 +106,6 @@ VerticalTabStripView::VerticalTabStripVi
+       views::ScrollView::ScrollWithLayers::kEnabled));
+   SetScrollViewProperties(pinned_tabs_scroll_view_);
+ 
+-  auto tabs_separator = std::make_unique<views::Separator>();
+-  tabs_separator_ = AddChildView(std::move(tabs_separator));
+-
+   unpinned_tabs_scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
+       views::ScrollView::ScrollWithLayers::kEnabled));
+   SetScrollViewProperties(unpinned_tabs_scroll_view_);
+@@ -156,10 +153,6 @@ views::ProposedLayout VerticalTabStripVi
+   const int unpinned_preferred_height =
+       unpinned_tabs_scroll_view_->GetPreferredSize(size_bounds).height();
+ 
+-  const bool should_show_separator = pinned_preferred_height != 0 &&
+-                                     unpinned_preferred_height != 0 &&
+-                                     is_collapsed_;
+-
+   // If the height is bounded, calculate the available space for laying out the
+   // pinned and unpinned containers.
+   int remaining_height = 0;
+@@ -168,10 +161,6 @@ views::ProposedLayout VerticalTabStripVi
+     if (pinned_preferred_height != 0 && unpinned_preferred_height != 0) {
+       remaining_height -= region_vertical_padding;
+     }
+-    if (should_show_separator) {
+-      remaining_height -= tabs_separator_->GetPreferredSize().height() +
+-                          region_vertical_padding;
+-    }
+     // Clamp the remaining height to 0 if we have less space.
+     remaining_height = std::max(remaining_height, 0);
+   }
+@@ -205,27 +194,6 @@ views::ProposedLayout VerticalTabStripVi
+     }
+   }
+ 
+-  // Place the tabs separator if visible.
+-  if (should_show_separator) {
+-    const int separator_padding =
+-        is_collapsed_
+-            ? GetLayoutConstant(
+-                  LayoutConstant::kVerticalTabStripCollapsedSeparatorPadding)
+-            : region_horizontal_padding;
+-    int separator_width = size_bounds.width().value() - 2 * separator_padding;
+-    int separator_x = separator_padding;
+-    gfx::Rect tabs_separator_bounds(
+-        separator_x, y, separator_width,
+-        tabs_separator_->GetPreferredSize().height());
+-    layouts.child_layouts.emplace_back(tabs_separator_.get(), true,
+-                                       tabs_separator_bounds);
+-
+-    y += tabs_separator_bounds.height() + region_vertical_padding;
+-  } else {
+-    layouts.child_layouts.emplace_back(tabs_separator_.get(), false,
+-                                       gfx::Rect());
+-  }
+-
+   // Place the unpinned container using the entire available width, we do not
+   // inset the x value by |region_horizontal_padding| here because, when the tab
+   // strip is collapsed, tab groups need to draw the group colored line in this
+@@ -595,10 +563,7 @@ void VerticalTabStripView::DisableOverfl
+   }
+ }
+ 
+-void VerticalTabStripView::UpdateColors() {
+-  tabs_separator_->SetColorId(IsFrameActive() ? kColorTabDividerFrameActive
+-                                              : kColorTabDividerFrameInactive);
+-}
++void VerticalTabStripView::UpdateColors() {}
+ 
+ bool VerticalTabStripView::IsFrameActive() const {
+   return GetWidget() ? GetWidget()->ShouldPaintAsActive() : true;
