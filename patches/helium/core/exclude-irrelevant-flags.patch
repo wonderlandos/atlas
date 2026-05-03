@@ -1,19 +1,21 @@
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -13066,11 +13066,387 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -13066,11 +13066,355 @@ const FeatureEntry kFeatureEntries[] = {
      // AboutFlagsHistogramTest unit test to verify this process).
  };
  
 +// Flags that either break Helium functionality or are not relevant to Helium
 +constexpr auto kExcludedFlags = base::MakeFixedFlatSet<std::string_view>({
 +  // Misc UI features
++#if BUILDFLAG(IS_WIN)
 +  "windows11-mica-titlebar",
++#endif
 +  "omnibox-toolbelt",
 +  "webui-omnibox-popup",
 +  "top-chrome-touch-ui",
 +  "glass-toolbar",
 +  "vertical-tabs",
-+  "detached-tabs",
++  "vertical-tabs-expand-on-hover",
 +  "first-run-desktop-refresh",
 +  "first-run-desktop-choice-screen-refresh",
 +  "first-run-desktop-revamp",
@@ -43,7 +45,6 @@
 +  "ntp-feature-optimization-module-removal",
 +  "ntp-feature-optimization-shortcuts-removal",
 +  "ntp-feature-optimization-dismiss-modules-removal",
-+  "enable-ntp-enterprise-shortcuts",
 +  "ntp-drive-module",
 +  "ntp-drive-module-segmentation",
 +
@@ -69,7 +70,6 @@
 +  "enable-bound-session-credentials",
 +  "enable-bound-session-credentials-software-keys-for-manual-testing",
 +  "history-sync-alternative-illustration",
-+  "omnibox-drive-suggestions-no-sync-requirement",
 +  "enable-standard-device-bound-session-google",
 +  "enable-standard-device-bound-session-google-experiment-id",
 +  "disable-u18-feedback-desktop",
@@ -123,8 +123,6 @@
 +  "shopping-list",
 +  "shopping-alternate-server",
 +  "price-tracking-subscription-service-locale-key",
-+  "price-tracking-subscription-service-product-version",
-+  "price-insights",
 +  "discount-on-navigation",
 +  "discount-autofill",
 +
@@ -164,26 +162,19 @@
 +  "lens-aim-gradient-suggest-background",
 +  "lens-overlay-optimization-filter",
 +  "lens-overlay-non-blocking-privacy-notice",
-+  "lens-aim-suggestions-type",
 +
 +  // User education
 +  "ntp-middle-slot-promo-dismissal",
-+  "enable-educational-tip-default-browser-promo-card",
-+  "force-startup-signin-promo",
 +  "group-promo-prototype",
-+  "group-promo-prototype-cpa",
++#if BUILDFLAG(IS_WIN)
 +  "avatar-button-sync-promo",
++#endif
 +  "replace-sync-promos-with-sign-in-promos-desktop",
-+  "clank-default-browser-promo-role-manager",
-+  "clank-default-browser-promo2",
-+  "policy-promotion-banner-flag",
 +  "management-promotion-banner-flag",
 +  "enable-ntp-browser-promos",
 +  "in-product-help-demo-mode-choice",
 +  "iph-extensions-menu-feature",
 +  "iph-extensions-request-access-button-feature",
-+  "google-one-offer-files-banner",
-+  "signin-level-up-button",
 +  "mobile-promo-on-desktop-force-promo-type",
 +  "mobile-promo-on-desktop-with-qr-code",
 +  "mobile-promo-on-desktop-with-reminder",
@@ -205,18 +196,14 @@
 +  "glic-pre-warming",
 +  "browsing-history-actor-integration-M2",
 +  "browsing-history-actor-integration-M3",
-+  "glic-side-panel",
 +  "glic-disable-actor-safety-checks",
 +  "glic-selection-prompt",
 +  "glic-guest-url-presets",
-+  "glic-set-g1-for-mi",
-+  "glic-reset-mi-enablement-by-tier",
 +  "glic-default-tab-context-setting",
 +  "glic-trust-first-onboarding",
 +  "glic-share-image",
 +  "glic-mi-tab-context-menu",
 +  "glic-live-mode-only-glow",
-+  "glic-unified-fre-screen",
 +  "glic-toolbar-height-side-panel",
 +  "glic-daisy-chain-new-tabs",
 +  "glic-chrome-status-icon",
@@ -243,15 +230,10 @@
 +
 +  // Google Wallet
 +  "wallet-service-use-sandbox",
-+  "enable-secure-payment-confirmation-fallback-ux",
 +  "enable-web-payments-experimental-features",
 +  "enable-debug-for-store-billing",
-+  "enable-secure-payment-confirmation-ux-refresh",
 +
 +  // Safety Hub
-+  "safety-hub-weak-reused-passwords",
-+  "safety-hub-local-passwords-module",
-+  "safety-hub-unified-passwords-module",
 +  "safety-hub-disruptive-notification-revocation",
 +  "safety-hub-unused-permission-revocation-for-all-surfaces",
 +
@@ -262,13 +244,10 @@
 +  "privacy-sandbox-ad-topics-content-parity",
 +
 +  // Password Manager
-+  "biometric-reauth-password-filling",
 +  "save-passwords-contextual-ui",
 +  "password-form-grouped-affiliations",
-+  "password-form-clientside-classifier",
 +  "three-button-password-save-dialog",
 +  "apply-clientside-model-predictions-for-password-types",
-+  "enable-site-isolation-for-password-sites",
 +  "pwm-show-suggestions-on-autofocus",
 +
 +  // Reading Mode
@@ -276,7 +255,6 @@
 +  "read-anything-images-via-algorithm",
 +  "read-anything-docs-integration",
 +  "read-anything-docs-load-more-button",
-+  "read-anything-read-aloud-ts-text-segmentation",
 +  "read-anything-with-readability-enabled",
 +  "read-anything-omnibox-chip",
 +  "read-anything-immersive-reading-mode",
@@ -319,18 +297,12 @@
 +  "autofill-show-bubbles-based-on-priorities",
 +  "enable-show-autofill-signatures",
 +  "enable-autofill-credit-card-upload",
-+  "autofill-enable-offers-in-clank-keyboard-accessory",
 +  "fedcm-autofill",
-+  "sync-autofill-wallet-credential-data",
-+  "autofill-enable-cvc-storage-and-filling",
 +  "autofill-enable-prefetching-risk-data-for-retrieval",
 +  "autofill-enable-fpan-risk-based-authentication",
 +  "autofill-enable-vcn-3ds-authentication",
-+  "autofill-shared-storage-server-card-data",
 +  "autofill-enable-card-benefits-for-american-express",
 +  "autofill-enable-card-benefits-sync",
-+  "autofill-unmask-card-request-timeout",
-+  "autofill-enable-cvc-storage-and-filling-enhancement",
 +  "autofill-enable-buy-now-pay-later",
 +  "autofill-enable-buy-now-pay-later-syncing",
 +  "autofill-enable-cvc-storage-and-filling-standalone-form-enhancement",
@@ -346,7 +318,6 @@
 +  "autofill-enable-buy-now-pay-later-for-klarna",
 +  "autofill-enable-downstream-card-awareness-iph",
 +  "autofill-enable-buy-now-pay-later-for-externally-linked",
-+  "autofill-enable-separate-pix-preference-item",
 +  "autofill-manual-testing-data",
 +  "autofill-enable-support-for-home-and-work",
 +  "autofill-enable-support-for-name-and-email-profile",
@@ -357,15 +328,12 @@
 +  "mark-all-credentials-as-leaked",
 +  "enable-your-saved-info-settings-page",
 +  "autofill-ai-based-amount-extraction-ignore-seen-terms-for-testing",
-+  "autofill-enable-new-fop-display-android",
 +  "autofill-enable-wallet-branding",
 +  "autofill-enable-pay-now-pay-later-tabs",
-+  "autofill-enable-non-affiliated-loyalty-cards",
 +  "autofill-disable-bnpl-country-check-for-testing",
 +  "password-upload-ui-update",
 +  "autofill-enable-new-amex-network-art",
 +  "password-save-in-context-error-resolution-on-desktop",
-+  "autofill-at-memory",
 +
 +  // Add new entries above this line and categorize them accordingly.
 +});
@@ -389,7 +357,7 @@
    FlagsStateSingleton(const FlagsStateSingleton&) = delete;
    FlagsStateSingleton& operator=(const FlagsStateSingleton&) = delete;
    ~FlagsStateSingleton() override = default;
-@@ -13089,7 +13465,7 @@ class FlagsStateSingleton : public flags
+@@ -13089,7 +13433,7 @@ class FlagsStateSingleton : public flags
  
    void RestoreDefaultState() {
      flags_state_ =
@@ -398,7 +366,7 @@
    }
  
   private:
-@@ -13416,7 +13792,7 @@ base::span<const FeatureEntry> GetFeatur
+@@ -13416,7 +13760,7 @@ base::span<const FeatureEntry> GetFeatur
        !entries_for_testing->empty()) {
      return *entries_for_testing;
    }
