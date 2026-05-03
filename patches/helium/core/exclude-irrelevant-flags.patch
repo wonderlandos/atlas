@@ -1,6 +1,6 @@
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -13066,11 +13066,355 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -13066,11 +13066,395 @@ const FeatureEntry kFeatureEntries[] = {
      // AboutFlagsHistogramTest unit test to verify this process).
  };
  
@@ -76,6 +76,12 @@
 +  "collaboration-entreprise-v2",
 +  "send-tab-to-self-enhanced-handoff",
 +  "collaboration-messaging",
++  "sync-account-settings",
++  "sync-autofill-valuable-metadata",
++  "sync-wallet-flight-reservations",
++  "sync-wallet-vehicle-registrations",
++  "uno-phase-2-follow-up",
++  "replace-sync-promos-with-signin-promos-new-signin",
 +
 +  // Gemini Nano / Other Google models
 +  "prompt-api-for-gemini-nano",
@@ -162,6 +168,9 @@
 +  "lens-aim-gradient-suggest-background",
 +  "lens-overlay-optimization-filter",
 +  "lens-overlay-non-blocking-privacy-notice",
++  "enable-lens-side-panel-unification",
++  "lens-enable-raw-file-media-types",
++  "lens-enable-urls-in-composeboxes",
 +
 +  // User education
 +  "ntp-middle-slot-promo-dismissal",
@@ -223,6 +232,11 @@
 +  "sync-ai-threads",
 +  "projects-panel",
 +  "skills",
++  "glic-experimental-triggering",
++  "glic-actor-script-tools",
++  "glic-button-auto-summarize",
++  "glic-client-zoom-control",
++  "glic-horizontal-tab-toolbar-button",
 +
 +  // Live captions
 +  "enable-headless-live-caption",
@@ -232,6 +246,7 @@
 +  "wallet-service-use-sandbox",
 +  "enable-web-payments-experimental-features",
 +  "enable-debug-for-store-billing",
++  "wallet-api-private-passes-enabled",
 +
 +  // Safety Hub
 +  "safety-hub-disruptive-notification-revocation",
@@ -287,6 +302,16 @@
 +  "safe-browsing-local-lists-use-sbv5",
 +  "report-unsafe-site",
 +  "enable-force-download-to-onedrive",
++  "extension-telemetry-enterprise-short-reporting-interval",
++  "composebox-drive-context-menu-option",
++  "ntp-animated-doodles",
++  "ntp-doodle-murals",
++  "email-verification-protocol",
++  "test-third-party-cookie-phaseout",
++  "mac-enable-okta-sso",
++  "saas-usage-reporting",
++  "migrate-enhanced-sb-user-to-enhanced-bundle",
++  "toolbar-glow-up", // adds a chrome logo animation to app menu button
 +
 +  // Autofill
 +  "reintroduce-hybrid-passkey-entry-point",
@@ -334,6 +359,21 @@
 +  "password-upload-ui-update",
 +  "autofill-enable-new-amex-network-art",
 +  "password-save-in-context-error-resolution-on-desktop",
++  "autofill-ai-always-trigger-server-model",
++  "autofill-ai-available-by-default",
++  "autofill-ai-create-entity-data-manager",
++  "autofill-ai-dedupe-entities",
++  "autofill-ai-no-filling-icons-experiment",
++  "autofill-ai-reauth-required",
++  "autofill-ai-server-model",
++  "autofill-ai-valuables-iph",
++  "autofill-ai-wallet-flight-reservation",
++  "autofill-ai-wallet-private-passes",
++  "autofill-ai-wallet-private-passes-deep-link",
++  "autofill-ai-wallet-vehicle-registration",
++  "autofill-ai-with-data-schema",
++  "autofill-enable-omnibox-autofill",
++  "autofill-enable-wallet-branding-v2",
 +
 +  // Add new entries above this line and categorize them accordingly.
 +});
@@ -357,7 +397,7 @@
    FlagsStateSingleton(const FlagsStateSingleton&) = delete;
    FlagsStateSingleton& operator=(const FlagsStateSingleton&) = delete;
    ~FlagsStateSingleton() override = default;
-@@ -13089,7 +13433,7 @@ class FlagsStateSingleton : public flags
+@@ -13089,7 +13473,7 @@ class FlagsStateSingleton : public flags
  
    void RestoreDefaultState() {
      flags_state_ =
@@ -366,7 +406,7 @@
    }
  
   private:
-@@ -13416,7 +13760,7 @@ base::span<const FeatureEntry> GetFeatur
+@@ -13416,7 +13800,7 @@ base::span<const FeatureEntry> GetFeatur
        !entries_for_testing->empty()) {
      return *entries_for_testing;
    }
