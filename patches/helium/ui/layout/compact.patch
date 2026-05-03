@@ -391,7 +391,7 @@
    bool ShouldDrawWebAppFrameToolbar() const override;
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
-@@ -111,7 +111,7 @@ class BrowserViewTabbedLayoutImpl : publ
+@@ -112,7 +112,7 @@ class BrowserViewTabbedLayoutImpl : publ
        const BrowserLayoutParams& params) const;
  
    // Returns the type of tabstrip present.

@@ -177,7 +177,7 @@
      background->SetPrimaryColor(CustomCornersBackground::ToolbarTheme());
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
-@@ -113,6 +113,8 @@ class BrowserViewTabbedLayoutImpl : publ
+@@ -114,6 +114,8 @@ class BrowserViewTabbedLayoutImpl : publ
    // Returns the type of tabstrip present.
    enum class TabStripType { kNone, kWebUi, kVertical, kHorizontal };
    HeliumLayoutType GetHeliumLayout() const;

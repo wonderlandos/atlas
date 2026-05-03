@@ -246,17 +246,15 @@
        AppMenuIconController::TypeAndSeverity type_and_severity) override;
 --- a/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h
-@@ -6,8 +6,8 @@
- #define CHROME_BROWSER_UI_VIEWS_FRAME_LAYOUT_BROWSER_VIEW_TABBED_LAYOUT_IMPL_H_
- 
+@@ -8,6 +8,7 @@
  #include <utility>
--
+ 
  #include "chrome/browser/ui/animation/browser_animation_types.h"
 +#include "chrome/browser/ui/helium/helium_layout_state_controller.h"
  #include "chrome/browser/ui/views/frame/layout/browser_view_layout.h"
  #include "chrome/browser/ui/views/frame/layout/browser_view_layout_impl.h"
  #include "chrome/browser/ui/views/frame/layout/browser_view_layout_params.h"
-@@ -112,6 +112,7 @@ class BrowserViewTabbedLayoutImpl : publ
+@@ -112,6 +113,7 @@ class BrowserViewTabbedLayoutImpl : publ
  
    // Returns the type of tabstrip present.
    enum class TabStripType { kNone, kWebUi, kVertical, kHorizontal };
