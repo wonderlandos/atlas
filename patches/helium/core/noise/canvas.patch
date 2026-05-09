@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,532 @@
+@@ -0,0 +1,531 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -102,7 +102,6 @@
 +
 +#include "base/check_op.h"
 +#include "base/containers/span.h"
-+#include "base/containers/span_writer.h"
 +#include "base/memory/scoped_refptr.h"
 +#include "base/numerics/byte_conversions.h"
 +#include "base/numerics/safe_conversions.h"
@@ -184,8 +183,8 @@
 +  return size.ValueOrDie();
 +}
 +
-+void HeliumNoisePixel(base::span<uint8_t> pixel, HeliumNoiseHash& token_hash) {
-+  base::SpanWriter writer(base::as_writable_bytes(pixel));
++void HeliumNoisePixel(base::span<uint8_t, kChannelsPerPixel> pixel,
++                      HeliumNoiseHash& token_hash) {
 +  const int shared_rgb_noise =
 +      GetSignedNoiseValue(token_hash, kMaxSharedRgbNoise);
 +  for (int i = 0; i < kChannelsPerPixel; ++i) {
@@ -195,7 +194,7 @@
 +
 +    // Keep alpha limits stable.
 +    if (is_alpha && (channel_value == 0 || channel_value == 255)) {
-+      writer.WriteU8LittleEndian(base::checked_cast<uint8_t>(channel_value));
++      pixel[i] = base::checked_cast<uint8_t>(channel_value);
 +      continue;
 +    }
 +
@@ -219,7 +218,7 @@
 +
 +    const int noised_value =
 +        std::clamp(channel_value + noise, minNoisedVal, maxNoisedVal);
-+    writer.WriteU8LittleEndian(base::checked_cast<uint8_t>(noised_value));
++    pixel[i] = base::checked_cast<uint8_t>(noised_value);
 +  }
 +}
 +
@@ -378,8 +377,8 @@
 +
 +void CopyPixelValue(const base::span<const uint8_t> from_pixel,
 +                    base::span<uint8_t> to_pixel) {
-+  base::SpanWriter writer(base::as_writable_bytes(to_pixel));
-+  writer.Write(from_pixel.first<kChannelsPerPixel>());
++  to_pixel.first<kChannelsPerPixel>().copy_from(
++      from_pixel.first<kChannelsPerPixel>());
 +}
 +
 +// Adds noise to the provided pixels in place, using |token_hash| as the
