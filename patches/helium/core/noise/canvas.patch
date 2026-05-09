@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,535 @@
+@@ -0,0 +1,525 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -284,12 +284,6 @@
 +  }
 +}
 +
-+void CopyPixelValue(const base::span<const uint8_t> from_pixel,
-+                    base::span<uint8_t> to_pixel) {
-+  to_pixel.first<kChannelsPerPixel>().copy_from(
-+      from_pixel.first<kChannelsPerPixel>());
-+}
-+
 +// The stable content component keeps repeated copies from averaging back to raw
 +// pixels. A separate coordinate component keeps a copied calibration sample
 +// from subtracting that stable component perfectly.
@@ -357,7 +351,7 @@
 +        continue;
 +      }
 +      auto pixel = GetPixelAt(x, y, width, pixels);
-+      CopyPixelValue(source_pixel, pixel);
++      pixel.copy_from(source_pixel);
 +
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(base::U32FromLittleEndian(source_pixel));
@@ -392,12 +386,11 @@
 +          QuantizedFloatPixelValue(GetPixelAt(x, y, width, source_pixels)));
 +    }
 +  }
-+  base::span<const uint32_t> quantized_source(quantized_source_pixels);
 +
 +  for (int y = 0; y < height; ++y) {
 +    for (int x = 0; x < width; ++x) {
 +      auto source_pixel = GetPixelAt(x, y, width, source_pixels);
-+      uint32_t quantized_source_pixel = quantized_source[x + y * width];
++      uint32_t quantized_source_pixel = quantized_source_pixels[x + y * width];
 +      if (quantized_source_pixel == 0u) {
 +        continue;
 +      }
@@ -407,7 +400,7 @@
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(quantized_source_pixel);
 +      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
-+                                               height, quantized_source);
++                                               height, quantized_source_pixels);
 +      HeliumNoiseHash coordinate_hash = token_hash;
 +      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
 +      coordinate_hash.Update(quantized_source_pixel);
@@ -427,34 +420,31 @@
 +      CheckedPixelStorageSize(width, height, sizeof(SkHalf)) / sizeof(SkHalf));
 +
 +  std::vector<SkHalf> source_pixel_storage(pixels.begin(), pixels.end());
-+  base::span<const SkHalf> source_pixels(source_pixel_storage);
 +  std::vector<uint32_t> quantized_source_pixels;
 +  quantized_source_pixels.reserve(base::checked_cast<size_t>(width) *
 +                                  base::checked_cast<size_t>(height));
 +  for (int y = 0; y < height; ++y) {
 +    for (int x = 0; x < width; ++x) {
 +      std::array<float, kChannelsPerPixel> source_pixel =
-+          LoadHalfFloatPixel(source_pixels, x, y, width);
++          LoadHalfFloatPixel(source_pixel_storage, x, y, width);
 +      quantized_source_pixels.push_back(
 +          QuantizedFloatPixelValue(base::span(source_pixel)));
 +    }
 +  }
-+  base::span<const uint32_t> quantized_source(quantized_source_pixels);
-+
 +  for (int y = 0; y < height; ++y) {
 +    for (int x = 0; x < width; ++x) {
-+      uint32_t quantized_source_pixel = quantized_source[x + y * width];
++      uint32_t quantized_source_pixel = quantized_source_pixels[x + y * width];
 +      if (quantized_source_pixel == 0u) {
 +        continue;
 +      }
 +      std::array<float, kChannelsPerPixel> source_pixel =
-+          LoadHalfFloatPixel(source_pixels, x, y, width);
++          LoadHalfFloatPixel(source_pixel_storage, x, y, width);
 +      std::array<float, kChannelsPerPixel> pixel = source_pixel;
 +
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(quantized_source_pixel);
 +      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
-+                                               height, quantized_source);
++                                               height, quantized_source_pixels);
 +      HeliumNoiseHash coordinate_hash = token_hash;
 +      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
 +      coordinate_hash.Update(quantized_source_pixel);
