@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,555 @@
+@@ -0,0 +1,535 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -121,7 +121,6 @@
 +
 +namespace {
 +
-+constexpr uint8_t kNearbyPixelMaxOffset = 2u;
 +constexpr int kMaxSharedRgbNoise = 1;
 +constexpr int kMaxIndependentRgbNoise = 1;
 +constexpr int kMaxAlphaNoise = 1;
@@ -129,48 +128,15 @@
 +constexpr std::array<uint8_t, 4u> kEmptyPixel({0, 0, 0, 0});
 +constexpr float kFloatChannelScale = 1.0f / 255.0f;
 +
-+struct PixelLocation {
-+  int x;
-+  int y;
-+};
-+
-+void ClampPixelLocation(PixelLocation* location,
-+                        const int width,
-+                        const int height) {
-+  CHECK(width >= 1 && height >= 1);
-+  location->x = std::min(std::max(0, location->x), width - 1);
-+  location->y = std::min(std::max(0, location->y), height - 1);
-+}
-+
-+// Returns two random pixel locations; one close to the offset and one
-+// randomly selected from the entire canvas.
-+std::pair<PixelLocation, PixelLocation> GetRandomPixelLocations(
-+    HeliumNoiseHash& token_hash,
-+    const PixelLocation offset,
-+    const int width,
-+    const int height) {
-+  std::pair<PixelLocation, PixelLocation> pixel_locations;
-+  // Uses at most 2 * bit_width(kNearbyPixelMaxOffset * 2) bits from hash.
-+  pixel_locations.first = {
-+      offset.x + token_hash.GetValueBelow(kNearbyPixelMaxOffset * 2) -
-+          kNearbyPixelMaxOffset + 1,
-+      offset.y + token_hash.GetValueBelow(kNearbyPixelMaxOffset * 2) -
-+          kNearbyPixelMaxOffset + 1};
-+  // x and y might be negative or go beyond the width or height here, so we need
-+  // to clamp them.
-+  ClampPixelLocation(&pixel_locations.first, width, height);
-+  // Uses at most bit_width(width) + bit_width(height) bits from hash.
-+  pixel_locations.second = {token_hash.GetValueBelow(width),
-+                            token_hash.GetValueBelow(height)};
-+  // Uses at most 32 bits from hash.
-+  return pixel_locations;
-+}
-+
 +int GetSignedNoiseValue(HeliumNoiseHash& token_hash, int max_abs_noise) {
 +  if (max_abs_noise <= 0) {
 +    return 0;
 +  }
 +  return token_hash.GetValueBelow(max_abs_noise * 2 + 1) - max_abs_noise;
++}
++
++int GetNonZeroSignedNoiseValue(HeliumNoiseHash& token_hash) {
++  return token_hash.GetValueBelow(2) == 0 ? -1 : 1;
 +}
 +
 +size_t CheckedPixelStorageSize(const int width,
@@ -184,9 +150,9 @@
 +}
 +
 +void HeliumNoisePixel(base::span<uint8_t, kChannelsPerPixel> pixel,
-+                      HeliumNoiseHash& token_hash) {
-+  const int shared_rgb_noise =
-+      GetSignedNoiseValue(token_hash, kMaxSharedRgbNoise);
++                      HeliumNoiseHash& content_hash,
++                      HeliumNoiseHash& coordinate_hash) {
++  const int stable_rgb_noise = GetNonZeroSignedNoiseValue(content_hash);
 +  for (int i = 0; i < kChannelsPerPixel; ++i) {
 +    int channel_value = pixel[i];
 +
@@ -210,10 +176,10 @@
 +
 +    int noise = 0;
 +    if (is_alpha) {
-+      noise = GetSignedNoiseValue(token_hash, kMaxAlphaNoise);
++      noise = GetSignedNoiseValue(coordinate_hash, kMaxAlphaNoise);
 +    } else {
-+      noise = shared_rgb_noise +
-+              GetSignedNoiseValue(token_hash, kMaxIndependentRgbNoise);
++      noise = stable_rgb_noise +
++              GetSignedNoiseValue(coordinate_hash, kMaxIndependentRgbNoise);
 +    }
 +
 +    const int noised_value =
@@ -245,9 +211,9 @@
 +}
 +
 +void HeliumNoiseFloatPixel(base::span<float, kChannelsPerPixel> pixel,
-+                           HeliumNoiseHash& token_hash) {
-+  const int shared_rgb_noise =
-+      GetSignedNoiseValue(token_hash, kMaxSharedRgbNoise);
++                           HeliumNoiseHash& content_hash,
++                           HeliumNoiseHash& coordinate_hash) {
++  const int stable_rgb_noise = GetNonZeroSignedNoiseValue(content_hash);
 +
 +  for (int i = 0; i < kChannelsPerPixel; ++i) {
 +    float channel_value = pixel[i];
@@ -265,10 +231,10 @@
 +
 +    int noise = 0;
 +    if (is_alpha) {
-+      noise = GetSignedNoiseValue(token_hash, kMaxAlphaNoise);
++      noise = GetSignedNoiseValue(coordinate_hash, kMaxAlphaNoise);
 +    } else {
-+      noise = shared_rgb_noise +
-+              GetSignedNoiseValue(token_hash, kMaxIndependentRgbNoise);
++      noise = stable_rgb_noise +
++              GetSignedNoiseValue(coordinate_hash, kMaxIndependentRgbNoise);
 +    }
 +
 +    const float lower_limit =
@@ -288,19 +254,6 @@
 +  return pixels
 +      .subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
 +      .template first<kChannelsPerPixel>();
-+}
-+
-+uint64_t GetValueFromPixelLocations(
-+    const std::pair<PixelLocation, PixelLocation> locations,
-+    const base::span<const uint8_t> pixels,
-+    int width) {
-+  uint64_t result = 0u;
-+  result |= base::U32FromLittleEndian(
-+      GetPixelAt(locations.first.x, locations.first.y, width, pixels));
-+  result <<= 32u;
-+  result |= base::U32FromLittleEndian(
-+      GetPixelAt(locations.second.x, locations.second.y, width, pixels));
-+  return result;
 +}
 +
 +std::array<float, kChannelsPerPixel>
@@ -331,21 +284,55 @@
 +  }
 +}
 +
-+uint64_t GetValueFromQuantizedPixelLocations(
-+    const std::pair<PixelLocation, PixelLocation> locations,
-+    base::span<const uint32_t> quantized_pixels,
-+    int width) {
-+  uint64_t result = 0u;
-+  result |= quantized_pixels[locations.first.x + locations.first.y * width];
-+  result <<= 32u;
-+  result |= quantized_pixels[locations.second.x + locations.second.y * width];
-+  return result;
-+}
-+
 +void CopyPixelValue(const base::span<const uint8_t> from_pixel,
 +                    base::span<uint8_t> to_pixel) {
 +  to_pixel.first<kChannelsPerPixel>().copy_from(
 +      from_pixel.first<kChannelsPerPixel>());
++}
++
++// The stable content component keeps repeated copies from averaging back to raw
++// pixels. A separate coordinate component keeps a copied calibration sample
++// from subtracting that stable component perfectly.
++void UpdateHashWithBytePixelNeighborhood(HeliumNoiseHash& hash,
++                                         int x,
++                                         int y,
++                                         int width,
++                                         int height,
++                                         base::span<const uint8_t> pixels) {
++  for (int dy = -1; dy <= 1; ++dy) {
++    const int sample_y = std::clamp(y + dy, 0, height - 1);
++    for (int dx = -1; dx <= 1; ++dx) {
++      const int sample_x = std::clamp(x + dx, 0, width - 1);
++      hash.Update(base::U32FromLittleEndian(
++          GetPixelAt(sample_x, sample_y, width, pixels)));
++    }
++  }
++}
++
++void UpdateHashWithQuantizedPixelNeighborhood(
++    HeliumNoiseHash& hash,
++    int x,
++    int y,
++    int width,
++    int height,
++    base::span<const uint32_t> quantized_pixels) {
++  for (int dy = -1; dy <= 1; ++dy) {
++    const int sample_y = std::clamp(y + dy, 0, height - 1);
++    for (int dx = -1; dx <= 1; ++dx) {
++      const int sample_x = std::clamp(x + dx, 0, width - 1);
++      hash.Update(quantized_pixels[sample_x + sample_y * width]);
++    }
++  }
++}
++
++void UpdateHashWithPixelCoordinates(HeliumNoiseHash& hash,
++                                    int x,
++                                    int y,
++                                    int x_offset,
++                                    int y_offset) {
++  hash.Update(
++      (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
++      static_cast<uint32_t>(x + x_offset));
 +}
 +
 +// Adds noise to the provided pixels in place, using |token_hash| as the
@@ -355,8 +342,8 @@
 +                       base::span<uint8_t> pixels,
 +                       const int width,
 +                       const int height,
-+                       const int x_offset = 0,
-+                       const int y_offset = 0) {
++                       const int x_offset,
++                       const int y_offset) {
 +  CHECK_EQ(pixels.size(),
 +           CheckedPixelStorageSize(width, height, sizeof(uint8_t)));
 +
@@ -372,17 +359,14 @@
 +      auto pixel = GetPixelAt(x, y, width, pixels);
 +      CopyPixelValue(source_pixel, pixel);
 +
-+      HeliumNoiseHash hash_copy = token_hash;
-+      hash_copy.Update(
-+          (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
-+          static_cast<uint32_t>(x + x_offset));
-+      hash_copy.Update(base::U32FromLittleEndian(source_pixel));
-+      // GetRandomPixelLocations consumes at most 32 bits from hash.
-+      const std::pair<PixelLocation, PixelLocation> other_pixels =
-+          GetRandomPixelLocations(hash_copy, {x, y}, width, height);
-+      hash_copy.Update(
-+          GetValueFromPixelLocations(other_pixels, source_pixels, width));
-+      HeliumNoisePixel(pixel, hash_copy);
++      HeliumNoiseHash content_hash = token_hash;
++      content_hash.Update(base::U32FromLittleEndian(source_pixel));
++      UpdateHashWithBytePixelNeighborhood(content_hash, x, y, width, height,
++                                          source_pixels);
++      HeliumNoiseHash coordinate_hash = token_hash;
++      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
++      coordinate_hash.Update(base::U32FromLittleEndian(source_pixel));
++      HeliumNoisePixel(pixel, content_hash, coordinate_hash);
 +    }
 +  }
 +}
@@ -420,16 +404,14 @@
 +      auto pixel = GetPixelAt(x, y, width, pixels);
 +      pixel.copy_from(source_pixel);
 +
-+      HeliumNoiseHash hash_copy = token_hash;
-+      hash_copy.Update(
-+          (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
-+          static_cast<uint32_t>(x + x_offset));
-+      hash_copy.Update(quantized_source_pixel);
-+      const std::pair<PixelLocation, PixelLocation> other_pixels =
-+          GetRandomPixelLocations(hash_copy, {x, y}, width, height);
-+      hash_copy.Update(GetValueFromQuantizedPixelLocations(
-+          other_pixels, quantized_source, width));
-+      HeliumNoiseFloatPixel(pixel, hash_copy);
++      HeliumNoiseHash content_hash = token_hash;
++      content_hash.Update(quantized_source_pixel);
++      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
++                                               height, quantized_source);
++      HeliumNoiseHash coordinate_hash = token_hash;
++      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
++      coordinate_hash.Update(quantized_source_pixel);
++      HeliumNoiseFloatPixel(pixel, content_hash, coordinate_hash);
 +    }
 +  }
 +}
@@ -469,16 +451,14 @@
 +          LoadHalfFloatPixel(source_pixels, x, y, width);
 +      std::array<float, kChannelsPerPixel> pixel = source_pixel;
 +
-+      HeliumNoiseHash hash_copy = token_hash;
-+      hash_copy.Update(
-+          (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
-+          static_cast<uint32_t>(x + x_offset));
-+      hash_copy.Update(quantized_source_pixel);
-+      const std::pair<PixelLocation, PixelLocation> other_pixels =
-+          GetRandomPixelLocations(hash_copy, {x, y}, width, height);
-+      hash_copy.Update(GetValueFromQuantizedPixelLocations(
-+          other_pixels, quantized_source, width));
-+      HeliumNoiseFloatPixel(base::span(pixel), hash_copy);
++      HeliumNoiseHash content_hash = token_hash;
++      content_hash.Update(quantized_source_pixel);
++      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
++                                               height, quantized_source);
++      HeliumNoiseHash coordinate_hash = token_hash;
++      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
++      coordinate_hash.Update(quantized_source_pixel);
++      HeliumNoiseFloatPixel(base::span(pixel), content_hash, coordinate_hash);
 +
 +      StoreHalfFloatPixel(pixels, x, y, width, pixel);
 +    }
