@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,525 @@
+@@ -0,0 +1,540 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -137,6 +137,18 @@
 +
 +int GetNonZeroSignedNoiseValue(HeliumNoiseHash& token_hash) {
 +  return token_hash.GetValueBelow(2) == 0 ? -1 : 1;
++}
++
++uint64_t MixCanvasCoordinateSeed(uint64_t value) {
++  // SplitMix64 finalizer. This is not cryptographic; it just avalanches nearby
++  // coordinates so low-amplitude noise does not form visible axis-aligned
++  // bands.
++  value ^= value >> 30;
++  value *= 0xbf58476d1ce4e5b9ULL;
++  value ^= value >> 27;
++  value *= 0x94d049bb133111ebULL;
++  value ^= value >> 31;
++  return value;
 +}
 +
 +size_t CheckedPixelStorageSize(const int width,
@@ -324,9 +336,12 @@
 +                                    int y,
 +                                    int x_offset,
 +                                    int y_offset) {
-+  hash.Update(
++  const uint64_t packed_coordinate =
 +      (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
-+      static_cast<uint32_t>(x + x_offset));
++      static_cast<uint32_t>(x + x_offset);
++  // Adjacent packed coordinates can otherwise produce visible axis-aligned
++  // patterns on flat fills, so avalanche them before updating the hash.
++  hash.Update(MixCanvasCoordinateSeed(packed_coordinate));
 +}
 +
 +// Adds noise to the provided pixels in place, using |token_hash| as the
