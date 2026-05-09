@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,531 @@
+@@ -0,0 +1,555 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -303,75 +303,42 @@
 +  return result;
 +}
 +
-+struct FloatPixelTraits {
-+  using Storage = float;
++std::array<float, kChannelsPerPixel>
++LoadHalfFloatPixel(base::span<const SkHalf> pixels, int x, int y, int width) {
++  auto pixel =
++      pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
++          .first<kChannelsPerPixel>();
++  skvx::half4 half_pixel = {pixel[0], pixel[1], pixel[2], pixel[3]};
++  skvx::float4 float_pixel = skvx::from_half(half_pixel);
++  return {float_pixel[0], float_pixel[1], float_pixel[2], float_pixel[3]};
++}
 +
-+  static std::array<float, kChannelsPerPixel>
-+  Load(base::span<const float> pixels, int x, int y, int width) {
-+    auto pixel =
-+        pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
-+            .first<kChannelsPerPixel>();
-+    return {pixel[0], pixel[1], pixel[2], pixel[3]};
++void StoreHalfFloatPixel(base::span<SkHalf> pixels,
++                         int x,
++                         int y,
++                         int width,
++                         const std::array<float, kChannelsPerPixel>& pixel) {
++  auto destination =
++      pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
++          .first<kChannelsPerPixel>();
++  skvx::float4 float_pixel = {std::isnan(pixel[0]) ? 0.0f : pixel[0],
++                              std::isnan(pixel[1]) ? 0.0f : pixel[1],
++                              std::isnan(pixel[2]) ? 0.0f : pixel[2],
++                              std::isnan(pixel[3]) ? 0.0f : pixel[3]};
++  skvx::half4 half_pixel = skvx::to_half(float_pixel);
++  for (size_t i = 0; i < kChannelsPerPixel; ++i) {
++    destination[i] = std::isnan(pixel[i]) ? SK_HalfNaN : half_pixel[i];
 +  }
++}
 +
-+  static void Store(base::span<float> pixels,
-+                    int x,
-+                    int y,
-+                    int width,
-+                    const std::array<float, kChannelsPerPixel>& pixel) {
-+    auto destination =
-+        pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
-+            .first<kChannelsPerPixel>();
-+    destination.copy_from(base::span(pixel));
-+  }
-+};
-+
-+struct HalfFloatPixelTraits {
-+  using Storage = SkHalf;
-+
-+  static std::array<float, kChannelsPerPixel>
-+  Load(base::span<const SkHalf> pixels, int x, int y, int width) {
-+    auto pixel =
-+        pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
-+            .first<kChannelsPerPixel>();
-+    skvx::half4 half_pixel = {pixel[0], pixel[1], pixel[2], pixel[3]};
-+    skvx::float4 float_pixel = skvx::from_half(half_pixel);
-+    return {float_pixel[0], float_pixel[1], float_pixel[2], float_pixel[3]};
-+  }
-+
-+  static void Store(base::span<SkHalf> pixels,
-+                    int x,
-+                    int y,
-+                    int width,
-+                    const std::array<float, kChannelsPerPixel>& pixel) {
-+    auto destination =
-+        pixels.subspan(static_cast<size_t>((x + y * width) * kChannelsPerPixel))
-+            .first<kChannelsPerPixel>();
-+    skvx::float4 float_pixel = {std::isnan(pixel[0]) ? 0.0f : pixel[0],
-+                                std::isnan(pixel[1]) ? 0.0f : pixel[1],
-+                                std::isnan(pixel[2]) ? 0.0f : pixel[2],
-+                                std::isnan(pixel[3]) ? 0.0f : pixel[3]};
-+    skvx::half4 half_pixel = skvx::to_half(float_pixel);
-+    for (size_t i = 0; i < kChannelsPerPixel; ++i) {
-+      destination[i] = std::isnan(pixel[i]) ? SK_HalfNaN : half_pixel[i];
-+    }
-+  }
-+};
-+
-+template <typename Traits>
-+uint64_t GetValueFromFloatLikePixelLocations(
++uint64_t GetValueFromQuantizedPixelLocations(
 +    const std::pair<PixelLocation, PixelLocation> locations,
-+    base::span<const typename Traits::Storage> pixels,
++    base::span<const uint32_t> quantized_pixels,
 +    int width) {
-+  std::array<float, kChannelsPerPixel> first_pixel =
-+      Traits::Load(pixels, locations.first.x, locations.first.y, width);
-+  std::array<float, kChannelsPerPixel> second_pixel =
-+      Traits::Load(pixels, locations.second.x, locations.second.y, width);
-+
 +  uint64_t result = 0u;
-+  result |= QuantizedFloatPixelValue(base::span(first_pixel));
++  result |= quantized_pixels[locations.first.x + locations.first.y * width];
 +  result <<= 32u;
-+  result |= QuantizedFloatPixelValue(base::span(second_pixel));
++  result |= quantized_pixels[locations.second.x + locations.second.y * width];
 +  return result;
 +}
 +
@@ -420,43 +387,100 @@
 +  }
 +}
 +
-+template <typename Traits>
-+void HeliumNoiseFloatLikePixels(const HeliumNoiseHash& token_hash,
-+                                base::span<typename Traits::Storage> pixels,
++void HeliumNoiseFloatPixels(const HeliumNoiseHash& token_hash,
++                            base::span<float> pixels,
++                            const int width,
++                            const int height,
++                            const int x_offset,
++                            const int y_offset) {
++  CHECK_EQ(
++      pixels.size(),
++      CheckedPixelStorageSize(width, height, sizeof(float)) / sizeof(float));
++
++  std::vector<float> source_pixel_storage(pixels.begin(), pixels.end());
++  base::span<const float> source_pixels(source_pixel_storage);
++  std::vector<uint32_t> quantized_source_pixels;
++  quantized_source_pixels.reserve(base::checked_cast<size_t>(width) *
++                                  base::checked_cast<size_t>(height));
++  for (int y = 0; y < height; ++y) {
++    for (int x = 0; x < width; ++x) {
++      quantized_source_pixels.push_back(
++          QuantizedFloatPixelValue(GetPixelAt(x, y, width, source_pixels)));
++    }
++  }
++  base::span<const uint32_t> quantized_source(quantized_source_pixels);
++
++  for (int y = 0; y < height; ++y) {
++    for (int x = 0; x < width; ++x) {
++      auto source_pixel = GetPixelAt(x, y, width, source_pixels);
++      uint32_t quantized_source_pixel = quantized_source[x + y * width];
++      if (quantized_source_pixel == 0u) {
++        continue;
++      }
++      auto pixel = GetPixelAt(x, y, width, pixels);
++      pixel.copy_from(source_pixel);
++
++      HeliumNoiseHash hash_copy = token_hash;
++      hash_copy.Update(
++          (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
++          static_cast<uint32_t>(x + x_offset));
++      hash_copy.Update(quantized_source_pixel);
++      const std::pair<PixelLocation, PixelLocation> other_pixels =
++          GetRandomPixelLocations(hash_copy, {x, y}, width, height);
++      hash_copy.Update(GetValueFromQuantizedPixelLocations(
++          other_pixels, quantized_source, width));
++      HeliumNoiseFloatPixel(pixel, hash_copy);
++    }
++  }
++}
++
++void HeliumNoiseHalfFloatPixels(const HeliumNoiseHash& token_hash,
++                                base::span<SkHalf> pixels,
 +                                const int width,
 +                                const int height,
 +                                const int x_offset,
 +                                const int y_offset) {
-+  CHECK_EQ(pixels.size(), CheckedPixelStorageSize(
-+                              width, height, sizeof(typename Traits::Storage)) /
-+                              sizeof(typename Traits::Storage));
++  CHECK_EQ(
++      pixels.size(),
++      CheckedPixelStorageSize(width, height, sizeof(SkHalf)) / sizeof(SkHalf));
 +
-+  std::vector<typename Traits::Storage> source_pixel_storage(pixels.begin(),
-+                                                             pixels.end());
-+  base::span<const typename Traits::Storage> source_pixels(
-+      source_pixel_storage);
-+
++  std::vector<SkHalf> source_pixel_storage(pixels.begin(), pixels.end());
++  base::span<const SkHalf> source_pixels(source_pixel_storage);
++  std::vector<uint32_t> quantized_source_pixels;
++  quantized_source_pixels.reserve(base::checked_cast<size_t>(width) *
++                                  base::checked_cast<size_t>(height));
 +  for (int y = 0; y < height; ++y) {
 +    for (int x = 0; x < width; ++x) {
 +      std::array<float, kChannelsPerPixel> source_pixel =
-+          Traits::Load(source_pixels, x, y, width);
-+      if (QuantizeFloatPixel(base::span(source_pixel)) == kEmptyPixel) {
++          LoadHalfFloatPixel(source_pixels, x, y, width);
++      quantized_source_pixels.push_back(
++          QuantizedFloatPixelValue(base::span(source_pixel)));
++    }
++  }
++  base::span<const uint32_t> quantized_source(quantized_source_pixels);
++
++  for (int y = 0; y < height; ++y) {
++    for (int x = 0; x < width; ++x) {
++      uint32_t quantized_source_pixel = quantized_source[x + y * width];
++      if (quantized_source_pixel == 0u) {
 +        continue;
 +      }
++      std::array<float, kChannelsPerPixel> source_pixel =
++          LoadHalfFloatPixel(source_pixels, x, y, width);
 +      std::array<float, kChannelsPerPixel> pixel = source_pixel;
 +
 +      HeliumNoiseHash hash_copy = token_hash;
 +      hash_copy.Update(
 +          (static_cast<uint64_t>(static_cast<uint32_t>(y + y_offset)) << 32) |
 +          static_cast<uint32_t>(x + x_offset));
-+      hash_copy.Update(QuantizedFloatPixelValue(base::span(source_pixel)));
++      hash_copy.Update(quantized_source_pixel);
 +      const std::pair<PixelLocation, PixelLocation> other_pixels =
 +          GetRandomPixelLocations(hash_copy, {x, y}, width, height);
-+      hash_copy.Update(GetValueFromFloatLikePixelLocations<Traits>(
-+          other_pixels, source_pixels, width));
++      hash_copy.Update(GetValueFromQuantizedPixelLocations(
++          other_pixels, quantized_source, width));
 +      HeliumNoiseFloatPixel(base::span(pixel), hash_copy);
 +
-+      Traits::Store(pixels, x, y, width, pixel);
++      StoreHalfFloatPixel(pixels, x, y, width, pixel);
 +    }
 +  }
 +}
@@ -506,15 +530,15 @@
 +      auto half_pixels = base::span(reinterpret_cast<SkHalf*>(pixels.data()),
 +                                    pixels.size() / sizeof(SkHalf));
 +
-+      HeliumNoiseFloatLikePixels<HalfFloatPixelTraits>(
-+          token_hash, half_pixels, width, height, x_offset, y_offset);
++      HeliumNoiseHalfFloatPixels(token_hash, half_pixels, width, height,
++                                 x_offset, y_offset);
 +      return true;
 +    }
 +    case kRGBA_F32_SkColorType: {
 +      auto float_pixels = base::span(reinterpret_cast<float*>(pixels.data()),
 +                                     pixels.size() / sizeof(float));
-+      HeliumNoiseFloatLikePixels<FloatPixelTraits>(
-+          token_hash, float_pixels, width, height, x_offset, y_offset);
++      HeliumNoiseFloatPixels(token_hash, float_pixels, width, height, x_offset,
++                             y_offset);
 +      return true;
 +    }
 +    default:
