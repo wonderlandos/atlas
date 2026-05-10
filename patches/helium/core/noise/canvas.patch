@@ -80,7 +80,7 @@
  // AIPageContent.
 --- /dev/null
 +++ b/third_party/blink/renderer/core/helium_noise/canvas_noising_helper.cc
-@@ -0,0 +1,540 @@
+@@ -0,0 +1,635 @@
 +// Copyright 2026 The Helium Authors
 +// You can use, redistribute, and/or modify this source code under
 +// the terms of the GPL-3.0 license that can be found in the LICENSE file.
@@ -121,11 +121,25 @@
 +
 +namespace {
 +
++// Tuning parameters.
 +constexpr int kMaxSharedRgbNoise = 1;
 +constexpr int kMaxIndependentRgbNoise = 1;
 +constexpr int kMaxAlphaNoise = 1;
++// Treat a 3x3 neighborhood as smooth when every RGB channel stays within this
++// range. Smooth regions show structured noise much more readily than edges.
++constexpr uint8_t kSmoothNeighborhoodRgbRange = 2u;
++// Smooth RGB noise is sparse: 4 means roughly one in four smooth pixels is
++// changed. Lower values are stronger; higher values are less visible.
++constexpr int kSmoothRgbNoiseFrequency = 4;
++
++// Pixel layout and derived constants.
 +constexpr uint8_t kChannelsPerPixel = 4u;
++constexpr size_t kRgbChannelsPerPixel = 3u;
++using RgbBytes = std::array<uint8_t, kRgbChannelsPerPixel>;
++using RgbNoise = std::array<int, kRgbChannelsPerPixel>;
 +constexpr std::array<uint8_t, 4u> kEmptyPixel({0, 0, 0, 0});
++constexpr RgbBytes kMinRgbInitialValue = {255u, 255u, 255u};
++constexpr RgbBytes kMaxRgbInitialValue = {0u, 0u, 0u};
 +constexpr float kFloatChannelScale = 1.0f / 255.0f;
 +
 +int GetSignedNoiseValue(HeliumNoiseHash& token_hash, int max_abs_noise) {
@@ -137,6 +151,40 @@
 +
 +int GetNonZeroSignedNoiseValue(HeliumNoiseHash& token_hash) {
 +  return token_hash.GetValueBelow(2) == 0 ? -1 : 1;
++}
++
++RgbNoise GetSmoothRgbNoiseVector(HeliumNoiseHash& content_hash,
++                                 HeliumNoiseHash& coordinate_hash) {
++  // Dense per-channel noise is visible on flat fills and slow gradients. For
++  // those pixels, only change one RGB channel on a sparse coordinate-selected
++  // subset.
++  if (coordinate_hash.GetValueBelow(kSmoothRgbNoiseFrequency) != 0) {
++    return {0, 0, 0};
++  }
++
++  RgbNoise noise = {0, 0, 0};
++  noise[content_hash.GetValueBelow(3)] =
++      GetNonZeroSignedNoiseValue(content_hash);
++  return noise;
++}
++
++RgbNoise GetFullRgbNoiseVector(HeliumNoiseHash& content_hash,
++                               HeliumNoiseHash& coordinate_hash) {
++  RgbNoise noise = {0, 0, 0};
++  for (int& channel_noise : noise) {
++    channel_noise =
++        GetNonZeroSignedNoiseValue(content_hash) +
++        GetSignedNoiseValue(coordinate_hash, kMaxIndependentRgbNoise);
++  }
++  return noise;
++}
++
++RgbNoise GetRgbNoiseVector(HeliumNoiseHash& content_hash,
++                           HeliumNoiseHash& coordinate_hash,
++                           bool smooth_neighborhood) {
++  return smooth_neighborhood
++             ? GetSmoothRgbNoiseVector(content_hash, coordinate_hash)
++             : GetFullRgbNoiseVector(content_hash, coordinate_hash);
 +}
 +
 +uint64_t MixCanvasCoordinateSeed(uint64_t value) {
@@ -162,10 +210,9 @@
 +}
 +
 +void HeliumNoisePixel(base::span<uint8_t, kChannelsPerPixel> pixel,
-+                      HeliumNoiseHash& content_hash,
-+                      HeliumNoiseHash& coordinate_hash) {
-+  const int stable_rgb_noise = GetNonZeroSignedNoiseValue(content_hash);
-+  for (int i = 0; i < kChannelsPerPixel; ++i) {
++                      HeliumNoiseHash& coordinate_hash,
++                      const RgbNoise& rgb_noise) {
++  for (size_t i = 0; i < kChannelsPerPixel; ++i) {
 +    int channel_value = pixel[i];
 +
 +    const bool is_alpha = i == kChannelsPerPixel - 1;
@@ -190,8 +237,7 @@
 +    if (is_alpha) {
 +      noise = GetSignedNoiseValue(coordinate_hash, kMaxAlphaNoise);
 +    } else {
-+      noise = stable_rgb_noise +
-+              GetSignedNoiseValue(coordinate_hash, kMaxIndependentRgbNoise);
++      noise = rgb_noise[i];
 +    }
 +
 +    const int noised_value =
@@ -223,11 +269,9 @@
 +}
 +
 +void HeliumNoiseFloatPixel(base::span<float, kChannelsPerPixel> pixel,
-+                           HeliumNoiseHash& content_hash,
-+                           HeliumNoiseHash& coordinate_hash) {
-+  const int stable_rgb_noise = GetNonZeroSignedNoiseValue(content_hash);
-+
-+  for (int i = 0; i < kChannelsPerPixel; ++i) {
++                           HeliumNoiseHash& coordinate_hash,
++                           const RgbNoise& rgb_noise) {
++  for (size_t i = 0; i < kChannelsPerPixel; ++i) {
 +    float channel_value = pixel[i];
 +    if (!std::isfinite(channel_value)) {
 +      continue;
@@ -245,8 +289,7 @@
 +    if (is_alpha) {
 +      noise = GetSignedNoiseValue(coordinate_hash, kMaxAlphaNoise);
 +    } else {
-+      noise = stable_rgb_noise +
-+              GetSignedNoiseValue(coordinate_hash, kMaxIndependentRgbNoise);
++      noise = rgb_noise[i];
 +    }
 +
 +    const float lower_limit =
@@ -296,39 +339,82 @@
 +  }
 +}
 +
-+// The stable content component keeps repeated copies from averaging back to raw
-+// pixels. A separate coordinate component keeps a copied calibration sample
-+// from subtracting that stable component perfectly.
-+void UpdateHashWithBytePixelNeighborhood(HeliumNoiseHash& hash,
-+                                         int x,
-+                                         int y,
-+                                         int width,
-+                                         int height,
-+                                         base::span<const uint8_t> pixels) {
++template <typename LoadPixel>
++bool UpdateHashAndCheckSmoothPixelNeighborhood(HeliumNoiseHash& hash,
++                                               int x,
++                                               int y,
++                                               int width,
++                                               int height,
++                                               LoadPixel load_pixel) {
++  // Use one 3x3 pass both to feed local content into the stable hash and to
++  // decide whether this pixel sits in a visually smooth area. The smoothness
++  // decision must use the source pixels, not already-noised output.
++  RgbBytes min_rgb = kMinRgbInitialValue;
++  RgbBytes max_rgb = kMaxRgbInitialValue;
 +  for (int dy = -1; dy <= 1; ++dy) {
 +    const int sample_y = std::clamp(y + dy, 0, height - 1);
 +    for (int dx = -1; dx <= 1; ++dx) {
 +      const int sample_x = std::clamp(x + dx, 0, width - 1);
-+      hash.Update(base::U32FromLittleEndian(
-+          GetPixelAt(sample_x, sample_y, width, pixels)));
++      const auto sample_pixel = load_pixel(sample_x, sample_y);
++      hash.Update(sample_pixel.hash_value);
++      for (size_t channel = 0; channel < sample_pixel.rgb.size(); ++channel) {
++        min_rgb[channel] =
++            std::min(min_rgb[channel], sample_pixel.rgb[channel]);
++        max_rgb[channel] =
++            std::max(max_rgb[channel], sample_pixel.rgb[channel]);
++      }
 +    }
 +  }
++  for (size_t channel = 0; channel < min_rgb.size(); ++channel) {
++    if (max_rgb[channel] - min_rgb[channel] > kSmoothNeighborhoodRgbRange) {
++      return false;
++    }
++  }
++  return true;
 +}
 +
-+void UpdateHashWithQuantizedPixelNeighborhood(
++struct NeighborhoodPixel {
++  uint32_t hash_value;
++  RgbBytes rgb;
++};
++
++// The stable content component keeps repeated copies from averaging back to raw
++// pixels. A separate coordinate component keeps a copied calibration sample
++// from subtracting that stable component perfectly.
++bool UpdateHashAndCheckSmoothBytePixelNeighborhood(
++    HeliumNoiseHash& hash,
++    int x,
++    int y,
++    int width,
++    int height,
++    base::span<const uint8_t> pixels) {
++  return UpdateHashAndCheckSmoothPixelNeighborhood(
++      hash, x, y, width, height, [width, pixels](int sample_x, int sample_y) {
++        auto sample_pixel = GetPixelAt(sample_x, sample_y, width, pixels);
++        return NeighborhoodPixel{
++            base::U32FromLittleEndian(sample_pixel),
++            {sample_pixel[0], sample_pixel[1], sample_pixel[2]}};
++      });
++}
++
++bool UpdateHashAndCheckSmoothQuantizedPixelNeighborhood(
 +    HeliumNoiseHash& hash,
 +    int x,
 +    int y,
 +    int width,
 +    int height,
 +    base::span<const uint32_t> quantized_pixels) {
-+  for (int dy = -1; dy <= 1; ++dy) {
-+    const int sample_y = std::clamp(y + dy, 0, height - 1);
-+    for (int dx = -1; dx <= 1; ++dx) {
-+      const int sample_x = std::clamp(x + dx, 0, width - 1);
-+      hash.Update(quantized_pixels[sample_x + sample_y * width]);
-+    }
-+  }
++  return UpdateHashAndCheckSmoothPixelNeighborhood(
++      hash, x, y, width, height,
++      [width, quantized_pixels](int sample_x, int sample_y) {
++        const uint32_t sample_pixel =
++            quantized_pixels[sample_x + sample_y * width];
++        return NeighborhoodPixel{
++            sample_pixel,
++            {static_cast<uint8_t>(sample_pixel & 0xffu),
++             static_cast<uint8_t>((sample_pixel >> 8) & 0xffu),
++             static_cast<uint8_t>((sample_pixel >> 16) & 0xffu)}};
++      });
 +}
 +
 +void UpdateHashWithPixelCoordinates(HeliumNoiseHash& hash,
@@ -370,12 +456,15 @@
 +
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(base::U32FromLittleEndian(source_pixel));
-+      UpdateHashWithBytePixelNeighborhood(content_hash, x, y, width, height,
-+                                          source_pixels);
++      const bool smooth_neighborhood =
++          UpdateHashAndCheckSmoothBytePixelNeighborhood(
++              content_hash, x, y, width, height, source_pixels);
 +      HeliumNoiseHash coordinate_hash = token_hash;
 +      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
 +      coordinate_hash.Update(base::U32FromLittleEndian(source_pixel));
-+      HeliumNoisePixel(pixel, content_hash, coordinate_hash);
++      RgbNoise rgb_noise =
++          GetRgbNoiseVector(content_hash, coordinate_hash, smooth_neighborhood);
++      HeliumNoisePixel(pixel, coordinate_hash, rgb_noise);
 +    }
 +  }
 +}
@@ -414,12 +503,15 @@
 +
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(quantized_source_pixel);
-+      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
-+                                               height, quantized_source_pixels);
++      const bool smooth_neighborhood =
++          UpdateHashAndCheckSmoothQuantizedPixelNeighborhood(
++              content_hash, x, y, width, height, quantized_source_pixels);
 +      HeliumNoiseHash coordinate_hash = token_hash;
 +      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
 +      coordinate_hash.Update(quantized_source_pixel);
-+      HeliumNoiseFloatPixel(pixel, content_hash, coordinate_hash);
++      RgbNoise rgb_noise =
++          GetRgbNoiseVector(content_hash, coordinate_hash, smooth_neighborhood);
++      HeliumNoiseFloatPixel(pixel, coordinate_hash, rgb_noise);
 +    }
 +  }
 +}
@@ -458,12 +550,15 @@
 +
 +      HeliumNoiseHash content_hash = token_hash;
 +      content_hash.Update(quantized_source_pixel);
-+      UpdateHashWithQuantizedPixelNeighborhood(content_hash, x, y, width,
-+                                               height, quantized_source_pixels);
++      const bool smooth_neighborhood =
++          UpdateHashAndCheckSmoothQuantizedPixelNeighborhood(
++              content_hash, x, y, width, height, quantized_source_pixels);
 +      HeliumNoiseHash coordinate_hash = token_hash;
 +      UpdateHashWithPixelCoordinates(coordinate_hash, x, y, x_offset, y_offset);
 +      coordinate_hash.Update(quantized_source_pixel);
-+      HeliumNoiseFloatPixel(base::span(pixel), content_hash, coordinate_hash);
++      RgbNoise rgb_noise =
++          GetRgbNoiseVector(content_hash, coordinate_hash, smooth_neighborhood);
++      HeliumNoiseFloatPixel(base::span(pixel), coordinate_hash, rgb_noise);
 +
 +      StoreHalfFloatPixel(pixels, x, y, width, pixel);
 +    }
