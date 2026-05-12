@@ -2277,7 +2277,7 @@
  
 --- a/components/enterprise/browser/reporting/chrome_profile_request_generator.cc
 +++ b/components/enterprise/browser/reporting/chrome_profile_request_generator.cc
-@@ -311,18 +311,12 @@ void ChromeProfileRequestGenerator::OnAg
+@@ -313,18 +313,12 @@ void ChromeProfileRequestGenerator::OnAg
          profile_signals.built_in_dns_client_enabled);
      profile_signals_report->set_chrome_remote_desktop_app_blocked(
          profile_signals.chrome_remote_desktop_app_blocked);

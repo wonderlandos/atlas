@@ -31,7 +31,7 @@
  }  // namespace features
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -4412,6 +4412,9 @@ BookmarkBar::State BrowserView::bookmark
+@@ -4428,6 +4428,9 @@ BookmarkBar::State BrowserView::bookmark
  }
  
  void BrowserView::UpdateTabSearchBubbleHost() {
