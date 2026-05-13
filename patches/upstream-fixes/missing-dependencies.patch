@@ -40,7 +40,7 @@
    # Disallow depending on content.
 --- a/components/contextual_tasks/internal/BUILD.gn
 +++ b/components/contextual_tasks/internal/BUILD.gn
-@@ -50,6 +50,7 @@ source_set("internal") {
+@@ -51,6 +51,7 @@ source_set("internal") {
      "//components/sync/model",
      "//components/url_formatter",
      "//net",
