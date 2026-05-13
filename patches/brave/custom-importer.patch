@@ -244,7 +244,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
    }
 --- a/chrome/common/pref_names.h
 +++ b/chrome/common/pref_names.h
-@@ -3601,6 +3601,9 @@ inline constexpr char kSharedWorkerBlobU
+@@ -3607,6 +3607,9 @@ inline constexpr char kSharedWorkerBlobU
  inline constexpr char kSharedWorkerExtendedLifetimeEnabled[] =
      "worker.shared_worker_extended_lifetime_enabled";
  

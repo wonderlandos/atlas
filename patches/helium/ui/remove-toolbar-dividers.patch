@@ -15,7 +15,7 @@
    }
  
    std::unique_ptr<MediaToolbarButtonView> media_button;
-@@ -496,10 +493,6 @@ void ToolbarView::Init() {
+@@ -484,10 +481,6 @@ void ToolbarView::Init() {
                                                         extensions_container_);
    }
  
@@ -26,7 +26,7 @@
    if (!features::IsWebUIPinnedToolbarActionsEnabled()) {
      pinned_toolbar_actions_container_ = AddChildView(
          std::make_unique<PinnedToolbarActionsContainer>(browser_view_, this));
-@@ -1555,13 +1548,6 @@ void ToolbarView::InitLayout() {
+@@ -1599,13 +1592,6 @@ void ToolbarView::InitLayout() {
              .WithOrder(kToolbarActionsFlexOrder));
    }
  
@@ -40,7 +40,7 @@
    constexpr int kToolbarFlexOrderStart = 1;
  
    // TODO(crbug.com/40929989): Ignore containers till issue addressed.
-@@ -1625,11 +1611,6 @@ void ToolbarView::LayoutCommon() {
+@@ -1669,11 +1655,6 @@ void ToolbarView::LayoutCommon() {
    }
    app_menu_button_->SetTrailingMargin(
        extend_buttons_to_edge ? interior_margin.right() : 0);

@@ -162,7 +162,7 @@
    if (!features::IsWebUIBackForwardButtonEnabled()) {
      back_ = AddChildView(std::make_unique<BackForwardButton>(
          BackForwardButton::Direction::kBack,
-@@ -488,9 +514,22 @@ void ToolbarView::Init() {
+@@ -488,6 +514,21 @@ void ToolbarView::Init() {
      location_bar_ = toolbar_webview_->GetLocationBar();
    }
  
@@ -181,25 +181,11 @@
 +        vertical_tab_strip_state_controller->ShouldDisplayVerticalTabs();
 +  }
 +
-   if (glic::GlicEnabling::IsProfileEligible(browser_view_->GetProfile())) {
--    auto* vertical_tab_strip_state_controller =
--        tabs::VerticalTabStripStateController::From(browser_view_->browser());
-     if (base::FeatureList::IsEnabled(features::kGlicActorUi) &&
-         features::kGlicActorUiTaskIcon.Get()) {
-       glic_actor_button_container_ =
-@@ -508,17 +547,28 @@ void ToolbarView::Init() {
-         views::kMarginsKey,
-         gfx::Insets::VH(
+   bool is_glic_left_of_profile =
+       features::kGlicToolbarButtonLocationParam.Get() ==
+           features::GlicToolbarButtonLocation::kLeftOfProfileChip ||
+@@ -507,6 +548,25 @@ void ToolbarView::Init() {
              0, GetLayoutConstant(LayoutConstant::kToolbarDividerSpacing)));
--    if (vertical_tab_strip_state_controller) {
--      vertical_tab_subscription_ =
--          vertical_tab_strip_state_controller->RegisterOnModeChanged(
--              base::BindRepeating(&ToolbarView::OnVerticalTabStripModeChanged,
--                                  base::Unretained(this)));
--      should_display_vertical_tabs_ =
--          vertical_tab_strip_state_controller->ShouldDisplayVerticalTabs();
--    }
-     UpdateGlicButtonVisibility();
    }
  
 +  std::unique_ptr<ToolbarButton> dynamic_new_tab_button =
@@ -224,7 +210,24 @@
    if (extensions_container) {
      extensions_container_ = AddChildView(std::move(extensions_container));
      extensions_toolbar_coordinator_ =
-@@ -701,6 +751,16 @@ void ToolbarView::Init() {
+@@ -685,16 +745,6 @@ void ToolbarView::Init() {
+   }
+ 
+   if (glic::GlicEnabling::IsProfileEligible(browser_view_->GetProfile())) {
+-    auto* vertical_tab_strip_state_controller =
+-        tabs::VerticalTabStripStateController::From(browser_view_->browser());
+-    if (vertical_tab_strip_state_controller) {
+-      vertical_tab_subscription_ =
+-          vertical_tab_strip_state_controller->RegisterOnModeChanged(
+-              base::BindRepeating(&ToolbarView::OnVerticalTabStripModeChanged,
+-                                  base::Unretained(this)));
+-      should_display_vertical_tabs_ =
+-          vertical_tab_strip_state_controller->ShouldDisplayVerticalTabs();
+-    }
+     UpdateGlicButtonVisibility();
+   }
+ 
+@@ -712,6 +762,16 @@ void ToolbarView::Init() {
  
    reload_->SetVisible(show_reload_button_.GetValue());
  
@@ -241,7 +244,7 @@
    show_avatar_button_.Init(
        prefs::kShowAvatarButton, prefs,
        base::BindRepeating(&ToolbarView::OnShowAvatarButtonChanged,
-@@ -749,8 +809,9 @@ void ToolbarView::Init() {
+@@ -760,8 +820,9 @@ void ToolbarView::Init() {
        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                 views::MaximumFlexSizeRule::kPreferred);
  
@@ -253,7 +256,7 @@
      if (button) {
        button->set_tag(GetViewCommandMap().at(button->GetID()));
        button->SetProperty(views::kFlexBehaviorKey, flex_preferred);
-@@ -765,6 +826,12 @@ void ToolbarView::OnVerticalTabStripMode
+@@ -788,6 +849,12 @@ void ToolbarView::OnVerticalTabStripMode
    should_display_vertical_tabs_ = controller->ShouldDisplayVerticalTabs();
    UpdateGlicButtonVisibility();
    UpdateGlicActorVisibility();
@@ -266,7 +269,7 @@
  }
  
  std::unique_ptr<GlicAndActorButtonsContainer>
-@@ -1608,6 +1675,16 @@ void ToolbarView::NewTabButtonPressed(co
+@@ -1652,6 +1719,16 @@ void ToolbarView::NewTabButtonPressed(co
                   NewTabTypes::kNewTabButtonInToolbarForTouch);
  }
  
@@ -283,7 +286,7 @@
  bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
    const views::View* focused_view = focus_manager()->GetFocusedView();
    if (focused_view && (focused_view->GetID() == VIEW_ID_OMNIBOX)) {
-@@ -1724,13 +1801,35 @@ void ToolbarView::LayoutCommon() {
+@@ -1768,13 +1845,35 @@ void ToolbarView::LayoutCommon() {
        browser_->window() &&
        (browser_->window()->IsMaximized() || browser_->window()->IsFullscreen());
    const int margin = extend_buttons_to_edge ? interior_margin.left() : 0;
@@ -324,7 +327,7 @@
    // Cast button visibility is controlled externally.
  }
  
-@@ -1785,6 +1884,19 @@ void ToolbarView::UpdateToolbarLayout()
+@@ -1829,6 +1928,19 @@ void ToolbarView::UpdateToolbarLayout()
                       .WithOrder(order);
    };
  
@@ -344,7 +347,7 @@
    if (location_bar_view_) {
      location_bar_view_->SetProperty(views::kFlexBehaviorKey,
                                      location_bar_flex_rule);
-@@ -1829,6 +1941,67 @@ bool ToolbarView::IsCompactLayout() cons
+@@ -1873,6 +1985,67 @@ bool ToolbarView::IsCompactLayout() cons
    return controller && controller->IsCompactLayout();
  }
  
@@ -435,11 +438,13 @@
  
    // AppMenuIconController::Delegate:
    void UpdateTypeAndSeverity(
-@@ -360,9 +367,12 @@ class ToolbarView : public views::Access
+@@ -360,11 +367,14 @@ class ToolbarView : public views::Access
    void OnTouchUiChanged();
  
    void NewTabButtonPressed(const ui::Event& event);
 +  void VerticalTabsCollapseButtonPressed(const ui::Event& event);
+ 
+   void InitGlicContainer();
  
    void OnVerticalTabStripModeChanged(
        tabs::VerticalTabStripStateController* controller);
@@ -448,7 +453,7 @@
  
    void SetForwardButtonVisibility(bool visible);
  
-@@ -400,6 +410,7 @@ class ToolbarView : public views::Access
+@@ -402,6 +412,7 @@ class ToolbarView : public views::Access
    // Controls. Most of these can be null, e.g. in popup windows. Only
    // |location_bar_| is guaranteed to exist. These pointers are owned by the
    // view hierarchy.
@@ -456,7 +461,7 @@
    raw_ptr<ToolbarButton> back_ = nullptr;
    raw_ptr<ToolbarButton> forward_ = nullptr;
    raw_ptr<ReloadButton> reload_ = nullptr;
-@@ -423,6 +434,7 @@ class ToolbarView : public views::Access
+@@ -425,6 +436,7 @@ class ToolbarView : public views::Access
    // `toolbar_webview_->GetPinnedActionsContainer()`.
    raw_ptr<PinnedToolbarActions> pinned_toolbar_actions_ = nullptr;
    raw_ptr<AvatarToolbarButton> avatar_ = nullptr;
@@ -464,7 +469,7 @@
    raw_ptr<MediaToolbarButtonView> media_button_ = nullptr;
    raw_ptr<BrowserAppMenuButton> app_menu_button_ = nullptr;
    raw_ptr<views::View> new_tab_button_ = nullptr;
-@@ -465,6 +477,10 @@ class ToolbarView : public views::Access
+@@ -467,6 +479,10 @@ class ToolbarView : public views::Access
  
    BooleanPrefMember show_reload_button_;
  
@@ -475,7 +480,7 @@
    BooleanPrefMember show_avatar_button_;
  
    BooleanPrefMember show_extensions_button_;
-@@ -495,8 +511,8 @@ class ToolbarView : public views::Access
+@@ -497,8 +513,8 @@ class ToolbarView : public views::Access
    // `toolbar_controller_`.
    raw_ptr<OverflowButton> overflow_button_ = nullptr;
  

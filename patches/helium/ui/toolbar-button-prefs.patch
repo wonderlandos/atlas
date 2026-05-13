@@ -172,7 +172,7 @@
  #include "chrome/browser/ui/intent_picker_tab_helper.h"
  #include "chrome/browser/ui/layout_constants.h"
  #include "chrome/browser/ui/omnibox/omnibox_view.h"
-@@ -547,8 +548,7 @@ void ToolbarView::Init() {
+@@ -544,8 +545,7 @@ void ToolbarView::Init() {
  #else
    // DevTools profiles are OffTheRecord, so hide it there.
    show_avatar_toolbar_button = browser_->profile()->IsIncognitoProfile() ||
@@ -182,8 +182,8 @@
  #endif
  
    const std::string sab_value = base::CommandLine::ForCurrentProcess()->
-@@ -623,6 +623,57 @@ void ToolbarView::Init() {
-     home_->SetVisible(show_home_button_.GetValue());
+@@ -634,6 +634,57 @@ void ToolbarView::Init() {
+     UpdateGlicButtonVisibility();
    }
  
 +  show_back_button_.Init(
@@ -240,7 +240,7 @@
    InitLayout();
  
    for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
-@@ -1840,6 +1891,35 @@ void ToolbarView::OnShowHomeButtonChange
+@@ -1884,6 +1935,35 @@ void ToolbarView::OnShowHomeButtonChange
    }
  }
  
@@ -297,7 +297,7 @@
    void OnTouchUiChanged();
  
    void NewTabButtonPressed(const ui::Event& event);
-@@ -433,6 +445,18 @@ class ToolbarView : public views::Access
+@@ -435,6 +447,18 @@ class ToolbarView : public views::Access
    // Controls whether or not a home button should be shown on the toolbar.
    BooleanPrefMember show_home_button_;
  
