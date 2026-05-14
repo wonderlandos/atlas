@@ -80,7 +80,7 @@
                                bool is_active,
                                bool is_highlighted,
                                bool round_bottom_left_window_corner,
-@@ -159,6 +160,7 @@ class ContentsContainerView : public vie
+@@ -158,6 +159,7 @@ class ContentsContainerView : public vie
        const views::SizeBounds& size_bounds) const override;
  
    bool is_in_split_ = false;
@@ -90,7 +90,7 @@
  
 --- a/chrome/browser/ui/views/frame/contents_container_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_container_view.cc
-@@ -183,20 +183,24 @@ std::vector<views::View*> ContentsContai
+@@ -186,20 +186,24 @@ std::vector<views::View*> ContentsContai
  }
  
  void ContentsContainerView::UpdateBorderAndOverlay(bool is_in_split,
@@ -117,7 +117,7 @@
        SetBorder(nullptr);
        ClearBorderRoundedCorners();
  
-@@ -208,15 +212,27 @@ void ContentsContainerView::UpdateBorder
+@@ -209,22 +213,33 @@ void ContentsContainerView::UpdateBorder
        }
      }
    } else {
@@ -146,11 +146,9 @@
 +    } else {
 +      container_outline_->SetVisible(false);
 +    }
-+
-     if (capture_contents_border_widget_) {
-       static_cast<ContentsCaptureBorderView*>(
-           capture_contents_border_widget_->GetContentsView())
-@@ -225,7 +241,7 @@ void ContentsContainerView::UpdateBorder
+     if (capture_contents_border_view_) {
+       capture_contents_border_view_->SetIsInSplit(true);
+     }
    }
  
  #if BUILDFLAG(IS_CHROMEOS)
@@ -159,7 +157,7 @@
      // Ensures correct window rounded corners after updating contents rounded
      // corners in UpdateBorderRoundedCorners()/ClearBorderRoundedCorners().
      GetWidget()->non_client_view()->frame_view()->UpdateWindowRoundedCorners();
-@@ -245,11 +261,10 @@ void ContentsContainerView::UpdateBorder
+@@ -244,21 +259,18 @@ void ContentsContainerView::UpdateBorder
    const gfx::RoundedCornersF container_rounded_corners(
        generic_radius, generic_radius, lower_right_radius, lower_left_radius);
  
@@ -175,7 +173,19 @@
  
    const gfx::RoundedCornersF inner_rounded_corners(
        inner_generic_radius, inner_generic_radius,
-@@ -367,7 +382,7 @@ void ContentsContainerView::ClearBorderR
+       inner_lower_right_radius, inner_lower_left_radius);
+ 
+   container_outline_->SetCornerRadii(container_rounded_corners);
+-  if (capture_contents_border_widget_) {
+-    static_cast<ContentsCaptureBorderView*>(
+-        capture_contents_border_widget_->GetContentsView())
+-        ->SetCornerRadii(container_rounded_corners);
++  if (capture_contents_border_view_) {
++    capture_contents_border_view_->SetCornerRadii(container_rounded_corners);
+   }
+ 
+   // Update devtools rounded corners. Note, devtools exists behind the contents
+@@ -366,7 +378,7 @@ void ContentsContainerView::ClearBorderR
  
  void ContentsContainerView::ChildVisibilityChanged(View* child) {
    if ((child == new_tab_footer_view_ || child == devtools_web_view_) &&
@@ -184,7 +194,7 @@
      UpdateBorderRoundedCorners();
    }
  }
-@@ -385,7 +400,7 @@ void ContentsContainerView::Layout(PassK
+@@ -391,7 +403,7 @@ views::View::Views ContentsContainerView
  void ContentsContainerView::OnViewBoundsChanged(View* observed_view) {
    if (observed_view == contents_view_) {
      UpdateDevToolsDockedPlacement();
@@ -193,22 +203,6 @@
        UpdateBorderRoundedCorners();
      }
    }
-@@ -511,10 +526,15 @@ void ContentsContainerView::CreateCaptur
-   capture_contents_border_widget_->Init(std::move(params));
-   auto contents_capture_border_view =
-       std::make_unique<ContentsCaptureBorderView>(nullptr);
-+  auto* contents_capture_border_view_ptr = contents_capture_border_view.get();
-   capture_contents_border_widget_->SetContentsView(
-       std::move(contents_capture_border_view));
-   capture_contents_border_widget_->SetVisibilityChangedAnimationsEnabled(false);
-   capture_contents_border_widget_->SetOpacity(0.50f);
-+  contents_capture_border_view_ptr->SetIsInSplit(should_round_contents_);
-+  if (should_round_contents_) {
-+    UpdateBorderRoundedCorners();
-+  }
- }
- 
- void ContentsContainerView::UpdateCaptureContentsBorderLocation() {
 --- a/chrome/browser/ui/views/frame/multi_contents_view.h
 +++ b/chrome/browser/ui/views/frame/multi_contents_view.h
 @@ -169,6 +169,7 @@ class MultiContentsView

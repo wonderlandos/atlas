@@ -117,7 +117,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
  
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -314,7 +314,10 @@
+@@ -315,7 +315,10 @@
  #include "ui/compositor/paint_recorder.h"
  #include "ui/content_accelerators/accelerator_util.h"
  #include "ui/display/screen.h"
@@ -128,7 +128,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
  #include "ui/gfx/animation/animation_runner.h"
  #include "ui/gfx/canvas.h"
  #include "ui/gfx/color_utils.h"
-@@ -332,6 +335,7 @@
+@@ -333,6 +336,7 @@
  #include "ui/views/controls/button/menu_button.h"
  #include "ui/views/controls/textfield/textfield.h"
  #include "ui/views/controls/webview/webview.h"
@@ -136,7 +136,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
  #include "ui/views/interaction/element_tracker_views.h"
  #include "ui/views/layout/fill_layout.h"
  #include "ui/views/view.h"
-@@ -838,6 +842,83 @@ class BrowserView::ExclusiveAccessContex
+@@ -839,6 +843,83 @@ class BrowserView::ExclusiveAccessContex
    base::WeakPtrFactory<ExclusiveAccessContextImpl> weak_ptr_factory_{this};
  };
  

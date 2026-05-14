@@ -363,7 +363,7 @@
        theme_: {type: Object},
        showCustomize_: {type: Boolean},
        showCustomizeChromeText_: {type: Boolean},
-@@ -353,9 +321,6 @@ export class AppElement extends AppEleme
+@@ -356,9 +324,6 @@ export class AppElement extends AppEleme
        loadTimeData.getBoolean('searchboxShowComposebox');
  
    protected accessor composeboxState_: ComposeboxState|null = null;
@@ -373,7 +373,7 @@
    protected accessor theme_: Theme|null = null;
    protected accessor showCustomize_: boolean = false;
    protected accessor showCustomizeChromeText_: boolean = false;
-@@ -474,13 +439,6 @@ export class AppElement extends AppEleme
+@@ -480,13 +445,6 @@ export class AppElement extends AppEleme
      this.shouldPrintPerformance_ =
          new URLSearchParams(location.search).has('print_perf');
  
@@ -387,7 +387,7 @@
      this.showCustomize_ =
          WindowProxy.getInstance().url.searchParams.has(CUSTOMIZE_URL_PARAM);
  
-@@ -581,30 +539,12 @@ export class AppElement extends AppEleme
+@@ -587,30 +545,12 @@ export class AppElement extends AppEleme
        this.setCustomizeChromeSidePanelVisible_(this.showCustomize_);
        recordCustomizeChromeOpen(NtpCustomizeChromeEntryPoint.URL);
      }
@@ -418,7 +418,7 @@
      if (loadTimeData.getString('backgroundImageUrl')) {
        this.backgroundManager_.getBackgroundImageLoadTime().then(
            time => {
-@@ -734,12 +674,6 @@ export class AppElement extends AppEleme
+@@ -740,12 +680,6 @@ export class AppElement extends AppEleme
      if (!this.modulesEnabled_) {
        this.recordBrowserPromoMetrics_();
      }
@@ -431,7 +431,7 @@
    }
  
    override updated(changedProperties: PropertyValues<this>) {
-@@ -781,31 +715,12 @@ export class AppElement extends AppEleme
+@@ -787,31 +721,12 @@ export class AppElement extends AppEleme
        composeboxDialog.showModal();
      }
  
@@ -463,7 +463,7 @@
    private computeShowCustomizeChromeText_(): boolean {
      if (this.showWallpaperSearchButton_) {
        return false;
-@@ -898,26 +813,15 @@ export class AppElement extends AppEleme
+@@ -904,26 +819,15 @@ export class AppElement extends AppEleme
      const composebox =
          this.shadowRoot.querySelector<ComposeboxElement>('#composebox');
      assert(composebox);
@@ -492,7 +492,7 @@
      const composebox =
          this.shadowRoot.querySelector<ComposeboxElement>('#composebox');
      assert(composebox);
-@@ -929,7 +833,6 @@ export class AppElement extends AppEleme
+@@ -935,7 +839,6 @@ export class AppElement extends AppEleme
      this.toggleComposebox_();
      this.logoColor_ = this.computeLogoColor_();
      this.singleColoredLogo_ = this.computeSingleColoredLogo_();
@@ -500,7 +500,7 @@
    }
  
    protected onOpenVoiceSearch_() {
-@@ -1125,101 +1028,6 @@ export class AppElement extends AppEleme
+@@ -1131,101 +1034,6 @@ export class AppElement extends AppEleme
      return !!this.theme_ && (!!this.theme_.logoColor || this.theme_.isDark);
    }
  
@@ -602,7 +602,7 @@
    protected onNtpMiddleSlotPromoLoaded_() {
      this.middleSlotPromoLoaded_ = true;
    }
-@@ -1334,23 +1142,6 @@ export class AppElement extends AppEleme
+@@ -1340,23 +1148,6 @@ export class AppElement extends AppEleme
    }
  
    private onWindowClick_(e: Event) {
@@ -626,7 +626,7 @@
      if (e.composedPath() && e.composedPath()[0] === $$(this, '#content')) {
        recordClick(NtpElement.BACKGROUND);
        return;
-@@ -1508,33 +1299,14 @@ export class AppElement extends AppEleme
+@@ -1514,33 +1305,14 @@ export class AppElement extends AppEleme
     * multiple toasts at the same time. Otherwise, the first pending toast is
     * popped and shown.
     */

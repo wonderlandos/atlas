@@ -85,7 +85,7 @@
    // layout loop.
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -2373,6 +2373,7 @@ void BrowserView::FullscreenStateChanged
+@@ -2374,6 +2374,7 @@ void BrowserView::FullscreenStateChanged
  #endif  // BUILDFLAG(IS_MAC)
  
    browser_->WindowFullscreenStateChanged();
@@ -116,7 +116,7 @@
  
    void ShowCaptureContentsBorder();
    void HideCaptureContentsBorder();
-@@ -158,6 +159,8 @@ class ContentsContainerView : public vie
+@@ -157,6 +158,8 @@ class ContentsContainerView : public vie
        const views::SizeBounds& size_bounds) const override;
  
    bool is_in_split_ = false;
@@ -163,7 +163,7 @@
  
    auto devtools_web_view =
        std::make_unique<views::WebView>(browser_view->GetProfile());
-@@ -184,9 +184,16 @@ std::vector<views::View*> ContentsContai
+@@ -187,9 +187,16 @@ std::vector<views::View*> ContentsContai
  
  void ContentsContainerView::UpdateBorderAndOverlay(bool is_in_split,
                                                     bool is_active,
@@ -181,7 +181,7 @@
  
    if (!is_in_split) {
      if (split_changed) {
-@@ -204,6 +211,8 @@ void ContentsContainerView::UpdateBorder
+@@ -205,6 +212,8 @@ void ContentsContainerView::UpdateBorder
      if (split_changed) {
        SetBorder(views::CreateEmptyBorder(gfx::Insets(
            kSplitViewContentPadding + ContentsContainerOutline::kThickness)));
@@ -190,7 +190,7 @@
        UpdateBorderRoundedCorners();
      }
  
-@@ -225,10 +234,38 @@ void ContentsContainerView::UpdateBorder
+@@ -224,10 +233,38 @@ void ContentsContainerView::UpdateBorder
  }
  
  void ContentsContainerView::UpdateBorderRoundedCorners() {
@@ -231,7 +231,7 @@
  
    const bool devtools_in_upper_left =
        devtools_web_view_->GetVisible() &&
-@@ -246,18 +283,21 @@ void ContentsContainerView::UpdateBorder
+@@ -245,18 +282,21 @@ void ContentsContainerView::UpdateBorder
         current_devtools_docked_placement_ == DevToolsDockedPlacement::kRight);
  
    const gfx::RoundedCornersF content_upper_rounded_corners =
@@ -263,7 +263,7 @@
  
    auto radii = new_tab_footer_view_ && new_tab_footer_view_->GetVisible()
                     ? content_upper_rounded_corners
-@@ -265,7 +305,7 @@ void ContentsContainerView::UpdateBorder
+@@ -264,7 +304,7 @@ void ContentsContainerView::UpdateBorder
  
    contents_view_->SetBackgroundRadii(radii);
    contents_view_->holder()->SetCornerRadii(radii);
@@ -408,36 +408,36 @@
  #include "ui/views/view.h"
  #include "ui/views/view_observer.h"
  
-@@ -24,6 +25,7 @@ class ContentsCaptureBorderView : public
+@@ -26,6 +27,7 @@ class ContentsCaptureBorderView : public
    static constexpr int kContentsBorderThickness = 5;
  
    void SetIsInSplit(bool is_in_split);
 +  void SetCornerRadii(const gfx::RoundedCornersF& radii);
  
-   // views::View:
-   void OnPaint(gfx::Canvas* canvas) override;
-@@ -37,6 +39,7 @@ class ContentsCaptureBorderView : public
+   void SetCaptureContentsBorderLocation(std::optional<gfx::Rect> location);
+ 
+@@ -45,6 +47,7 @@ class ContentsCaptureBorderView : public
    void OnViewIsDeleting(views::View* observed_view) override;
  
    bool is_in_split_ = false;
 +  gfx::RoundedCornersF corner_radii_;
+   std::optional<gfx::Rect> capture_location_;
+   raw_ptr<BrowserView> browser_view_ = nullptr;
    base::ScopedObservation<views::View, views::ViewObserver>
-       view_bounds_observer_{this};
- };
 --- a/chrome/browser/ui/views/frame/contents_capture_border_view.cc
 +++ b/chrome/browser/ui/views/frame/contents_capture_border_view.cc
-@@ -14,7 +14,8 @@
+@@ -19,7 +19,8 @@
  #include "ui/views/view_class_properties.h"
  
  ContentsCaptureBorderView::ContentsCaptureBorderView(
 -    views::View* /*mini_toolbar*/) {
 +    views::View* /*mini_toolbar*/)
 +    : corner_radii_(ContentsContainerOutline::kCornerRadius) {
-   SetProperty(views::kElementIdentifierKey, kContentsCaptureBorder);
-   SetBorder(views::CreateSolidBorder(kContentsBorderThickness,
-                                      kColorCapturedTabContentsBorder));
-@@ -36,6 +37,15 @@ void ContentsCaptureBorderView::SetIsInS
-   }
+   SetPaintToLayer();
+   layer()->SetFillsBoundsOpaquely(false);
+   layer()->SetOpacity(0.50f);
+@@ -58,6 +59,15 @@ void ContentsCaptureBorderView::SetCaptu
+   InvalidateLayout();
  }
  
 +void ContentsCaptureBorderView::SetCornerRadii(
@@ -452,7 +452,7 @@
  void ContentsCaptureBorderView::OnViewBoundsChanged(
      views::View* observed_view) {
    SchedulePaint();
-@@ -69,11 +79,15 @@ void ContentsCaptureBorderView::OnPaint(
+@@ -91,11 +101,15 @@ void ContentsCaptureBorderView::OnPaint(
    gfx::RectF local_bounds(GetLocalBounds());
    const float half_thickness = kContentsBorderThickness / 2.0f;
    local_bounds.Inset(half_thickness);

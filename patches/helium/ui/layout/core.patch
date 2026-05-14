@@ -68,8 +68,8 @@
  #include "chrome/browser/ui/tab_search_feature.h"
  #include "chrome/browser/ui/tabs/features.h"
  #include "chrome/browser/ui/tabs/vertical_tab_strip_state.h"
-@@ -43,11 +44,11 @@ void RegisterProfilePrefs(user_prefs::Pr
-       prefs::kTabSearchPinnedToTabstripMigrationComplete, false);
+@@ -45,11 +46,11 @@ void RegisterProfilePrefs(user_prefs::Pr
+       prefs::kTabSearchPinnedToTabstripMigrationComplete2, false);
    registry->RegisterBooleanPref(prefs::kProjectsPanelPinnedToTabstrip, true);
    registry->RegisterBooleanPref(prefs::kEverythingMenuPinnedToTabstrip, true);
 -  registry->RegisterBooleanPref(prefs::kVerticalTabsEnabled, false);
@@ -275,7 +275,7 @@
  // A boolean pref set to true if a Home button to open the Home pages should be
  // visible on the toolbar.
  inline constexpr char kShowHomeButton[] = "browser.show_home_button";
-@@ -1492,18 +1499,6 @@ inline constexpr char kProjectsPanelPinn
+@@ -1498,18 +1505,6 @@ inline constexpr char kProjectsPanelPinn
  inline constexpr char kEverythingMenuPinnedToTabstrip[] =
      "everything_menu.pinned_to_tabstrip";
  
@@ -771,7 +771,7 @@
    void StartPasswordManagerTutorial();
 --- a/chrome/browser/glic/suggestions/contextual_cueing_helper.cc
 +++ b/chrome/browser/glic/suggestions/contextual_cueing_helper.cc
-@@ -472,10 +472,6 @@ ContextualCueingHelper::AutoOpenGlicSide
+@@ -476,10 +476,6 @@ ContextualCueingHelper::AutoOpenGlicSide
    Profile* profile =
        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
    bool vertical_tabs_enabled = false;
