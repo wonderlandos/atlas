@@ -1,0 +1,24 @@
+Atlas overlay patch 0002: privacy/gpc-default-on
+Why: Global Privacy Control is on for every profile, so pages see Sec-GPC: 1 and
+navigator.globalPrivacyControl == true unless the person turns it off. The inherited series
+already carries the pref and all of its consumers (request headers, renderer preferences, the
+navigator and worker bindings) but registers it off; only the registered default changes
+(patches-0 P-02).
+Files: chrome/browser/ui/browser_ui_prefs.cc
+Test filter: *GlobalPrivacyControl*; journey J-A2 (Sec-GPC: 1, navigator.globalPrivacyControl)
+Rebase risk: L (one line, in the hunk the inherited GPC pref patch adds)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -183,7 +183,7 @@
+   registry->RegisterBooleanPref(
+       prefs::kEnableDoNotTrack, true,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+-  registry->RegisterBooleanPref(prefs::kHeliumGlobalPrivacyControl, false);
++  registry->RegisterBooleanPref(prefs::kHeliumGlobalPrivacyControl, true);
+ #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+   registry->RegisterBooleanPref(prefs::kPrintPreviewUseSystemDefaultPrinter,
+                                 false);
