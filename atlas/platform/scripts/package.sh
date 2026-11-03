@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Derived from the upstream platform repository (GPL-3.0, see ../LICENSE). Changes: the tarball only
 # (no installer image, no signing), no pv/zip dependency, ATLAS_* paths (see shared.sh).
-# Layout of the tarball is the one of the upstream release asset (helium-<version>-x86_64_linux/).
+# Layout of the tarball is the one of the upstream release asset, under our names
+# (atlas-<version>-x86_64_linux/: binary atlas, atlas_crashpad_handler, atlas.desktop, atlas-wrapper).
 set -euo pipefail
 
 _current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
@@ -10,7 +11,7 @@ _main_repo="${ATLAS_FORK_ROOT:-$(cd "$_root_dir/../.." && pwd)}"
 _build_dir="${ATLAS_BUILD_DIR:-$_root_dir/build}"
 _release_dir="$_build_dir/release"
 
-_app_name="helium"
+_app_name="atlas"
 _version=$(python3 "$_main_repo/utils/helium_version.py" \
                    --tree "$_main_repo" \
                    --platform-tree "$_root_dir" \
@@ -30,10 +31,10 @@ _release_name="$_app_name-$_version-$_arch"
 _tarball_name="${_release_name}_linux"
 _tarball_dir="$_release_dir/$_tarball_name"
 
-_files="helium
+_files="atlas
 chrome_100_percent.pak
 chrome_200_percent.pak
-helium_crashpad_handler
+atlas_crashpad_handler
 chromedriver
 icudtl.dat
 libEGL.so
@@ -61,12 +62,12 @@ done
 mkdir -p "$_tarball_dir/locales"
 cp "$_build_dir/src/out/Default/locales/"*.pak "$_tarball_dir/locales/"
 
-cp "$_root_dir/package/helium.desktop" "$_tarball_dir"
+cp "$_root_dir/package/atlas.desktop" "$_tarball_dir"
 cp "$_root_dir/package/apparmor.cfg" "$_tarball_dir"
-cp "$_root_dir/package/helium-wrapper.sh" "$_tarball_dir/helium-wrapper"
+cp "$_root_dir/package/atlas-wrapper.sh" "$_tarball_dir/atlas-wrapper"
 
 wait
-(cd "$_tarball_dir" && ln -sf helium chrome)
+(cd "$_tarball_dir" && ln -sf atlas chrome)
 
 # symbols: the unstripped ELF files, relative to out/Default
 _syms_zip="$_release_dir/${_release_name}_symbols.zip"

@@ -39,12 +39,12 @@
    // versions can set themselves as the default without interfering with
    // non-official, packaged versions using the built-in value.
 -  std::optional<std::string> name = env->GetVar("CHROME_DESKTOP");
-+  std::optional<std::string> name = env->GetVar("HELIUM_DESKTOP");
++  std::optional<std::string> name = env->GetVar("ATLAS_DESKTOP");
    if (name.has_value() && !name.value().empty()) {
      return name.value();
    }
 -  return "chromium-browser.desktop";
-+  return "helium.desktop";
++  return "atlas.desktop";
  #endif
  }
  #endif  // BUILDFLAG(IS_LINUX)
@@ -55,7 +55,7 @@
    base::FilePath config_dir;
    std::optional<std::string> chrome_config_home_str =
 -      env->GetVar("CHROME_CONFIG_HOME");
-+      env->GetVar("HELIUM_CONFIG_HOME");
++      env->GetVar("ATLAS_CONFIG_HOME");
    if (chrome_config_home_str.has_value() &&
        base::IsStringUTF8(chrome_config_home_str.value())) {
      config_dir = base::FilePath::FromUTF8Unsafe(chrome_config_home_str.value());
@@ -70,7 +70,7 @@
 -#else
 -  std::string data_dir_basename = "chromium";
 -#endif
-+  std::string data_dir_basename = "net.imput.helium";
++  std::string data_dir_basename = "atlas";
    *result = config_dir.Append(data_dir_basename + GetChannelSuffixForDataDir());
    return true;
  }
@@ -81,7 +81,7 @@
  
  # Base name of the package.
 -PACKAGE="chromium-browser"
-+PACKAGE="helium"
++PACKAGE="atlas-browser"
  
  # Filename of the main executable (for generating launcher scripts, etc.)
  PROGNAME=chrome
@@ -90,7 +90,7 @@
  
  # Display string for desktop menu/icon.
 -MENUNAME="Chromium Web Browser"
-+MENUNAME="Helium"
++MENUNAME="Atlas"
  
  # Brief package description.
  SHORTDESC="The web browser from the Chromium projects"
@@ -101,24 +101,24 @@
 -MAINTNAME="Chromium Linux Team"
 -MAINTMAIL="chromium-packagers@chromium.org"
 -PRODUCTURL="https://www.chromium.org/Home"
-+MAINTNAME="imput"
-+MAINTMAIL="helium@imput.net"
-+PRODUCTURL="https://helium.computer"
++MAINTNAME="WolOS"
++MAINTMAIL="wolos@wonderlandos.org"
++PRODUCTURL="https://github.com/wonderlandos/atlas"
  
 -PROJECT_LICENSE="BSD-3-Clause and LGPL-2.1+ and Apache-2.0 and IJG and MIT and GPL-2.0+ and ISC and OpenSSL and (MPL-1.1 or GPL-2.0 or LGPL-2.0)"
 +PROJECT_LICENSE="GPL-3.0 and BSD-3-Clause and LGPL-2.1+ and Apache-2.0 and IJG and MIT and GPL-2.0+ and ISC and OpenSSL and (MPL-1.1 or GPL-2.0 or LGPL-2.0)"
  
 -DEVELOPER_NAME="The Chromium Authors"
-+DEVELOPER_NAME="The Helium Authors"
++DEVELOPER_NAME="The Atlas Authors"
  
 -BUGTRACKERURL="https://www.chromium.org/for-testers/bug-reporting-guidelines"
-+BUGTRACKERURL="https://github.com/imputnet/helium-linux/issues"
++BUGTRACKERURL="https://github.com/wonderlandos/atlas/issues"
  
 -HELPURL="https://chromium.googlesource.com/chromium/src/+/main/docs/linux/debugging.md"
-+HELPURL="https://helium.computer/"
++HELPURL="https://github.com/wonderlandos/atlas"
  
 -RDN="org.chromium.Chromium"
-+RDN="net.imput.helium"
++RDN="org.wolos.atlas"
 --- a/media/audio/pulse/pulse_util.cc
 +++ b/media/audio/pulse/pulse_util.cc
 @@ -39,8 +39,8 @@ namespace {
@@ -127,8 +127,8 @@
  #else
 -constexpr char kBrowserDisplayName[] = "chromium-browser";
 -#define PRODUCT_STRING "Chromium"
-+constexpr char kBrowserDisplayName[] = "helium";
-+#define PRODUCT_STRING "Helium"
++constexpr char kBrowserDisplayName[] = "atlas";
++#define PRODUCT_STRING "Atlas"
  #endif
  
  #if defined(DLOPEN_PULSEAUDIO)
@@ -143,7 +143,7 @@
 -#else  // BUILDFLAG(CHROMIUM_BRANDING)
 -  return "chromium-browser";
 -#endif
-+  return "helium";
++  return "atlas";
  }
  
  bool GetExistingShortcutContents(base::Environment* env,

@@ -123,8 +123,8 @@ ___helium_build() {
 }
 
 ___helium_run() {
-    cd "$_src_dir" && ./out/Default/helium \
-    --user-data-dir="$HOME/.config/net.imput.helium.dev" \
+    cd "$_src_dir" && ./out/Default/atlas \
+    --user-data-dir="$HOME/.config/atlas.dev" \
     --enable-ui-devtools=$RANDOM
 }
 

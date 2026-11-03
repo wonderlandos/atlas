@@ -1,8 +1,8 @@
 ungoogled-chromium/portablelinux/use-oauth2-client-switches-as-default.patch
 
-helium/linux/change-chromium-branding.patch
-helium/linux/rename-chrome-binary.patch
-helium/linux/use-default-theme.patch
-helium/linux/add-middle-click-paste-flag.patch
-helium/linux/add-error-for-missing-desktop-file.patch
-helium/linux/disable-tab-strokes.patch
+linux/change-chromium-branding.patch
+linux/rename-chrome-binary.patch
+linux/use-default-theme.patch
+linux/add-middle-click-paste-flag.patch
+linux/add-error-for-missing-desktop-file.patch
+linux/disable-tab-strokes.patch

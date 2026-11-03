@@ -4,7 +4,7 @@
    # We build a chromium-specific crashpad_handler executable so that we can
    # define custom UserStreamDataSources.
    executable("chrome_crashpad_handler") {
-+    output_name = "helium_crashpad_handler"
++    output_name = "atlas_crashpad_handler"
      sources = [ "chrome_crashpad_handler.cc" ]
  
      deps = [
@@ -15,7 +15,7 @@
        return false;
      }
 -    handler_path = handler_path.Append("chrome_crashpad_handler");
-+    handler_path = handler_path.Append("helium_crashpad_handler");
++    handler_path = handler_path.Append("atlas_crashpad_handler");
  
      // When --use-cros-crash-reporter is set (below), the handler passes dumps
      // to ChromeOS's /sbin/crash_reporter which in turn passes the dump to
@@ -26,7 +26,7 @@
        GetProcessDataMemoryInformation(GetAllChildren(process_map, getpid()));
    current_browser.name = base::ASCIIToUTF16(version_info::GetProductName());
 -  current_browser.process_name = u"chrome";
-+  current_browser.process_name = u"helium";
++  current_browser.process_name = u"atlas";
  
    for (auto i = current_browser.processes.begin();
         i != current_browser.processes.end(); ++i) {
@@ -37,7 +37,7 @@
      _chrome_output_name = "initialexe/chrome"
    } else {
 -    _chrome_output_name = "chrome"
-+    _chrome_output_name = "helium"
++    _chrome_output_name = "atlas"
    }
  
    executable("chrome_initial") {
@@ -46,15 +46,15 @@
  
      extract_symbols("chrome_symbols") {
 -      binary = "$root_out_dir/chrome"
-+      binary = "$root_out_dir/helium"
++      binary = "$root_out_dir/atlas"
  
        if (current_cpu == "x86") {
          # GYP used "ia32" so keep that naming for back-compat.
 -        symbol_file = "$root_out_dir/chrome.breakpad.ia32"
-+        symbol_file = "$root_out_dir/helium.breakpad.ia32"
++        symbol_file = "$root_out_dir/atlas.breakpad.ia32"
        } else {
 -        symbol_file = "$root_out_dir/chrome.breakpad.$current_cpu"
-+        symbol_file = "$root_out_dir/helium.breakpad.$current_cpu"
++        symbol_file = "$root_out_dir/atlas.breakpad.$current_cpu"
        }
  
        deps = [ ":chrome" ]
@@ -62,7 +62,7 @@
  
      extract_symbols("chrome_crashpad_symbols") {
 -      binary = "$root_out_dir/chrome_crashpad_handler"
-+      binary = "$root_out_dir/helium_crashpad_handler"
++      binary = "$root_out_dir/atlas_crashpad_handler"
  
        if (current_cpu == "x86") {
          # GYP used "ia32" so keep that naming for back-compat.
@@ -76,8 +76,8 @@
 -  "$root_out_dir/chrome_crashpad_handler",
 -  "$root_out_dir/chrome_management_service",
 -  "$root_out_dir/chrome_sandbox",
-+  "$root_out_dir/helium",
-+  "$root_out_dir/helium_crashpad_handler",
++  "$root_out_dir/atlas",
++  "$root_out_dir/atlas_crashpad_handler",
  ]
  
  packaging_files_shlibs = []
@@ -86,13 +86,13 @@
  
  strip_binary("strip_chrome_binary") {
 -  binary_input = "$root_out_dir/chrome"
-+  binary_input = "$root_out_dir/helium"
++  binary_input = "$root_out_dir/atlas"
    deps = [ "//chrome" ]
  }
  
  strip_binary("strip_chrome_crashpad_handler") {
 -  binary_input = "$root_out_dir/chrome_crashpad_handler"
-+  binary_input = "$root_out_dir/helium_crashpad_handler"
++  binary_input = "$root_out_dir/atlas_crashpad_handler"
    deps = [ "//components/crash/core/app:chrome_crashpad_handler" ]
  }
  

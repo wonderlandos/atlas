@@ -104,8 +104,8 @@
        <else>
 +      <if expr="is_linux">
 +        <then>
-+        <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Helium is launched on Linux, but has no existing .desktop file.">
-+          Helium cannot be set as default, because no <ph name="DESKTOP_FILENAME">$1<ex>helium.desktop</ex></ph> file was found in any of: ~/.local/share/applications, /usr/share/applications, /usr/local/share/applications.
++        <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Atlas is launched on Linux, but has no existing .desktop file.">
++          Atlas cannot be set as default, because no <ph name="DESKTOP_FILENAME">$1<ex>atlas.desktop</ex></ph> file was found in any of: ~/.local/share/applications, /usr/share/applications, /usr/local/share/applications.
 +        </message>
 +        </then>
 +        <else>
