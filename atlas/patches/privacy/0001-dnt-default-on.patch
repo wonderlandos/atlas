@@ -1,0 +1,22 @@
+Atlas overlay patch 0001: privacy/dnt-default-on
+Why: every profile, new and existing, sends Do Not Track unless the person turns it off. A
+first-run preference only reaches new profiles and stores an explicit value, so the default itself
+changes (patches-0 P-01). The pref keeps its SYNCABLE_PREF flag.
+Files: chrome/browser/ui/browser_ui_prefs.cc
+Test filter: *DoNotTrack*; journey J-A2 (request header DNT: 1)
+Rebase risk: L (one line; the inherited GPC pref patch adds the line below it)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -181,7 +181,7 @@
+   registry->RegisterDictionaryPref(prefs::kBrowserWindowPlacementPopup);
+   registry->RegisterDictionaryPref(prefs::kAppWindowPlacement);
+   registry->RegisterBooleanPref(
+-      prefs::kEnableDoNotTrack, false,
++      prefs::kEnableDoNotTrack, true,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+   registry->RegisterBooleanPref(prefs::kHeliumGlobalPrivacyControl, false);
+ #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
