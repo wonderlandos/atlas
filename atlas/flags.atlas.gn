@@ -1,0 +1,14 @@
+# Atlas GN arguments. The build appends this file after flags.gn and
+# atlas/platform/flags.atlas.linux.gn, so an assignment here wins.
+# `gn gen --fail-on-unused-args` rejects a wrong name, so a bad line costs one failed gen.
+#
+# Empty on purpose until the baseline build (AT-1, gate G1) has recorded the unmodified size and
+# timings: every flag below changes the artifact and must be measured against that baseline (AT-4,
+# saving recorded in atlas/debloat.toml). Proposed first rows (patches-0 section B, "now" rows):
+#
+# G-02: no DRM loader in the base package (an optional package can ship it)
+# enable_widevine = false
+#
+# G-05: drop the Qt shims and the toolkit probe at startup (WolOS uses the GTK path)
+# use_qt = false
+# use_qt6 = false

@@ -135,7 +135,9 @@ helium_resources() {
 write_gn_args() {
     mkdir -p "${_out_dir}"
 
-    cat "${_main_repo}/flags.gn" "${_root_dir}/flags.atlas.linux.gn" | tee "${_out_dir}/args.gn"
+    # the overlay's own arguments come last, so they win over the inherited ones
+    cat "${_main_repo}/flags.gn" "${_root_dir}/flags.atlas.linux.gn" "${_main_repo}/atlas/flags.atlas.gn" \
+        | tee "${_out_dir}/args.gn"
     echo "target_cpu = \"$_build_arch\"" | tee -a "${_out_dir}/args.gn"
     echo "v8_target_cpu = \"$_build_arch\"" | tee -a "${_out_dir}/args.gn"
 
