@@ -23,7 +23,7 @@ meeting new engine code, and it is always fixed in our patch.
 | `patches/<area>/NNNN-name.patch` | one overlay patch; `NNNN` is unique across areas and never reused; areas: `privacy`, `security`, `brand`, `memory`, `host`, `ui`, `debloat` |
 | `flags.atlas.gn` | our GN arguments, appended after `flags.gn` and `platform/flags.atlas.linux.gn` (the last assignment wins) |
 | `platform/` | the Linux glue: build scripts, the platform patch series, package files (see its README) |
-| `onboarding/` | slot for the Atlas first-run page (placeholder until AT-15) |
+| `onboarding/` | the Atlas first-run page (HTML, CSS, script, its tools and checks); not a build input until patch P-17 wires it in (0.14, see its README) |
 | `drop.list` | inherited patches left out; leaf patches only (empty) |
 | `debloat.toml` | one entry per kept build-flag removal with its measured saving (AT-4) |
 | `tools/atlas-series` | combined view of the three series; `--dry-run TREE` on a pristine prepared tree |
