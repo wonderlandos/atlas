@@ -1,0 +1,36 @@
+Atlas overlay patch 0004: privacy/crash-reporting-default-off
+Why: crash reports stay on the machine. The crash reporting mode (Local State) is registered as
+"disabled" instead of "ask", and an invalid stored value resets to "disabled" too; the person can
+still choose "ask" or "automatic" in settings. Upload consent was already off until a choice is
+made; this removes the prompt and the default path to the inherited project's crash host
+(patches-0 P-03, crash part; the registration is in browser_prefs.cc, not in the crash reporting
+file as patches-0 assumed).
+Files: chrome/browser/prefs/browser_prefs.cc, chrome/browser/crash_upload_list/helium_crash_reporting.cc
+Test filter: *CrashReporting*; Local State of a new profile holds mode -1; zero-egress test (AT-7)
+Rebase risk: M (five inherited patches edit browser_prefs.cc; the crash file is the inherited series' own)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series adds or patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/prefs/browser_prefs.cc
++++ b/chrome/browser/prefs/browser_prefs.cc
+@@ -1536,7 +1536,7 @@
+   BrowserProcessImpl::RegisterPrefs(registry);
+   registry->RegisterIntegerPref(
+       prefs::kHeliumCrashReportingMode,
+-      static_cast<int>(helium::CrashReportingMode::kAsk));
++      static_cast<int>(helium::CrashReportingMode::kDisabled));
+   ChromeContentBrowserClient::RegisterLocalStatePrefs(registry);
+ #if BUILDFLAG(CHROME_FOR_TESTING)
+   chrome_for_testing::RegisterPrefs(registry);
+--- a/chrome/browser/crash_upload_list/helium_crash_reporting.cc
++++ b/chrome/browser/crash_upload_list/helium_crash_reporting.cc
+@@ -80,7 +80,7 @@
+                << "; resetting to default";
+     local_state->SetInteger(
+         prefs::kHeliumCrashReportingMode,
+-        static_cast<int>(CrashReportingMode::kAsk));
++        static_cast<int>(CrashReportingMode::kDisabled));
+   }
+ 
+   static base::NoDestructor<PrefChangeRegistrar> policy_registrar;
