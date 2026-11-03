@@ -1,0 +1,40 @@
+Atlas overlay patch 0003: privacy/services-default-off
+Why: no background traffic to the inherited project's web services unless the person turns them
+on in settings: the services switch itself, search keyword shortcuts (bangs), the extension
+download proxy, spellcheck dictionary downloads, browser update checks (WolOS updates the browser
+through its package manager) and filter-list downloads for the bundled content blocker are all
+registered off. The services origin, the onboarding flag and the consent flag are untouched, so
+the settings page still shows every switch and works as before when the person opts in.
+Effects to know: the content blocker runs on the lists bundled in the package until the person
+enables list downloads; spellcheck has no dictionaries until enabled (patches-0 P-03).
+Files: chrome/browser/ui/browser_ui_prefs.cc
+Test filter: zero-egress test (AT-7); atlas://settings services page shows every switch off
+Rebase risk: M (six inherited patches edit this block)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -261,15 +261,15 @@
+   {
+     registry->RegisterIntegerPref(prefs::kHeliumSchemaVersion, 0);
+     registry->RegisterBooleanPref(prefs::kHeliumDisableSchemaAlerts, false);
+-    registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, true);
+-    registry->RegisterBooleanPref(prefs::kHeliumBangsEnabled, true);
+-    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, true);
+-    registry->RegisterBooleanPref(prefs::kHeliumSpellcheckEnabled, true);
++    registry->RegisterBooleanPref(prefs::kHeliumServicesEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumBangsEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumExtProxyEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumSpellcheckEnabled, false);
+     registry->RegisterStringPref(prefs::kHeliumServicesOrigin, "");
+     registry->RegisterBooleanPref(prefs::kHeliumDidOnboarding, false);
+     registry->RegisterBooleanPref(prefs::kHeliumServicesConsented, false);
+-    registry->RegisterBooleanPref(prefs::kHeliumUpdateFetchingEnabled, true);
+-    registry->RegisterBooleanPref(prefs::kHeliumUBlockAssetsEnabled, true);
++    registry->RegisterBooleanPref(prefs::kHeliumUpdateFetchingEnabled, false);
++    registry->RegisterBooleanPref(prefs::kHeliumUBlockAssetsEnabled, false);
+   }
+ 
+   registry->RegisterBooleanPref(
