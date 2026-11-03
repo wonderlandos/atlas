@@ -1,162 +1,88 @@
-# Contributing to Helium
+# Contributing to Atlas
 
-This repository contains Helium's shared Chromium patches, resources, and
-development tooling. Platform-specific packaging and build environments live in
-the platform repositories:
+Atlas is the WolOS browser. This repository is its patch set: the inherited patch series, mirrored
+from upstream on the branch `upstream`, plus the Atlas overlay in `atlas/` on the branch `main`.
+Read [atlas/README.md](atlas/README.md) for the model; this page is the working rules.
 
-- [Helium for macOS](https://github.com/imputnet/helium-macos)
-- [Helium for Linux](https://github.com/imputnet/helium-linux)
-- [Helium for Windows](https://github.com/imputnet/helium-windows)
+## Conduct
 
-The same contribution guidelines apply to all platform repos.
+Every WolOS space, this repository included, follows
+[The Wonderland Doctrine](https://github.com/wonderlandos/wolos/blob/main/docs/DOCTRINE.md):
+be blunt about the work, never about the person.
 
-## Before you start
+## Where things go
 
-### General
+| You want to | Do this |
+|---|---|
+| change a default, remove a service, change behaviour | an overlay patch in `atlas/patches/<area>/` (below) |
+| change a build flag | a line in `atlas/flags.atlas.gn`, with its measured effect in `atlas/debloat.toml` when it removes code |
+| rename or substitute strings across the tree | a scripted transform in `atlas/transform/` with asserted match counts, not a patch |
+| change a policy or a first-run preference | the WolOS system package (repository `wonderlandos/wolos`), not this repository |
+| change the Linux build or packaging | `atlas/platform/` |
+| drop an inherited patch | a line in `atlas/drop.list` (leaf patches only; `atlas/tools/atlas-series list` checks it) |
+| fix an inherited patch | an overlay patch after it; never edit a file under `patches/` |
 
-- For platform-specific issues or features, open the issue or PR in the
-  related platform repository instead of this one.
-- Do not use AI to generate issue or PR descriptions. You will get banned
-  for spam without review. We want contributions from people, not bots.
+Pick the cheapest mechanism that works, in this order: GN argument, policy or first-run
+preference, launcher flag, scripted transform, a small patch, a new component. The overlay budget
+is **60 patches** and 2,500 added C++ lines. A patch that fails to apply for two engine milestones
+in a row is deleted or rewritten, not carried by force.
 
-### Issues
+## Adding a patch
 
-- Search existing issues before opening a new bug report or feature request.
-- When creating an issue, please follow the template and be as specific
-  as possible.
-- Please do not create duplicate issues. We reserve the right to ban you
-  for repeatedly wasting our time through ignorance.
+1. Prepare a base tree (a prepared engine source tree with the inherited and platform series
+   applied, see [atlas/README.md](atlas/README.md)) and apply the current overlay with
+   `tools/apply-overlay.sh TREE`.
+2. Make the change in the tree. Write it as `atlas/patches/<area>/NNNN-name.patch` with
+   `diff -u` (labels `a/<path>` and `b/<path>`). `NNNN` is the next free number across all areas;
+   numbers are never reused.
+3. Start the file with the patch header (Why, Files, Test filter, Rebase risk, Release, License,
+   Verified at; the format is in [atlas/README.md](atlas/README.md)). "Why" says what changes for
+   the person using Atlas and why a cheaper mechanism was not enough.
+4. Append the path to `atlas/patches/series`.
+5. Check on a fresh base tree: `tools/apply-overlay.sh --dry-run TREE` prints `ok` for every patch.
+6. Commit the patch file and the series line together, **one commit per patch**, with the header as
+   the commit message (first line: `Atlas overlay patch NNNN: <area>/<name>`).
 
-### Contributions
+To change an existing patch, amend its own commit (rebase `main`), so the history keeps one commit
+per patch.
 
-- For non-trivial changes, start with an issue and wait until a maintainer
-  confirms the bug or agrees that the feature should be implemented.
-- If an issue you want to work on is stale, mention an active maintainer
-  and show your intent to contribute.
-- Please do not use AI for contributing if you don't fully understand its
-  output. We will permanently ban you if you spam our repos with AI slop.
+## Syncing with upstream
 
-## Development
-macOS is our primary development platform, so it's the recommended
-development environment for community contributions.
+`tools/sync-upstream.sh` does the whole cycle and never pushes:
 
-Linux packaging includes a similar development script, so the same guide
-can be applied there too.
+1. fetches the upstream remote with tags and picks its newest release tag;
+2. fast-forwards `upstream` to it (the mirror is never edited or rewritten);
+3. replays the overlay commits one by one onto the release and reports each as `ok` or
+   `CONFLICT` with the files and the patch;
+4. with `--tree DIR` (a base tree of the new release) also dry-runs the overlay against the new
+   engine code, per patch;
+5. moves `main` only when everything replayed cleanly.
 
-[> See development docs in macOS repo][macos-guide]
+A conflict is always fixed in our patch, never in an inherited one: rebase `main` onto the tag,
+fix the patch, regenerate it from a base tree, keep it in its own commit. The lead pushes
+`upstream` and `main` (`main` with `--force-with-lease`, since it is rebased).
 
-## Working with patches
+## Building
 
-Most code changes in this repository are maintained as quilt patches
-applied on top of Chromium.
-
-- Don't edit files in `patches/` directly unless you know exactly what
-  you're doing.
-- Make code changes in the Chromium source tree, then refresh the
-  affected patch.
-- Keep patch ordering and ownership intact.
-- Follow the existing vendor grouping under `patches/` unless maintainers
-  ask for something different.
-
-When working in a platform repository, the usual workflow is:
-
-1. Load the development environment.
-1. Merge the patch series and push all patches.
-1. Use `quilt` in `build/src` to create or edit a patch.
-1. Refresh patches after your changes.
-1. Unmerge the series, verify, commit.
-
-## Code style
-
-- Follow Chromium style and conventions.
-- Prefer existing Chromium or Helium patterns over introducing new abstractions.
-- Keep changes focused and minimal.
-- Proofread surrounding code before submitting.
-- When adding new Helium-authored files to the Chromium tree, include the Helium
-  copyright header used in other patches.
-- Refer to existing Helium patches for guidance if necessary.
+Atlas is built on the WolOS build forge (`atlas/platform/scripts/build.sh`, then
+`atlas/platform/scripts/package.sh`); there is no hosted build. The repository CI only lints:
+shell scripts, the series files and the patch headers, and the inherited series checks.
 
 ## Git style
 
-### Clean commit messages
+- One commit per change: a patch, a flag, a tool, a document. No merge commits on `main`.
+- Subject: `<area>: <what changes>` in plain words, or the patch header's first line for patches.
+- Body: why, in full sentences; mention what is not done.
 
-We use commit titles that are similar to [Linux Kernel Style][linux-style],
-but with a more flexible scope-first format. And without the email prefix,
-obviously.
+## Naming
 
-Examples of titles from recent history as of writing:
-
-```
-- helium/ui/layout: add a ⌘+S shortcut to toggle vertical tabs
-- helium/ui/pdf-viewer: fix stuck width when sidebar's collapsed
-- deps: update ublock to 1.70.0
-- merge: update to chromium 146.0.7680.75
-- helium/core/keyboard-shortcuts: update command state correctly
-```
-
-The part before the colon should describe the area being changed (scope),
-and the part after the colon should explain the change itself.
-
-1. Pick the most helpful scope for the change.
-1. Do not use generic scopes like "feat" or "chore".
-1. Keep titles specific and meaningful rather than generic.
-1. If the change needs extra context, add a body explaining why it was
-   made and what changed.
-
-Make sure that the title is 65 chars long or shorter. This is needed for
-squash merging with a PR reference, so that the total length is 72 chars
-or under.
-
-72 is a common length limit before the title gets wrapped into the body
-in most places (such as GitHub). For example, this final commit title is
-exactly 72 characters long:
-
-```
-helium/ui/customize: add change wallpaper button, fix visibility (#1053)
-```
-
-If a multi-commit pull request contains uninformative or malformed commit
-titles, maintainers will ask you to rewrite them before review/merge.
-
-### Clean commit history
-
-Keep branch history tidy before opening a pull request.
-
-- If your changes are big, split them into several commits with a smaller scope.
-- If you find a bug in an unmerged commit, prefer folding the fix into the
-  commit that introduced it.
-- Use interactive rebase extensively to maintain a clean and readable commit
-  history in your branch.
-- Use `git commit --amend` when fixing the latest commit.
-- Use `git commit --fixup=<hash>` for older commits, then squash during an
-  interactive rebase.
-- Use `git cherry-pick <hash>` for single-commit changes if a rebase is
-  too complex.
-- If you rewrite commits that were already pushed, force push the branch with
-  `git push -f` or alike.
-
-This keeps the branch history easier to review, bisect, and revert.
-
-## Pull requests
-
-Before opening a pull request, make sure that:
-
-- The change is tied to an approved feature request or confirmed bug.
-- The branch builds and runs without issues and has been thoroughly tested.
-  Otherwise, the pull request is marked as draft.
-- The pull request description clearly explains the change scope. The
-  description includes visuals (screenshots, videos) if applicable.
-- You mention which platforms you tested on.
-- The branch is rebased on `main`, or at least the latest Chromium milestone.
-
-Small and focused pull requests are much easier to review. Please split your
-changes into several follow-up PRs if necessary.
+The browser, its pages, its package, its patches and its documentation say **Atlas**. The project
+Atlas is built on is credited by name in [README.md](README.md) and in the licence files, and
+nowhere else; code identifiers inherited from it (symbols, file names of inherited tools) stay as
+they are.
 
 ## Licensing
 
-By contributing to Helium, you agree that your changes will be licensed under
-the repository's existing licensing terms.
-
-<!-- Long referenced links -->
-[macos-guide]: https://github.com/imputnet/helium-macos/blob/main/docs/building.md#development-build-and-environment
-[linux-style]: https://docs.kernel.org/process/submitting-patches.html#the-canonical-patch-format
+Overlay patches that modify files the inherited series patches, and changes to inherited scripts,
+are GPL-3.0-or-later. New source files added to the engine tree are BSD-3-Clause. Inherited files
+keep their licences ([LICENSE](LICENSE), [LICENSE.ungoogled_chromium](LICENSE.ungoogled_chromium)).
