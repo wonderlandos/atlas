@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""atlas-series: the combined patch series of the atlas overlay.
+
+  atlas-series list                 the three series in order, minus atlas/drop.list
+  atlas-series --dry-run TREE       apply the combined series to copies of the files it touches
+                                    (TREE is a prepared source tree, never modified) and report
+                                    the first patch that does not apply, with file and hunk
+
+Series, in the order the build applies them:
+  inherited   <root>/patches/series
+  platform    <root>/atlas/platform/patches/series
+  overlay     <root>/atlas/patches/series
+
+Drop rule: atlas/drop.list names inherited patches to leave out. A dropped patch must be a leaf:
+no later patch in the combined series may touch a file it touches (else the later patch would
+need it); the tool refuses otherwise.
+Python 3 standard library only; run it with -I.
+"""
+import argparse
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+PATCH_FLAGS = ["-p1", "--ignore-whitespace", "--no-backup-if-mismatch", "--forward", "--batch"]
+
+
+def read_series(path):
+    if not path.is_file():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split(" #", 1)[0].strip()
+        if line and not line.startswith("#"):
+            out.append(line)
+    return out
+
+
+def targets(patch_text):
+    """Files a patch touches (b-side of ---/+++ pairs, a-side for deletions)."""
+    files = []
+    for m in re.finditer(r"^--- (?:a/)?(\S+)[^\n]*\n\+\+\+ (?:b/)?(\S+)", patch_text, re.M):
+        a, b = m.group(1), m.group(2)
+        f = a if b == "/dev/null" else b
+        if f != "/dev/null" and f not in files:
+            files.append(f)
+    return files
+
+
+def combined(root):
+    items = []  # (kind, name, path)
+    for kind, base in (("inherited", root / "patches"),
+                       ("platform", root / "atlas/platform/patches"),
+                       ("overlay", root / "atlas/patches")):
+        for name in read_series(base / "series"):
+            items.append((kind, name, base / name))
+    drop = set(read_series(root / "atlas/drop.list"))
+    unknown = drop - {n for k, n, _ in items if k == "inherited"}
+    if unknown:
+        sys.exit("atlas-series: drop.list names patches that are not in the inherited series: "
+                 + ", ".join(sorted(unknown)))
+    texts = {n: p.read_text(encoding="utf-8", errors="replace") for _, n, p in items}
+    names = [n for _, n, _ in items]
+    for d in sorted(drop):
+        mine = set(targets(texts[d]))
+        for n in names[names.index(d) + 1:]:
+            if n in drop:
+                continue
+            clash = mine & set(targets(texts[n]))
+            if clash:
+                sys.exit(f"atlas-series: {d} is not a leaf: {n} touches {sorted(clash)[0]}")
+    return [(k, n, p) for k, n, p in items if n not in drop]
+
+
+def dry_run(root, tree):
+    items = combined(root)
+    counts = {k: sum(1 for i in items if i[0] == k) for k in ("inherited", "platform", "overlay")}
+    with tempfile.TemporaryDirectory(prefix="atlas-series.") as tmp:
+        work = Path(tmp)
+        seen = set()
+        for kind, name, path in items:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for f in targets(text):
+                if f in seen:
+                    continue
+                seen.add(f)
+                src = tree / f
+                if src.is_file():
+                    dst = work / f
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+            r = subprocess.run(["patch", *PATCH_FLAGS, "-d", str(work), "-i", str(path)],
+                               capture_output=True, text=True, check=False)
+            if r.returncode != 0:
+                print(f"FAIL {kind}/{name}")
+                for line in (r.stdout + r.stderr).splitlines():
+                    if re.search(r"FAILED|can't find file|Hunk|malformed|Reversed|rej", line):
+                        print("  " + line)
+                return 1
+    print(f"{counts['inherited']} inherited + {counts['platform']} platform + "
+          f"{counts['overlay']} overlay, applies clean")
+    return 0
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    ap.add_argument("cmd", nargs="?", choices=["list"], help="print the combined series")
+    ap.add_argument("--dry-run", metavar="TREE", help="check that the series applies to TREE")
+    ap.add_argument("--root", default=None, help="fork root (default: two levels above this file)")
+    a = ap.parse_args()
+    root = Path(a.root) if a.root else Path(__file__).resolve().parents[2]
+    if a.dry_run:
+        return dry_run(root, Path(a.dry_run))
+    if a.cmd == "list":
+        for kind, name, _ in combined(root):
+            print(f"{kind}\t{name}")
+        return 0
+    ap.print_help()
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,2 @@
+# One entry per kept build-flag removal: [[flag]] name = "<gn arg>" value = "<value>" saving_bytes = <measured>.
+# Empty at AT-1 (baseline build, no flag changed).
