@@ -1,18 +1,9 @@
-For your pull request to not get closed without review, please confirm that:
-
-- [ ] An issue exists where the maintainers agreed that this should be implemented
-      (an approved feature request, or confirmed bug).
-- [ ] I tested that my contribution works locally, and does not break anything,
-      otherwise I have marked my PR as draft.
-- [ ] If my contribution is non-trivial, I did not use AI to write most of it.
-- [x] I understand that I will be permanently banned from interacting with this
-      organization if I lied by checking any of these checkboxes.
-
-Tested on (check one or more):
-- [ ] Windows
-- [ ] macOS
-- [ ] Linux
+- [ ] One commit per change; a patch commit adds or changes exactly one patch file and its series line.
+- [ ] Nothing under `patches/` is edited; the branch `upstream` is untouched.
+- [ ] `tools/apply-overlay.sh --dry-run TREE` prints `ok` for every patch (say which tree), or I
+      say why I could not run it.
+- [ ] The patch header says why a GN argument, a policy, a flag or a transform was not enough.
 
 ---
 
-[short description of your PR goes here]
+[what changes for the person using Atlas, and how it was tested]

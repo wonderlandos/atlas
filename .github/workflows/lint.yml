@@ -1,33 +1,36 @@
-name: Check patch series correctness
+name: Lint
 
+# Lint only. Atlas is built and released on the WolOS build forge, never by this CI.
 on: [push, pull_request]
 
 permissions:
   contents: read
 
 jobs:
-  lint:
+  inherited-series:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
         python-version: '3.13'
-    - run: python3 ./devutils/lint.py
-
-  i18n:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
-    - name: Regenerate source strings and check for drift
+    - name: Inherited patch series checks
+      run: python3 ./devutils/lint.py
+    - name: Inherited i18n source strings and translation files
       run: |
         python3 ./devutils/i18n.py generate -o /tmp/source.gen.json
-        diff -u ./i18n/source.gen.json /tmp/source.gen.json || {
-          echo "::error::i18n/source.gen.json is out of date. Run: python3 devutils/i18n.py generate"
-          exit 1
-        }
-    - name: Validate translation files
-      run: python3 ./devutils/i18n_lint.py
+        diff -u ./i18n/source.gen.json /tmp/source.gen.json
+        python3 ./devutils/i18n_lint.py
+
+  overlay:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Shell scripts (shellcheck)
+      run: shellcheck tools/*.sh atlas/tests/check_overlay.sh atlas/tests/test_tools.sh
+    - name: Overlay series, names and patch headers
+      run: atlas/tests/check_overlay.sh
+    - name: Series tool
+      run: atlas/tests/test_series.sh
+    - name: Overlay tools
+      run: atlas/tests/test_tools.sh
