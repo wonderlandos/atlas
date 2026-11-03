@@ -2,3 +2,4 @@ privacy/0001-dnt-default-on.patch
 privacy/0002-gpc-default-on.patch
 privacy/0003-services-default-off.patch
 privacy/0004-crash-reporting-default-off.patch
+privacy/0005-metrics-default-off.patch

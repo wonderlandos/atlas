@@ -1,0 +1,25 @@
+Atlas overlay patch 0005: privacy/metrics-default-off
+Why: usage statistics are off by construction. The metrics reporting pref was registered with
+the value of the stats-consent file in the user data directory; it is now registered false, so
+no file, import or leftover state can turn it on. The managed policy MetricsReportingEnabled
+(shipped by the WolOS system package) still governs it, and crash upload still reads that policy.
+Not in patches-0 (it lists the policy, A7); added because a policy file is absent on a plain
+install of the package outside WolOS.
+Files: chrome/browser/browser_process_impl.cc
+Test filter: *MetricsReporting*; chrome://local-state shows user_experience_metrics.reporting_enabled false
+Rebase risk: L (one line; two inherited patches edit other parts of this file)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/browser_process_impl.cc
++++ b/chrome/browser/browser_process_impl.cc
+@@ -1368,7 +1368,7 @@
+ #endif  // BUILDFLAG(IS_CHROMEOS)
+ 
+   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
+-                                GoogleUpdateSettings::GetCollectStatsConsent());
++                                false);
+   registry->RegisterBooleanPref(prefs::kDevToolsRemoteDebuggingAllowed, true);
+   registry->RegisterBooleanPref(prefs::kDevToolsRemoteDebuggingEnabled, false);
+ 
