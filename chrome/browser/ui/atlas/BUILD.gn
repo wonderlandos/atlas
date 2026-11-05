@@ -20,6 +20,7 @@ source_set("atlas_ui") {
   deps = [
     "//base",
     "//chrome/browser/ui/atlas/chrome",
+    "//chrome/browser/ui/atlas/kit",
     "//chrome/browser/ui/atlas/newtab",
     "//chrome/browser/ui/atlas/rest",
     "//chrome/browser/ui/atlas/sidebar",

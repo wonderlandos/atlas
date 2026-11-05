@@ -34,6 +34,15 @@ class PrivacyBubbleController {
   PrivacyBubbleController& operator=(const PrivacyBubbleController&) = delete;
   ~PrivacyBubbleController();
 
+  // Shows the popover under `anchor` and returns its widget. The default is the engine-styled
+  // bubble below; the Kit chrome (ADR 0062) sets one that draws the same rows as a Kit popover.
+  // Process-wide, set before the first button is pressed; an empty callback restores the default.
+  using Presenter =
+      base::RepeatingCallback<views::Widget*(views::View* anchor,
+                                             const PrivacyState& state,
+                                             base::RepeatingClosure open_settings)>;
+  static void SetPresenter(Presenter presenter);
+
   bool IsShowing() const;
 
   // Opens the popover, or closes it when it is already open. `open_settings` runs when the person

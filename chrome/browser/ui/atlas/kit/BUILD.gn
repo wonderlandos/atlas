@@ -1,0 +1,89 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(!is_android)
+
+# The Atlas Kit chrome (owner: ATLAS-UI, ADR 0062): the toolbar and the sidebar
+# as views of our own, drawn with the WolOS Kit numbers (tokens.md, the DS
+# specs). The engine's leaf controls that carry engine logic (the omnibox, the
+# extensions container, the pinned actions with Downloads, the app menu button)
+# are re-hosted inside them. Engine files reach it through the hook lines of
+# patch 0100; it is off unless the browser starts with --atlas-kit-chrome.
+source_set("kit") {
+  sources = [
+    "kit_app_menu.cc",
+    "kit_app_menu.h",
+    "kit_chrome.cc",
+    "kit_chrome.h",
+    "kit_icon_button.cc",
+    "kit_icon_button.h",
+    "kit_layout.cc",
+    "kit_layout.h",
+    "kit_menu.cc",
+    "kit_menu.h",
+    "kit_popover.cc",
+    "kit_popover.h",
+    "kit_privacy_popover.cc",
+    "kit_privacy_popover.h",
+    "kit_sidebar_view.cc",
+    "kit_sidebar_view.h",
+    "kit_tab_menu.cc",
+    "kit_tab_menu.h",
+    "kit_text.cc",
+    "kit_text.h",
+    "kit_toolbar_view.cc",
+    "kit_toolbar_view.h",
+  ]
+  public_deps = [
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser/ui/atlas/kit/vector_icons",
+    "//ui/views",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//cc/paint",
+    "//chrome/app:command_ids",
+    "//chrome/app:generated_resources",
+    "//chrome/browser/ui:browser_commands",
+    "//chrome/browser/ui/atlas/chrome",
+    "//chrome/browser/ui/atlas/sidebar",
+    "//chrome/browser/ui/atlas/toolbar",
+    "//components/favicon/content",
+    "//components/tab_groups",
+    "//components/tabs:public",
+    "//components/vector_icons",
+    "//components/zoom",
+    "//skia",
+    "//ui/accessibility",
+    "//ui/base",
+    "//ui/color",
+    "//ui/display",
+    "//ui/gfx",
+  ]
+}
+
+# The geometry and list-model tests, as a binary of their own like the sidebar's
+# (the slot tree cannot build //chrome/test:unit_tests): `autoninja -C out/Slot
+# atlas_kit_unittests`. kit_layout.cc is compiled in directly so the binary does
+# not link the views.
+test("atlas_kit_unittests") {
+  sources = [
+    "kit_layout.cc",
+    "kit_layout.h",
+    "kit_layout_unittest.cc",
+    "kit_text.cc",
+    "kit_text.h",
+    "kit_text_unittest.cc",
+  ]
+  deps = [
+    "//base",
+    "//chrome/browser/ui/atlas/sidebar",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
+    "//ui/gfx",
+  ]
+}

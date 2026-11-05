@@ -1,0 +1,109 @@
+Atlas overlay patch 0100: ui/kit-chrome-hooks
+Why: the lead wants Atlas to have its own interface instead of the engine's restyled chrome (ADR 0062).
+The Kit chrome (chrome/browser/ui/atlas/kit, new files) draws the toolbar and the tab sidebar as views
+of our own with the WolOS Kit numbers and re-hosts the engine's leaf controls that carry engine logic
+(omnibox, pinned actions with Downloads, extensions, app menu), so extensions, profiles and prefs stay
+the engine's. This patch is only the hook lines: ToolbarView::Init() installs the Kit toolbar,
+ToolbarView::Layout(), CalculatePreferredSize() and GetMinimumSize() defer to it when it is there, and
+the BrowserView constructor puts the Kit sidebar into the vertical tab strip region. Everything is off
+unless the browser starts with --atlas-kit-chrome (phase 1 of ADR 0062: the patch-based chrome stays
+the shipped look until the Kit chrome passes the reel check).
+Files: chrome/browser/ui/views/toolbar/toolbar_view.cc, chrome/browser/ui/views/toolbar/BUILD.gn,
+chrome/browser/ui/views/frame/browser_view.cc
+Test filter: *AtlasKit*
+Rebase risk: M (toolbar_view.cc and browser_view.cc are hot files; the hunks are one include, one call
+in Init, one early return in Layout, two early returns in the size methods, one call after the vertical
+region is made)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -70,6 +70,7 @@
+ #include "chrome/browser/themes/theme_service.h"
+ #include "chrome/browser/themes/theme_service_factory.h"
+ #include "chrome/browser/translate/chrome_translate_client.h"
++#include "chrome/browser/ui/atlas/kit/kit_chrome.h"
+ #include "chrome/browser/ui/accelerator_table.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
+ #include "chrome/browser/ui/actions/chrome_action_properties.h"
+@@ -1110,6 +1111,10 @@
+     }
+     vertical_tab_strip_region_view_ =
+         AddChildView(std::move(vertical_tab_strip_container));
++    if (atlas::kit::IsKitChromeEnabled()) {
++      atlas::kit::InstallKitSidebar(vertical_tab_strip_region_view_,
++                                    browser_.get());
++    }
+   } else {
+     horizontal_tab_strip_region_view_->InitializeTabStrip();
+   }
+--- a/chrome/browser/ui/views/toolbar/BUILD.gn
++++ b/chrome/browser/ui/views/toolbar/BUILD.gn
+@@ -272,6 +272,7 @@
+     "//chrome/browser/ui:view_ids",
+     "//chrome/browser/ui/actions",
+     "//chrome/browser/ui/actions:actions_headers",
++    "//chrome/browser/ui/atlas/kit",
+     "//chrome/browser/ui/atlas/toolbar",
+     "//chrome/browser/ui/bookmarks",
+     "//chrome/browser/ui/browser_window",
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -45,6 +45,7 @@
+ #include "chrome/browser/themes/theme_properties.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
+ #include "chrome/browser/ui/ai_overlay_dialog/ai_overlay_dialog_controller.h"
++#include "chrome/browser/ui/atlas/kit/kit_chrome.h"
+ #include "chrome/browser/ui/atlas/toolbar/toolbar_buttons.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_command_controller.h"
+@@ -942,6 +943,14 @@
+     glic_split_button_controller_->SetVerticalTabsDelegate(this);
+   }
+ 
++  if (display_mode_ == DisplayMode::kNormal &&
++      atlas::kit::IsKitChromeEnabled()) {
++    atlas::kit::InstallKitToolbar(
++        this, browser_view_.get(), location_bar_view_.get(),
++        {pinned_toolbar_actions_container_.get(), extensions_container_.get(),
++         app_menu_button_.get()});
++  }
++
+   initialized_ = true;
+ }
+ 
+@@ -1701,6 +1710,10 @@
+ 
+ gfx::Size ToolbarView::CalculatePreferredSize(
+     const views::SizeBounds& available_size) const {
++  if (const std::optional<gfx::Size> kit = atlas::kit::KitToolbarSize(this)) {
++    return gfx::Size(kit->width(),
++                     kit->height() * size_animation_.GetCurrentValue());
++  }
+   gfx::Size size;
+   switch (display_mode_) {
+     case DisplayMode::kCustomTab:
+@@ -1729,6 +1742,10 @@
+ }
+ 
+ gfx::Size ToolbarView::GetMinimumSize() const {
++  if (const std::optional<gfx::Size> kit = atlas::kit::KitToolbarSize(this)) {
++    return gfx::Size(kit->width(),
++                     kit->height() * size_animation_.GetCurrentValue());
++  }
+   gfx::Size size;
+   switch (display_mode_) {
+     case DisplayMode::kCustomTab:
+@@ -1772,6 +1789,10 @@
+     return;
+   }
+ 
++  if (atlas::kit::LayoutKitToolbar(this)) {
++    return;
++  }
++
+   if (display_mode_ == DisplayMode::kCustomTab) {
+     custom_tab_bar_->SetBounds(0, 0, width(),
+                                custom_tab_bar_->GetPreferredSize().height());

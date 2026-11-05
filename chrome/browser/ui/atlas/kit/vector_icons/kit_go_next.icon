@@ -1,0 +1,20 @@
+// Copyright 2026 The Atlas Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The WolOS symbolic glyph go-next (16 px grid), converted by svg2icon.py.
+
+CANVAS_DIMENSIONS, 16,
+MOVE_TO, 4.72f, 3.28f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 5.78f, 2.22f,
+LINE_TO, 11.28f, 7.72f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 10.22f, 8.78f,
+LINE_TO, 4.72f, 3.28f,
+CLOSE,
+NEW_PATH,
+MOVE_TO, 10.245f, 7.695f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 11.255f, 8.805f,
+LINE_TO, 5.755f, 13.805f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 4.745f, 12.695f,
+LINE_TO, 10.245f, 7.695f,
+CLOSE,

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,6 +25,11 @@
 namespace atlas::toolbar {
 
 namespace {
+
+PrivacyBubbleController::Presenter& PresenterSlot() {
+  static base::NoDestructor<PrivacyBubbleController::Presenter> slot;
+  return *slot;
+}
 
 // Spacing steps of the design (space-2 = 8, space-3 = 12); not new values.
 constexpr int kSpace2 = 8;
@@ -116,6 +122,11 @@ PrivacyBubbleController::~PrivacyBubbleController() {
   Close();
 }
 
+// static
+void PrivacyBubbleController::SetPresenter(Presenter presenter) {
+  PresenterSlot() = std::move(presenter);
+}
+
 bool PrivacyBubbleController::IsShowing() const {
   return widget_ && !widget_->IsClosed();
 }
@@ -145,6 +156,12 @@ void PrivacyBubbleController::Toggle(views::View* anchor,
         open.Run();
       },
       weak_factory_.GetWeakPtr(), std::move(open_settings));
+
+  if (const Presenter& present = PresenterSlot()) {
+    views::Widget* shown = present.Run(anchor, state, follow);
+    widget_ = shown ? shown->GetWeakPtr() : nullptr;
+    return;
+  }
 
   auto model =
       ui::DialogModel::Builder()

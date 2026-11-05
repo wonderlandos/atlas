@@ -1,0 +1,35 @@
+Atlas overlay patch 0101: ui/kit-app-menu
+Why: with the Kit chrome on, the app menu is a Kit popover (chrome/browser/ui/atlas/kit/kit_app_menu.cc):
+the engine's AppMenuModel stays the source of the entries, their enabled state, checks and shortcuts, the
+Kit draws them (rows of 28, radius 12, accent row, section separators, submenus as a popover with a back row).
+One call at the top of BrowserAppMenuButton::ShowMenuWithFlags; it returns false (the engine's own menu is
+shown) unless the browser starts with --atlas-kit-chrome.
+Files: chrome/browser/ui/views/toolbar/browser_app_menu_button.cc
+Test filter: *AtlasKit*
+Rebase risk: L (one include, one call in a function that has not changed shape for years)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/toolbar/browser_app_menu_button.cc
++++ b/chrome/browser/ui/views/toolbar/browser_app_menu_button.cc
+@@ -12,6 +12,7 @@
+ #include "base/task/single_thread_task_runner.h"
+ #include "base/time/time.h"
+ #include "build/branding_buildflags.h"
++#include "chrome/browser/ui/atlas/kit/kit_app_menu.h"
+ #include "chrome/browser/ui/atlas/toolbar/toolbar_glyphs.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/ui_features.h"
+@@ -97,6 +98,11 @@
+ 
+   BrowserWindowInterface* browser = toolbar_view_->browser();
+ 
++  if (atlas::kit::ShowKitAppMenu(this, browser, toolbar_view_,
++                                 toolbar_view_->app_menu_icon_controller())) {
++    return;
++  }
++
+   if (base::FeatureList::IsEnabled(features::kAppMenuGlowUp)) {
+     RunActionMenu(browser, run_types);
+     return;

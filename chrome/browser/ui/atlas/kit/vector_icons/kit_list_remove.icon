@@ -1,0 +1,13 @@
+// Copyright 2026 The Atlas Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The WolOS symbolic glyph list-remove (16 px grid), converted by svg2icon.py.
+
+CANVAS_DIMENSIONS, 16,
+MOVE_TO, 2.75f, 8.75f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 2.75f, 7.25f,
+LINE_TO, 13.25f, 7.25f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 13.25f, 8.75f,
+LINE_TO, 2.75f, 8.75f,
+CLOSE,

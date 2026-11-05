@@ -1,0 +1,43 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/vector_icons/vector_icons.gni")
+
+assert(!is_android)
+
+# The WolOS symbolic glyphs the Kit chrome draws (16 px grid), converted from
+# the design repo's SVGs by svg2icon.py.
+aggregate_vector_icons("atlas_kit_vector_icons") {
+  icon_directory = "."
+
+  sources = [
+    "kit_emblem_ok.icon",
+    "kit_emblem_shared.icon",
+    "kit_folder_open.icon",
+    "kit_go_next.icon",
+    "kit_go_previous.icon",
+    "kit_list_add.icon",
+    "kit_list_remove.icon",
+    "kit_pan_end.icon",
+    "kit_tab_new.icon",
+    "kit_user_trash.icon",
+    "kit_audio_volume_high.icon",
+    "kit_audio_volume_muted.icon",
+    "kit_window_close.icon",
+    "kit_view_fullscreen.icon",
+    "kit_view_refresh.icon",
+    "kit_window_new.icon",
+  ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":atlas_kit_vector_icons")
+
+  deps = [
+    ":atlas_kit_vector_icons",
+    "//base",
+    "//skia",
+    "//ui/gfx",
+  ]
+}
