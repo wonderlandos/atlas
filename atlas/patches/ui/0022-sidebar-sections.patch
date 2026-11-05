@@ -1,0 +1,501 @@
+Atlas overlay patch 0022: ui/sidebar-sections
+Why: the tab list is grouped under PINNED, TODAY, YESTERDAY and EARLIER headers (reel scene R02, R09;
+patches-0 P-07). The sections are visual: the model order stays by position, a dragged tab keeps its
+place and its last-active time, empty sections show nothing, a named group keeps its own header and
+ends the run before it, and the tab in front is always today's. The grouping and the header painting
+are in chrome/browser/ui/atlas/sidebar/sidebar_sections; the containers reserve a band above the
+first row of each section in their layout (so the layout manager animates the bands with the rows)
+and paint the labels in OnPaint. Only a band inside the container can follow the rows through the
+engine's animated layout, so a first-run pref or a policy cannot do this and a lower tier was not
+enough. The tab in front asks its container to lay out again when it changes.
+A named group's name is a header in small caps with no chip, and while the group is collapsed one
+row under it says "N tabs" (a bookmark glyph, the count in the dim colour).
+Files: chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.{h,cc},
+ chrome/browser/ui/views/tabs/common/tab_group_view.{h,cc},
+ chrome/browser/ui/views/tabs/common/tab_group_view_layout.cc,
+ chrome/browser/ui/views/tabs/common/tab_group_header_view.{h,cc},
+ chrome/browser/ui/views/tabs/common/unpinned_tab_container_view_layout.cc,
+ chrome/browser/ui/views/tabs/common/pinned_tab_container_view.{h,cc},
+ chrome/browser/ui/views/tabs/common/tab_view.cc, chrome/browser/ui/views/tabs/common/BUILD.gn
+Test filter: *AtlasSidebar*; journey R02 (headers PINNED/TODAY/YESTERDAY), R09
+Rebase risk: M (the containers, the group view and their layout are young engine code)
+Release: 0.13
+License: BSD-3-Clause (hunks in engine files the inherited series does not patch)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/tabs/common/BUILD.gn
++++ b/chrome/browser/ui/views/tabs/common/BUILD.gn
+@@ -6,6 +6,9 @@
+ import("//chrome/common/features.gni")
+ 
+ source_set("common") {
++  # Atlas: the headers of the common views include the sidebar's section logic.
++  public_deps = [ "//chrome/browser/ui/atlas/sidebar" ]
++
+   sources = [
+     "dragged_tabs_container.h",
+     "pinned_tab_container_view.h",
+--- a/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.cc
++++ b/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/ui/views/tabs/common/pinned_tab_container_view.h"
+ 
+ #include "base/i18n/rtl.h"
++#include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/tabs/features.h"
+ #include "chrome/browser/ui/tabs/tab_style.h"
+@@ -17,6 +18,7 @@
+ #include "chrome/browser/ui/views/tabs/common/tab_view.h"
+ #include "content/public/browser/navigation_controller.h"
+ #include "ui/base/metadata/metadata_impl_macros.h"
++#include "ui/gfx/canvas.h"
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/views/controls/scroll_view.h"
+ #include "ui/views/layout/delegating_layout_manager.h"
+@@ -79,6 +81,27 @@
+ 
+ PinnedTabContainerView::~PinnedTabContainerView() = default;
+ 
++bool PinnedTabContainerView::ShowsAtlasHeader() const {
++  return collection_node_ &&
++         collection_node_->orientation() == TabStripOrientation::kVertical &&
++         !collection_node_->children().empty() &&
++         GetTabStripCollapseState() ==
++             tabs::VerticalTabStripCollapseState::kExpanded;
++}
++
++void PinnedTabContainerView::OnPaint(gfx::Canvas* canvas) {
++  views::View::OnPaint(canvas);
++  if (const ui::ColorProvider* color_provider = GetColorProvider();
++      color_provider && ShowsAtlasHeader()) {
++    atlas::sidebar::PaintSectionHeader(
++        canvas,
++        gfx::Rect(0, 0, width(),
++                  atlas::sidebar::HeaderBandHeight(true, /*with_gap=*/false)),
++        /*row_left=*/0,  // the pinned rows start at x 0 of this container
++        atlas::sidebar::Section::kPinned, *color_provider);
++  }
++}
++
+ views::ProposedLayout PinnedTabContainerView::CalculateProposedLayout(
+     const views::SizeBounds& size_bounds) const {
+   if (collection_node_ &&
+@@ -378,7 +401,9 @@
+   int total_height = 0;
+ 
+   int x = 0;
+-  int y = 0;
++  // Atlas: the rows start below the "Pinned" header.
++  int y = atlas::sidebar::HeaderBandHeight(ShowsAtlasHeader(),
++                                           /*with_gap=*/false);
+   int children_on_row = children.size();
+ 
+   if (children_on_row == 0) {
+--- a/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.h
++++ b/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.h
+@@ -38,6 +38,7 @@
+ 
+   // views::View:
+   gfx::Size GetMinimumSize() const override;
++  void OnPaint(gfx::Canvas* canvas) override;
+ 
+   // TabCollectionAnimatingLayoutManager::Delegate:
+   bool IsDragging() const override;
+@@ -77,6 +78,9 @@
+   std::optional<BrowserRootView::DropIndex> GetLinkDropIndexForExpanded(
+       const gfx::Point& loc_in_container);
+ 
++  // Atlas: whether the "Pinned" header of the sidebar is drawn above the rows.
++  bool ShowsAtlasHeader() const;
++
+   void ResetCollectionNode();
+   void OnCollapseStateChanged(tabs::VerticalTabStripCollapseState state);
+ 
+--- a/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_group_header_view.cc
+@@ -2,6 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include "chrome/browser/ui/atlas/sidebar/group_style.h"
++#include "chrome/browser/ui/atlas/sidebar/row_style.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_group_header_view.h"
+ 
+ #include "base/task/single_thread_task_runner.h"
+@@ -171,6 +173,11 @@
+       editor_bubble_tracker_.RegisterOnBubbleClosed(base::BindRepeating(
+           &TabGroupHeaderView::OnBubbleClosed, base::Unretained(this)));
+ 
++  if (orientation_ == TabStripOrientation::kVertical) {
++    group_header_label_->SetFontList(
++        atlas::sidebar::GroupHeaderFont(group_header_label_->font_list()));
++  }
++
+   SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+   SetInteriorMargin(gfx::Insets::VH(0, GetHorizontalInset()));
+   SetDefault(views::kFlexBehaviorKey,
+@@ -521,7 +528,7 @@
+   if (delegate_->IsValid() && delegate_->GetTabGroup().is_ephemeral()) {
+     OnTabCountChanged();
+   } else {
+-    group_header_label_->SetText(tab_group_visual_data_.title());
++    SetHeaderText(tab_group_visual_data_.title());
+   }
+ 
+   UpdateColors();
+@@ -536,10 +543,16 @@
+   SetHoverCardDataFrom(tab_group_data);
+ }
+ 
++void TabGroupHeaderView::SetHeaderText(const std::u16string& title) {
++  group_header_label_->SetText(orientation_ == TabStripOrientation::kVertical
++                                   ? atlas::sidebar::GroupHeaderText(title)
++                                   : title);
++}
++
+ void TabGroupHeaderView::OnTabCountChanged() {
+   if (delegate_->IsValid() && delegate_->GetTabGroup().is_ephemeral()) {
+     const int tab_count = delegate_->GetTabGroup().tab_count();
+-    group_header_label_->SetText(l10n_util::GetPluralStringFUTF16(
++    SetHeaderText(l10n_util::GetPluralStringFUTF16(
+         IDS_TAB_GROUP_HEADER_EPHEMERAL_TAB_COUNT, tab_count));
+   }
+ }
+@@ -580,6 +593,10 @@
+   if (!GetColorProvider()) {
+     return SK_ColorBLACK;
+   }
++  // Atlas: in the sidebar a group header has no chip; its name is a header.
++  if (orientation_ == TabStripOrientation::kVertical) {
++    return SK_ColorTRANSPARENT;
++  }
+   const bool frame_active = GetWidget() && GetWidget()->ShouldPaintAsActive();
+   if (delegate_->IsValid() && delegate_->GetTabGroup().is_ephemeral()) {
+     const SkColor normal_bg = GetColorProvider()->GetColor(
+@@ -600,6 +617,9 @@
+   if (!GetColorProvider()) {
+     return SK_ColorBLACK;
+   }
++  if (orientation_ == TabStripOrientation::kVertical) {
++    return atlas::sidebar::DimTextColor(*GetColorProvider());
++  }
+   if (delegate_->IsValid() && delegate_->GetTabGroup().is_ephemeral()) {
+     const bool frame_active = GetWidget() && GetWidget()->ShouldPaintAsActive();
+     return GetColorProvider()->GetColor(
+--- a/chrome/browser/ui/views/tabs/common/tab_group_header_view.h
++++ b/chrome/browser/ui/views/tabs/common/tab_group_header_view.h
+@@ -133,6 +133,8 @@
+   void SetEditorBubbleButtonVisibilityOnHover(bool is_hovered);
+   void ShowEditorBubble();
+   void UpdateAccessibleName();
++  // Atlas: the text drawn in the vertical header (small caps).
++  void SetHeaderText(const std::u16string& title);
+   void UpdateIsCollapsed();
+   void UpdateAttentionState(bool needs_attention);
+ 
+--- a/chrome/browser/ui/views/tabs/common/tab_group_view.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_group_view.cc
+@@ -2,6 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include "chrome/browser/ui/atlas/sidebar/group_style.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_group_view.h"
+ 
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+@@ -99,6 +100,17 @@
+       collection_node_->RegisterWillDestroyCallback(base::BindOnce(
+           &TabGroupView::ResetCollectionNode, base::Unretained(this)));
+ 
++  if (orientation_ == TabStripOrientation::kVertical) {
++    atlas_summary_row_ = AddChildView(
++        std::make_unique<atlas::sidebar::GroupSummaryRow>(
++            base::BindRepeating(&TabGroupView::GetAtlasTabCount,
++                                base::Unretained(this)),
++            base::BindRepeating(&TabGroupView::ToggleCollapsedState,
++                                base::Unretained(this),
++                                ToggleTabGroupCollapsedStateOrigin::kMouse)));
++    atlas_summary_row_->SetVisible(false);
++  }
++
+   TabGroup* const tab_group =
+       const_cast<TabGroup*>(GetTabGroupFromNode(collection_node_));
+ 
+@@ -137,6 +149,10 @@
+   }
+ }
+ 
++int TabGroupView::GetAtlasTabCount() const {
++  return collection_node_ ? static_cast<int>(GetTabGroup().tab_count()) : 0;
++}
++
+ void TabGroupView::ToggleCollapsedState(
+     ToggleTabGroupCollapsedStateOrigin origin) {
+   // If the group is in the process of being closed, then ignore updates.
+--- a/chrome/browser/ui/views/tabs/common/tab_group_view.h
++++ b/chrome/browser/ui/views/tabs/common/tab_group_view.h
+@@ -21,6 +21,10 @@
+ class TabGroupHeaderView;
+ class TabGroupLineView;
+ 
++namespace atlas::sidebar {
++class GroupSummaryRow;
++}
++
+ namespace tabs {
+ class TabGroupDataObserver;
+ }
+@@ -121,6 +125,9 @@
+ 
+   bool is_collapsed() const { return is_collapsed_; }
+ 
++  // Atlas: the number of tabs of the group, for its summary row.
++  int GetAtlasTabCount() const;
++
+   void SetIsCollapsed(bool is_collapsed);
+ 
+   void ResetCollectionNode();
+@@ -132,6 +139,8 @@
+   tab_groups::TabGroupVisualData tab_group_visual_data_;
+   const raw_ptr<TabGroupHeaderView> group_header_ = nullptr;
+   const raw_ptr<TabGroupLineView> group_line_ = nullptr;
++  // Atlas: the "N tabs" row of a collapsed group in the vertical sidebar.
++  raw_ptr<atlas::sidebar::GroupSummaryRow> atlas_summary_row_ = nullptr;
+ 
+   // The available main-axis space allocated by the parent unpinned container.
+   views::SizeBound available_space_;
+--- a/chrome/browser/ui/views/tabs/common/tab_group_view_layout.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_group_view_layout.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/ui/views/tabs/common/tab_group_view_layout.h"
+ 
+ #include <algorithm>
++#include "chrome/browser/ui/atlas/sidebar/group_style.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/tabs/tab_style.h"
+ #include "chrome/browser/ui/views/tabs/common/split_tab_view.h"
+@@ -98,6 +99,26 @@
+       header_bounds.height() + kGroupHeaderVerticalMargin + kTabVerticalPadding;
+   width = std::max(width, header_bounds.width());
+ 
++  // Atlas: a collapsed group in the expanded sidebar has one row under its
++  // header, "N tabs".
++  const bool show_summary =
++      tab_group_view->atlas_summary_row_ && tab_group_view->IsCollapsed() &&
++      tab_strip_collapse_state ==
++          tabs::VerticalTabStripCollapseState::kExpanded;
++  int summary_height = 0;
++  if (tab_group_view->atlas_summary_row_) {
++    gfx::Rect summary_bounds(
++        GetLayoutConstant(LayoutConstant::kVerticalTabStripHorizontalPadding),
++        header_bounds.bottom() + kGroupHeaderVerticalMargin,
++        0, atlas::sidebar::kGroupSummaryRowHeight);
++    if (size_bounds.width().is_bounded()) {
++      summary_bounds.set_width(size_bounds.width().value() - summary_bounds.x());
++    }
++    layouts.child_layouts.emplace_back(tab_group_view->atlas_summary_row_.get(),
++                                       show_summary, summary_bounds);
++    summary_height = show_summary ? summary_bounds.height() : 0;
++  }
++
+   // If the tab strip is not collapsed then the group line is below and left
+   // aligned with the header.
+   if (tab_strip_collapse_state ==
+@@ -174,7 +195,8 @@
+ 
+   layouts.host_size = gfx::Size(
+       width, is_group_collapsed
+-                 ? header_bounds.height() + (2 * kGroupHeaderVerticalMargin)
++                 ? header_bounds.height() + (2 * kGroupHeaderVerticalMargin) +
++                       summary_height
+                  : std::max(height, dragged_view_bottom));
+   return layouts;
+ }
+--- a/chrome/browser/ui/views/tabs/common/tab_view.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_view.cc
+@@ -47,6 +47,7 @@
+ #include "chrome/browser/ui/views/tabs/common/tab_strip_view.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_view_horizontal_layout.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.h"
++#include "chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.h"
+ #include "chrome/browser/ui/views/tabs/common/vertical_tab_style_views.h"
+ #include "chrome/browser/ui/views/tabs/shared/tab_strip_types.h"
+ #include "chrome/browser/ui/views/tabs/tab/alert_indicator_button.h"
+@@ -1132,6 +1133,13 @@
+   UpdateColors();
+   UpdateZOrder();
+   InvalidateLayout();
++
++  // Atlas: the tab in front belongs to "Today", so the section headers of the
++  // sidebar are laid out again when the tab in front changes.
++  if (auto* container =
++          views::AsViewClass<UnpinnedTabContainerView>(parent())) {
++    container->InvalidateLayout();
++  }
+ }
+ 
+ void TabView::UpdateZOrder() {
+--- a/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.cc
++++ b/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.h"
+ 
++#include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/tabs/tab_style.h"
+ #include "chrome/browser/ui/views/tabs/common/dragged_tabs_container.h"
+@@ -16,8 +17,10 @@
+ #include "chrome/browser/ui/views/tabs/common/tab_view.h"
+ #include "chrome/browser/ui/views/tabs/common/unpinned_tab_container_view_layout.h"
+ #include "components/tabs/public/tab_group.h"
++#include "components/tabs/public/tab_interface.h"
+ #include "content/public/browser/navigation_controller.h"
+ #include "ui/base/metadata/metadata_impl_macros.h"
++#include "ui/gfx/canvas.h"
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/views/controls/scroll_view.h"
+ #include "ui/views/layout/layout_types.h"
+@@ -112,6 +115,66 @@
+ 
+ UnpinnedTabContainerView::~UnpinnedTabContainerView() = default;
+ 
++bool UnpinnedTabContainerView::ShowsAtlasSectionHeaders() const {
++  return collection_node_ &&
++         collection_node_->orientation() == TabStripOrientation::kVertical &&
++         GetTabStripCollapseState() ==
++             tabs::VerticalTabStripCollapseState::kExpanded;
++}
++
++std::vector<std::optional<atlas::sidebar::Section>>
++UnpinnedTabContainerView::GetAtlasSectionHeaders(
++    const std::vector<const views::View*>& shown) const {
++  std::vector<atlas::sidebar::SectionRow> rows;
++  rows.reserve(shown.size());
++  for (const views::View* view : shown) {
++    atlas::sidebar::SectionRow row;
++    row.kind = atlas::sidebar::RowKind::kOther;
++    if (const auto* tab_view = views::AsViewClass<TabView>(view)) {
++      row.kind = atlas::sidebar::RowKind::kTab;
++      row.active = tab_view->IsActive();
++      if (const tabs::TabInterface* tab = tab_view->GetTabInterface()) {
++        row.last_active = tab->GetLastActiveTime();
++      }
++    } else if (views::IsViewClass<TabGroupView>(view)) {
++      row.kind = atlas::sidebar::RowKind::kGroup;
++    }
++    rows.push_back(row);
++  }
++  return atlas::sidebar::SectionHeaders(rows, base::Time::Now());
++}
++
++void UnpinnedTabContainerView::OnPaint(gfx::Canvas* canvas) {
++  views::View::OnPaint(canvas);
++  if (!ShowsAtlasSectionHeaders()) {
++    return;
++  }
++  std::vector<const views::View*> shown;
++  for (const views::View* child : collection_node_->GetDirectChildren()) {
++    if (child->GetVisible()) {
++      shown.push_back(child);
++    }
++  }
++  const std::vector<std::optional<atlas::sidebar::Section>> headers =
++      GetAtlasSectionHeaders(shown);
++  const ui::ColorProvider* color_provider = GetColorProvider();
++  if (!color_provider) {
++    return;
++  }
++  const int row_left =
++      GetLayoutConstant(LayoutConstant::kVerticalTabStripHorizontalPadding);
++  for (size_t i = 0; i < shown.size(); ++i) {
++    // The row being dragged keeps its band but leaves its label behind.
++    if (!headers[i] || IsViewDragging(*shown[i])) {
++      continue;
++    }
++    const int band_height = atlas::sidebar::HeaderBandHeight(true, true);
++    atlas::sidebar::PaintSectionHeader(
++        canvas, gfx::Rect(0, shown[i]->y() - band_height, width(), band_height),
++        row_left, *headers[i], *color_provider);
++  }
++}
++
+ 
+ std::optional<BrowserRootView::DropIndex>
+ UnpinnedTabContainerView::GetLinkDropIndex(const gfx::Point& loc_in_container) {
+--- a/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.h
++++ b/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view.h
+@@ -5,8 +5,12 @@
+ #ifndef CHROME_BROWSER_UI_VIEWS_TABS_COMMON_UNPINNED_TAB_CONTAINER_VIEW_H_
+ #define CHROME_BROWSER_UI_VIEWS_TABS_COMMON_UNPINNED_TAB_CONTAINER_VIEW_H_
+ 
++#include <optional>
++#include <vector>
++
+ #include "base/callback_list.h"
+ #include "base/memory/raw_ptr.h"
++#include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
+ #include "chrome/browser/ui/views/frame/browser_root_view.h"
+ #include "chrome/browser/ui/views/tabs/common/dragged_tabs_container.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_collection_animating_layout_manager.h"
+@@ -51,6 +55,16 @@
+   std::optional<BrowserRootView::DropIndex> GetLinkDropIndex(
+       const gfx::Point& point_in_local_coords);
+ 
++  // Atlas: the section headers of the sidebar. Whether this container draws
++  // them (vertical, expanded), and the header above each of the `shown` rows
++  // (see atlas::sidebar::SectionHeaders).
++  bool ShowsAtlasSectionHeaders() const;
++  std::vector<std::optional<atlas::sidebar::Section>> GetAtlasSectionHeaders(
++      const std::vector<const views::View*>& shown) const;
++
++  // views::View:
++  void OnPaint(gfx::Canvas* canvas) override;
++
+   // Returns the unconstrained target preferred size that this container will
+   // occupy once current animations complete.
+   gfx::Size GetTargetPreferredSize() const;
+--- a/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view_layout.cc
++++ b/chrome/browser/ui/views/tabs/common/unpinned_tab_container_view_layout.cc
+@@ -8,6 +8,7 @@
+ #include <vector>
+ 
+ #include "base/numerics/safe_conversions.h"
++#include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/tabs/tab_style.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_collection_node.h"
+@@ -242,6 +243,20 @@
+   const int horizontal_padding =
+       GetLayoutConstant(LayoutConstant::kVerticalTabStripHorizontalPadding);
+ 
++  // Atlas: a band above the first row of each section (the sidebar's headers).
++  std::vector<std::optional<atlas::sidebar::Section>> section_headers;
++  size_t shown_index = 0;
++  if (tab_container_view->ShowsAtlasSectionHeaders()) {
++    std::vector<const views::View*> shown;
++    for (auto* child : children) {
++      if (IsChildVisibleInContainer(tab_container_view, focused_group_id,
++                                    child)) {
++        shown.push_back(child);
++      }
++    }
++    section_headers = tab_container_view->GetAtlasSectionHeaders(shown);
++  }
++
+   for (auto* child : children) {
+     int x =
+         views::AsViewClass<TabGroupView>(child) &&
+@@ -278,6 +293,11 @@
+       continue;
+     }
+ 
++    if (shown_index < section_headers.size()) {
++      height += atlas::sidebar::HeaderBandHeight(
++          section_headers[shown_index].has_value(), /*with_gap=*/true);
++      ++shown_index;
++    }
+     bounds.set_y(drag_data ? drag_data->offset.y() : height);
+ 
+     if (size_bounds.width().is_bounded()) {

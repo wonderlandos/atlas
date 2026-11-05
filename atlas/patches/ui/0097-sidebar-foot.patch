@@ -1,0 +1,30 @@
+Atlas overlay patch 0097: ui/sidebar-foot
+Why: in the reel (scene 3, pose atlas-ntp-light) the "New tab" row with its shortcut is the foot of
+the sidebar, under its rule, whatever the number of tabs; the engine's bottom container grows with
+the free space but keeps its button at the top, so with a few tabs the row followed the last tab.
+Aligning the container's content to its end puts the row at the foot (and the + of the collapsed
+rail at the bottom of the rail). No setting places it, so this is two alignment lines.
+Files: chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
+Test filter: *AtlasSidebar*; reel-check scene R02 (footer row at the foot of the sidebar)
+Rebase risk: L (two lines in one small function)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
++++ b/chrome/browser/ui/views/tabs/vertical/vertical_tab_strip_bottom_container.cc
+@@ -86,8 +86,13 @@
+ 
+   // Setting button's layout based on collapsed state
+   SetOrientation(orientation);
++  // Atlas (patch 0097): the "New tab" row is the foot of the sidebar, under a
++  // rule, however few tabs there are (reel scene 3); the space above it stays
++  // free (window caption).
+   SetCrossAxisAlignment(collapsed ? views::LayoutAlignment::kStretch
+-                                  : views::LayoutAlignment::kStart);
++                                  : views::LayoutAlignment::kEnd);
++  SetMainAxisAlignment(collapsed ? views::LayoutAlignment::kEnd
++                                 : views::LayoutAlignment::kStart);
+ 
+   new_tab_button_->SetProperty(
+       views::kFlexBehaviorKey,

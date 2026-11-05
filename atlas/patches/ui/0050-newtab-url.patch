@@ -1,0 +1,28 @@
+Atlas overlay patch 0050: ui/newtab-url
+Why: the new tab page of normal windows is the Atlas page (components/atlas_pages/newtab), served at the engine's own new tab address chrome://new-tab-page/ by replacing the one WebUI config of that host. Keeping the address means the tab title and icon, the empty address bar, the permission and extension checks (about twelve places key on host "new-tab-page") keep working with no hunk of their own. The inherited always-use-better-ntp patch already makes search.cc return that address for every default search provider, so search.cc and new_tab_ui.cc are not touched; incognito, guest and isolated windows keep the engine's chrome://newtab page. A policy or pref cannot choose the controller behind a WebUI host, so this is the smallest tier that works: two lines.
+Files: chrome/browser/ui/webui/chrome_web_ui_configs.cc
+Test filter: *AtlasNewTab*; journey R02b (open a new tab, DOM check over CDP)
+Rebase risk: L (one include and one registration line; the neighbouring lines are the engine's alphabetical-by-feature list)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in a file the inherited series patches)
+Verified at: 156.0.8078.79, base tree only (NOT yet on the prepared tree with the inherited and platform series applied; ATLAS-NTP to re-run in a dev slot)
+
+--- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+@@ -71,6 +71,7 @@
+ #include "ui/webui/buildflags.h"
+ 
+ #if BUILDFLAG(ENABLE_WEBUI_NTP)
++#include "chrome/browser/ui/atlas/newtab/newtab_ui.h"
+ #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+ #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
+ #endif  // BUILDFLAG(ENABLE_WEBUI_NTP)
+@@ -327,7 +328,7 @@
+   map.AddWebUIConfig(std::make_unique<WebRtcLogsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<RegionalCapabilitiesInternalsUIConfig>());
+ #if BUILDFLAG(ENABLE_WEBUI_NTP)
+-  map.AddWebUIConfig(std::make_unique<NewTabPageUIConfig>());
++  map.AddWebUIConfig(std::make_unique<atlas::newtab::NewTabUIConfig>());
+   map.AddWebUIConfig(std::make_unique<CustomizeChromeUIConfig>());
+ #endif  // BUILDFLAG(ENABLE_WEBUI_NTP)
+ 

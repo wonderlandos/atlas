@@ -1,0 +1,8 @@
+# Overlay series fragment brand: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-BRAND-FORK (0011, 0012) and ATLAS-ANCHOR (0013, the policy directory). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0011-0019
+brand/0011-about-version.patch
+brand/0012-about-updates-row.patch
+brand/0013-policy-directory.patch

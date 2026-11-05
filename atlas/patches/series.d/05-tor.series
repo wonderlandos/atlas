@@ -1,0 +1,5 @@
+# Overlay series fragment tor: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-TOR (ADR 0053). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0006-0009

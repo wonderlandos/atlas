@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Files of the new tab page (owner: ATLAS-NTP), each with
+     file= newtab/<file> (relative to the root grd, components/atlas_pages) and
+     resource_path="newtab/<file>"; newtab/index.html is the page. host.engine.js is served under
+     the name host.js. theme.css is not listed: the shared page source writes it from the live
+     theme. host.js and theme.css of this directory are the preview host and the preview tokens and
+     are not part of the build. -->
+<grit-part>
+  <include name="IDR_ATLAS_NEWTAB_INDEX_HTML"
+           file="newtab/index.html"
+           resource_path="newtab/index.html"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_NEWTAB_CSS"
+           file="newtab/newtab.css"
+           resource_path="newtab/newtab.css"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_NEWTAB_CATEGORIES_CSS"
+           file="newtab/categories.css"
+           resource_path="newtab/categories.css"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_NEWTAB_JS"
+           file="newtab/newtab.js"
+           resource_path="newtab/newtab.js"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_NEWTAB_HOST_JS"
+           file="newtab/host.engine.js"
+           resource_path="newtab/host.js"
+           type="BINDATA" />
+</grit-part>

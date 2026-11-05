@@ -1,0 +1,9 @@
+# Overlay series fragment vault: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-VAULT. One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0060-0069
+ui/0060-passwords-entry.patch
+security/0061-keyring-label.patch
+security/0062-password-saving-default-on.patch
+security/0063-keyring-required.patch

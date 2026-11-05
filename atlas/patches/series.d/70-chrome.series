@@ -1,0 +1,9 @@
+# Overlay series fragment chrome: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-CHROME (0070-0072) and ATLAS-THEME (0073-0079). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0070-0079
+ui/0070-ui-tokens.patch
+ui/0071-omnibox-find-ring.patch
+ui/0072-webui-tokens.patch
+ui/0073-accent-seed.patch

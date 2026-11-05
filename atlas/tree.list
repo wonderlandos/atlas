@@ -1,0 +1,8 @@
+# The overlay tree: directories of new engine files, kept here at their engine path and copied into
+# the engine tree as they are (atlas/tools/atlas-series install-tree). One engine-relative directory
+# per line; its last component starts with "atlas". Overlay patches only hook these files into
+# engine files; they never patch them. Owners: atlas/README.md, "Numbering and owners".
+chrome/app/atlas
+chrome/browser/ui/atlas
+components/atlas_host
+components/atlas_pages

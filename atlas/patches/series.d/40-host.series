@@ -1,0 +1,7 @@
+# Overlay series fragment host: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-HOST. One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0040-0049
+host/0040-atlas-host-core.patch
+host/0041-download-verbs.patch

@@ -1,0 +1,187 @@
+/* SPDX-License-Identifier: BSD-3-Clause
+   Atlas new tab page. Colours are the WolOS theme variables of theme.css and the category
+   variables of categories.css, never a literal (hig.md section 2; the Atlas brand set,
+   tokens.md sections 1 and 5). Type sizes are the HIG scale: 26 large title, 22 empty-state
+   title, 15 heading, 13 body, 11 secondary. Motion: the brand set's motion.md. */
+
+:root {
+  --block-gap: calc(var(--space-6) + var(--space-2));
+  --column: 656px; /* six 96 px cards and five 16 px gaps; two 320 px cards and one gap */
+  --accent-tint: color-mix(in srgb, var(--accent) 22%, transparent);
+  --ring: color-mix(in srgb, var(--accent) 90%, transparent);
+  --hover: color-mix(in srgb, var(--card) 94%, var(--text));
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--surface);
+  color: var(--text);
+  font: 400 13px/1.45 Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+[hidden] { display: none !important; }
+
+/* The page: one centred column, the status line at the bottom */
+.page { min-height: 100%; display: flex; flex-direction: column; }
+.column {
+  width: min(var(--column), 100%);
+  margin-inline: auto;
+  padding: clamp(var(--space-6), 11vh, 84px) var(--space-6) var(--space-6);
+  display: flex; flex-direction: column; gap: var(--block-gap);
+}
+@media (min-width: 704px) { .column { padding-inline: 0; } }
+
+/* Badge and title */
+.hero { display: flex; flex-direction: column; align-items: center; gap: var(--space-6); }
+.badge { width: 72px; height: 72px; }
+h1 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; text-align: center; }
+.hero + .search { margin-top: calc(var(--space-4) - var(--block-gap)); } /* title to field: 16 */
+
+/* Search field: 560 x 40, radius 10, card with a 1 px line */
+.search { position: relative; width: min(560px, 100%); height: 40px; margin-inline: auto; }
+.search-glyph {
+  position: absolute; left: var(--space-4); top: var(--space-3); width: 16px; height: 16px;
+  fill: var(--dim); pointer-events: none;
+}
+.search-field {
+  display: block; width: 100%; height: 100%; margin: 0;
+  padding: 0 var(--space-4) 0 40px;
+  border: 0; border-radius: var(--radius-m);
+  background: var(--card); color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font: inherit;
+}
+.search-field::placeholder { color: var(--dim); opacity: 1; }
+.search-field:focus-visible, .search-field:focus { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Sections */
+.block { display: flex; flex-direction: column; gap: var(--space-3); }
+.heading { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.2; }
+.hint { margin: 0; color: var(--dim); }
+
+/* Pinned: cards 96 x 88, 16 px gap, radius 10, a 32 px tile in the category colour with a
+   16 px glyph (the glyph is the theme's accentText, white in both built-in themes) */
+.pins {
+  margin: 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(auto-fill, 96px); gap: var(--space-4);
+}
+.pin { position: relative; width: 96px; height: 88px; }
+.pin-link {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-4);
+  width: 100%; height: 100%; padding: var(--space-3) var(--space-2) 0;
+  border-radius: var(--radius-m);
+  background: var(--card); color: var(--dim);
+  box-shadow: inset 0 0 0 1px var(--line);
+  text-decoration: none; cursor: default;
+  transition: background-color var(--motion-fast) var(--ease);
+}
+.pin-link:hover { background: var(--hover); }
+.tile {
+  flex: none; width: 32px; height: 32px; border-radius: var(--space-2);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cat-web); color: var(--accent-text);
+}
+.cat-web { background: var(--cat-web); }
+.cat-talk { background: var(--cat-talk); }
+.cat-files { background: var(--cat-files); }
+.cat-media { background: var(--cat-media); }
+.cat-store { background: var(--cat-store); }
+.cat-system { background: var(--cat-system); }
+.glyph { width: 16px; height: 16px; fill: currentColor; }
+.pin-label {
+  max-width: 100%; font-size: 11px; line-height: 16px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pin-remove {
+  position: absolute; top: var(--space-1); right: var(--space-1);
+  width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--space-1);
+  background: none; color: var(--dim); cursor: default;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease);
+}
+.pin-remove .glyph { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.pin:hover .pin-remove, .pin:focus-within .pin-remove { opacity: 1; }
+.pin-remove:hover { background: var(--control); color: var(--text); }
+
+/* Pick up where you left off: cards 320 x 64, radius 10 */
+.recents {
+  margin: 0; padding: 0; list-style: none;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(0, 320px)); gap: var(--space-4);
+}
+.recents li { min-width: 0; height: 64px; }
+.recents li { width: 100%; max-width: 320px; }
+.recent {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  width: 100%; height: 100%; padding: var(--space-4);
+  border-radius: var(--radius-m);
+  background: var(--card); color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+  text-decoration: none; cursor: default;
+  transition: background-color var(--motion-fast) var(--ease);
+}
+.recent:hover { background: var(--hover); }
+.recent .glyph { flex: none; fill: var(--accent); }
+.recent-text { min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.recent-title, .recent-when { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 16px; }
+.recent-title { font-weight: 600; }
+.recent-when { font-size: 11px; color: var(--dim); }
+
+/* Empty state: icon, title, one line, one action (the EmptyState pattern) */
+.empty { align-items: center; text-align: center; gap: var(--space-2); padding-block: var(--space-4); }
+.empty-glyph { width: 32px; height: 32px; fill: var(--dim); margin-bottom: var(--space-2); }
+.empty-title { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.3; }
+.empty .secondary { margin-top: var(--space-2); }
+
+/* Status line: a quiet fact, 24 px, no action */
+.status {
+  margin: auto 0 0; height: 24px; padding: 0 var(--space-4);
+  border-top: 1px solid var(--line);
+  font-size: 11px; line-height: 23px; color: var(--dim); text-align: center;
+  user-select: none;
+}
+
+/* Buttons and focus */
+button { font: inherit; color: inherit; }
+.secondary {
+  min-width: 96px; height: 36px; padding: 0 var(--space-4);
+  border: 0; border-radius: var(--radius-s);
+  background: var(--control); color: var(--text);
+  font-weight: 600; cursor: default;
+  transition: background-color var(--motion-fast) var(--ease);
+}
+.secondary:hover { background: color-mix(in srgb, var(--control) 90%, var(--text)); }
+:is(.pin-link, .recent, .secondary, .pin-remove):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Motion (motion.md section 2, "New tab page appears"): heading, search field, Pinned and
+   Pick up where you left off enter one after another, 30 ms apart, an 8 px rise and a fade,
+   on normal and ease; transform and opacity only. Only the first time a window shows the page
+   (the host says so); the page is hidden until the host has answered, so there is no flash. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.pending [data-enter] { opacity: 0; }
+.is-entering [data-enter] {
+  animation: rise var(--motion-normal) var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+/* Reduce motion: every move jumps to its end state */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+:root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+  animation: none !important; transition: none !important;
+}
+
+/* Contrast mode of the system: boundaries become text at 55% */
+@media (prefers-contrast: more) {
+  .pin-link, .recent, .search-field { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 55%, transparent); }
+  .status { border-top-color: color-mix(in srgb, var(--text) 55%, transparent); }
+}

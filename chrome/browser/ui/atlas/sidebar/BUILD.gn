@@ -1,0 +1,85 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(!is_android)
+
+# Atlas sidebar (owner: ATLAS-SIDEBAR). Linked into //chrome/browser/ui (anchor patch 0010). The
+# engine's tab-strip targets (chrome/browser/ui/views/tabs/common) depend on this target for its
+# row style and section logic, so it depends only on leaf targets and never on the views of the tab
+# strip: those pass what is needed in as plain values.
+source_set("sidebar") {
+  sources = [
+    "footer_row.cc",
+    "footer_row.h",
+    "group_style.cc",
+    "group_style.h",
+    "row_style.cc",
+    "row_style.h",
+    "sidebar_prefs.cc",
+    "sidebar_prefs.h",
+    "sidebar_sections.cc",
+    "sidebar_sections.h",
+  ]
+  public_deps = [
+    "//skia",
+    "//ui/gfx",
+    "//ui/views",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//cc/paint",
+    "//chrome/app:generated_resources",
+    "//components/pref_registry",
+    "//ui/accessibility",
+    "//ui/base",
+    "//ui/color",
+    "//ui/events",
+  ]
+}
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "footer_row_unittest.cc",
+    "group_style_unittest.cc",
+    "row_font_unittest.cc",
+    "row_paint_unittest.cc",
+    "row_style_unittest.cc",
+    "sidebar_labels_unittest.cc",
+    "sidebar_sections_unittest.cc",
+  ]
+  deps = [
+    ":sidebar",
+    "//base",
+    "//skia",
+    "//testing/gtest",
+    "//ui/color",
+    "//ui/gfx",
+    "//ui/views",
+    "//ui/views:test_support",
+  ]
+}
+
+# The tests that need no string resources, as a binary of their own: the slot's prepared tree has no
+# chrome/test/data/webui, so //chrome/test:unit_tests cannot be built there. Not part of any group: build it
+# by name (`autoninja -C out/Slot atlas_sidebar_unittests`).
+test("atlas_sidebar_unittests") {
+  sources = [
+    "row_style_unittest.cc",
+    "sidebar_sections_unittest.cc",
+  ]
+  deps = [
+    ":sidebar",
+    "//base",
+    "//skia",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
+    "//ui/color",
+    "//ui/gfx",
+  ]
+}

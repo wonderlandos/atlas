@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Atlas strings of the sidebar area (owner: ATLAS-SIDEBAR). A part of
+     chrome/app/generated_resources.grd (anchor patch 0010): add <message name="IDS_ATLAS_..."> elements
+     here, never in generated_resources.grd. -->
+<grit-part>
+  <message name="IDS_ATLAS_SIDEBAR_SECTION_PINNED" desc="Header of the pinned tabs in the tab sidebar. It is drawn in capital letters.">
+    Pinned
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_SECTION_TODAY" desc="Header of the tabs used today in the tab sidebar. It is drawn in capital letters.">
+    Today
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_SECTION_YESTERDAY" desc="Header of the tabs last used yesterday in the tab sidebar. It is drawn in capital letters.">
+    Yesterday
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_SECTION_EARLIER" desc="Header of the tabs last used before yesterday in the tab sidebar. It is drawn in capital letters.">
+    Earlier
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_NEW_TAB" desc="Label of the row at the bottom of the tab sidebar that opens a new tab.">
+    New tab
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT" desc="The keys that open a new tab, shown at the right of the New tab row of the tab sidebar, written like the WolOS shortcut sheet: the command glyph stands for Super, the key with the WolOS logo.">
+    ⌘T
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT" desc="Summary of a collapsed tab group in the tab sidebar: how many tabs it holds.">
+    {COUNT, plural,
+      =1 {1 tab}
+      other {# tabs}}
+  </message>
+</grit-part>

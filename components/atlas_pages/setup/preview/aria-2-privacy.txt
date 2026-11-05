@@ -1,0 +1,19 @@
+- region "Private from the start":
+  - heading "Private from the start" [level=1]
+  - paragraph: These are on already. You can turn any of them off here or later in Settings.
+  - list "Privacy":
+    - listitem:
+      - text: Do Not Track Sites are asked not to follow you. Some sites ignore the request.
+      - switch "Do Not Track" [checked]
+    - listitem:
+      - text: Global Privacy Control Sites are told not to sell or share your data. In some places the law requires sites to honour it.
+      - switch "Global Privacy Control" [checked]
+    - listitem:
+      - text: Tracker blocking A list built into Atlas stops known trackers and ads from loading.
+      - switch "Tracker blocking" [checked]
+    - listitem: No usage data Atlas sends no statistics and no crash reports. Crash details stay on this PC. Never sent
+    - listitem: No account There is nothing to sign in to, and nothing will ask you to. None needed
+  - button "Skip setup"
+  - text: Keeps what is on this page.
+  - button "Back"
+  - button "Continue"

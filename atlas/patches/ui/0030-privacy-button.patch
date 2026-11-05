@@ -1,0 +1,148 @@
+Atlas overlay patch 0030: ui/privacy-button
+Why: the toolbar of the reel is sidebar toggle, back, forward, reload, the omnibox, then privacy,
+bookmark, downloads and the menu (reel scene R02). The privacy button and the bookmark button are
+new files in the overlay tree (chrome/browser/ui/atlas/toolbar); this patch only hooks them in:
+ToolbarView::Init() adds them right after the omnibox, ShowBookmarkBubble() anchors to the toolbar
+bookmark button when it is shown, and the bookmark page action of the omnibox steps aside while the
+pref atlas.toolbar.show_bookmark_button is on (default on), so the page has one bookmark control.
+The default button set of a new profile is not changed here but by the registrar of the area
+(toolbar_prefs.cc, SetDefaultPrefValue on the engine's own helium.browser.show_* prefs and the
+pinned actions), so the person keeps the engine's own way of choosing buttons.
+Files: chrome/browser/ui/views/toolbar/toolbar_view.cc, chrome/browser/ui/views/toolbar/BUILD.gn,
+chrome/browser/ui/views/bookmarks/bookmark_page_action_controller.{h,cc},
+chrome/browser/ui/views/bookmarks/BUILD.gn
+Test filter: *AtlasToolbar*
+Rebase risk: M (toolbar_view.cc is a hot file; the three hunks there are one include, one call and
+one block in ShowBookmarkBubble)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/toolbar/BUILD.gn
++++ b/chrome/browser/ui/views/toolbar/BUILD.gn
+@@ -272,6 +272,7 @@
+     "//chrome/browser/ui:view_ids",
+     "//chrome/browser/ui/actions",
+     "//chrome/browser/ui/actions:actions_headers",
++    "//chrome/browser/ui/atlas/toolbar",
+     "//chrome/browser/ui/bookmarks",
+     "//chrome/browser/ui/browser_window",
+     "//chrome/browser/ui/color:mixers",
+--- a/chrome/browser/ui/views/bookmarks/BUILD.gn
++++ b/chrome/browser/ui/views/bookmarks/BUILD.gn
+@@ -107,6 +107,7 @@
+     "//chrome/browser/ui:layout_constants",
+     "//chrome/browser/ui:ui_features",
+     "//chrome/browser/ui:view_ids",
++    "//chrome/browser/ui/atlas/toolbar",
+     "//chrome/browser/ui/browser_window",
+     "//chrome/browser/ui/desktop_to_mobile_promos:controller",
+     "//chrome/browser/ui/desktop_to_mobile_promos:service",
+--- a/chrome/browser/ui/views/bookmarks/bookmark_page_action_controller.h
++++ b/chrome/browser/ui/views/bookmarks/bookmark_page_action_controller.h
+@@ -5,6 +5,7 @@
+ #ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_PAGE_ACTION_CONTROLLER_H_
+ #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_PAGE_ACTION_CONTROLLER_H_
+ 
++#include "base/memory/raw_ptr.h"
+ #include "base/scoped_observation.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
+@@ -75,6 +76,10 @@
+ 
+   const raw_ref<page_actions::PageActionController> page_action_controller_;
+   BooleanPrefMember edit_bookmarks_enabled_;
++  // Atlas: while the toolbar has its own bookmark button, the omnibox
++  // draws no star.
++  const raw_ptr<PrefService> pref_service_;
++  BooleanPrefMember atlas_bookmark_button_;
+ 
+   base::ScopedObservation<BookmarkTabHelper, BookmarkTabHelperObserver>
+       tab_helper_observation_{this};
+--- a/chrome/browser/ui/views/bookmarks/bookmark_page_action_controller.cc
++++ b/chrome/browser/ui/views/bookmarks/bookmark_page_action_controller.cc
+@@ -8,6 +8,8 @@
+ #include "base/metrics/histogram_macros.h"
+ #include "chrome/browser/defaults.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_buttons.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_prefs.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+ #include "chrome/browser/ui/page_action/page_action_controller.h"
+@@ -48,12 +50,20 @@
+     page_actions::PageActionController& page_action_controller)
+     : ContentsObservingTabFeature(tab),
+       page_action_controller_(page_action_controller),
++      pref_service_(pref_service),
+       scoped_unowned_user_data_(tab.GetUnownedUserDataHost(), *this) {
+   edit_bookmarks_enabled_.Init(
+       bookmarks::prefs::kEditBookmarksEnabled, pref_service,
+       base::BindRepeating(
+           &BookmarkPageActionController::UpdatePageActionVisibility,
+           base::Unretained(this)));
++  if (pref_service->FindPreference(atlas::toolbar::kShowBookmarkButton)) {
++    atlas_bookmark_button_.Init(
++        atlas::toolbar::kShowBookmarkButton, pref_service,
++        base::BindRepeating(
++            &BookmarkPageActionController::UpdatePageActionVisibility,
++            base::Unretained(this)));
++  }
+   UpdatePageActionVisibility();
+   ObserveBookmarkTabHelper(tab.GetContents());
+ }
+@@ -132,7 +142,9 @@
+ bool BookmarkPageActionController::ShouldShowPageAction() const {
+   const auto& url = tab().GetContents()->GetLastCommittedURL();
+   return browser_defaults::bookmarks_enabled &&
+-         edit_bookmarks_enabled_.GetValue() && url.is_valid() && !IsNTPUrl(url);
++         edit_bookmarks_enabled_.GetValue() &&
++         !atlas::toolbar::BookmarkButtonReplacesStar(pref_service_) &&
++         url.is_valid() && !IsNTPUrl(url);
+ }
+ 
+ void BookmarkPageActionController::SetStarred(bool starred) {
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -45,6 +45,7 @@
+ #include "chrome/browser/themes/theme_properties.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
+ #include "chrome/browser/ui/ai_overlay_dialog/ai_overlay_dialog_controller.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_buttons.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_command_controller.h"
+ #include "chrome/browser/ui/browser_commands.h"
+@@ -607,6 +608,10 @@
+     location_bar_ = toolbar_webview_->GetLocationBar();
+   }
+ 
++  // Atlas: the privacy and bookmark buttons come right after the omnibox
++  // (patch 0030).
++  atlas::toolbar::AddToolbarButtons(this, browser_);
++
+   if (auto* vertical_tab_strip_state_controller =
+           tabs::VerticalTabStripStateController::From(
+               browser_view_->browser())) {
+@@ -1580,13 +1585,18 @@
+ 
+ void ToolbarView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
+   page_actions::PageActionViewInterface* bookmark_star_icon = nullptr;
+-  if (!features::IsWebUILocationBarEnabled()) {
++  views::BubbleAnchor bubble_anchor = GetBubbleAnchor(std::nullopt);
++  if (views::View* const atlas_button =
++          atlas::toolbar::FindVisibleBookmarkButton(this)) {
++    // Atlas: the toolbar button replaces the omnibox star (patch 0030).
++    bubble_anchor = views::BubbleAnchor(atlas_button);
++  } else if (!features::IsWebUILocationBarEnabled()) {
+     bookmark_star_icon = GetPageActionViewInterface(kActionBookmarkThisTab);
+     CHECK(bookmark_star_icon);
+   }
+-  BookmarkBubbleView::ShowBubble(GetBubbleAnchor(std::nullopt),
+-                                 GetWebContents(), bookmark_star_icon, browser_,
+-                                 url, already_bookmarked);
++  BookmarkBubbleView::ShowBubble(bubble_anchor, GetWebContents(),
++                                 bookmark_star_icon, browser_, url,
++                                 already_bookmarked);
+ }
+ 
+ bool ToolbarView::IsPositionInWindowCaption(

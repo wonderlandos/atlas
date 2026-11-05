@@ -1,0 +1,34 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# The new tab page (owner: ATLAS-NTP): page files in newtab_resources.grdp (resource_path
+# "newtab/<file>", newtab/index.html is the page) and the logic that needs no //chrome (host
+# category table, pinned list, state sent to the page). The handler, the UI controller and the pref
+# registration are in //chrome/browser/ui/atlas/newtab: //chrome/browser depends on
+# //components/atlas_pages, so the other direction would be a dependency cycle. The page is served
+# at chrome::kAtlasNewTabHost by atlas_pages::AtlasPageSource::CreateAndAdd(..., "newtab").
+source_set("newtab") {
+  sources = [
+    "newtab_categories.cc",
+    "newtab_categories.h",
+    "newtab_state.cc",
+    "newtab_state.h",
+  ]
+  public_deps = [ "//components/atlas_pages/common" ]
+  deps = [
+    "//base",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "newtab_state_unittest.cc" ]
+  deps = [
+    ":newtab",
+    "//base",
+    "//testing/gtest",
+    "//url",
+  ]
+}

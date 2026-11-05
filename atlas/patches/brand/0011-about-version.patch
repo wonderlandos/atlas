@@ -1,0 +1,102 @@
+Atlas overlay patch 0011: brand/about-version
+Why: the version a person reads in Settings > About, on atlas://version and from the command line
+ names Atlas, the WolOS release and the engine, in plain words, and the sentence below the
+ copyright points to the credits page instead of naming other projects (reel scene 11, R01). The
+ text, the os-release reading and the labels are in the new files chrome/browser/ui/atlas/brand/*
+ and chrome/app/atlas/brand_strings.grdp; this patch only calls them. No lower tier: the inherited
+ add-helium-versioning patch hard-codes the layout of these strings in the engine files.
+Files: chrome/browser/ui/webui/version/version_ui.cc, components/webui/version/resources/about_version.html,
+ chrome/app/chrome_main_delegate.cc, chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+Test filter: *WolosRelease*; journey J-A12 (atlas://version lists Atlas, WolOS, Engine rows; Settings > About line)
+Rebase risk: M (the first three files are also patched by add-helium-versioning; the hunks are small and sit next to its lines)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/webui/version/version_ui.cc
++++ b/chrome/browser/ui/webui/version/version_ui.cc
+@@ -21,6 +21,7 @@
+ #include "build/build_config.h"
+ #include "chrome/browser/browser_process_impl.h"
+ #include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/atlas/brand/atlas_about.h"
+ #include "chrome/browser/ui/webui/version/version_handler.h"
+ #include "chrome/common/channel_info.h"
+ #include "chrome/common/url_constants.h"
+@@ -256,6 +257,8 @@
+ 
+   html_source->AddString(version_ui::kVersionModifier, GetProductModifier());
+ 
++  atlas::brand::AddVersionPageStrings(html_source);
++
+   html_source->AddString(version_ui::kJSEngine, "V8");
+   html_source->AddString(version_ui::kJSVersion, V8_VERSION_STRING);
+   html_source->AddString(
+@@ -340,16 +343,11 @@
+ #if !BUILDFLAG(IS_ANDROID)
+ // static
+ std::u16string VersionUI::GetAnnotatedVersionStringForUi() {
+-  return l10n_util::GetStringFUTF16(
+-      IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
+-      {base::UTF8ToUTF16(version_info::GetHeliumVersionNumber()),
+-      base::UTF8ToUTF16(version_info::GetVersionNumber()),
+-      base::UTF8ToUTF16(GetVersionInformationalSuffix()),
++  return atlas::brand::AnnotatedVersion(
++      version_info::GetHeliumVersionNumber(), version_info::GetVersionNumber(),
+       l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
+                                     ? IDS_VERSION_UI_OFFICIAL
+                                     : IDS_VERSION_UI_UNOFFICIAL),
+-      base::UTF8ToUTF16(GetProductModifier()),
+-      l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation()),
+-      u"Chromium"}, nullptr);
++      l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation()));
+ }
+ #endif  // !BUILDFLAG(IS_ANDROID)
+--- a/components/webui/version/resources/about_version.html
++++ b/components/webui/version/resources/about_version.html
+@@ -65,7 +65,10 @@
+             </button>
+           </td>
+         </tr>
+-        <tr><td class="label">Chromium</td>
++        <tr><td class="label">$i18n{atlas_wolos_label}</td>
++          <td class="version" id="wolos-release">$i18n{atlas_wolos_release}</td>
++        </tr>
++        <tr><td class="label">$i18n{atlas_engine_label}</td>
+           <td class="version" id="version">
+             <span id="copy-content">
+               <span>$i18n{version}$i18n{version_suffix}</span>
+--- a/chrome/app/chrome_main_delegate.cc
++++ b/chrome/app/chrome_main_delegate.cc
+@@ -475,7 +475,7 @@
+ 
+   if (command_line.HasSwitch(switches::kVersion)) {
+     UNSAFE_TODO(printf(
+-        "%s %s (Chromium %s)\n", version_info::GetProductName().data(),
++        "%s %s (engine %s)\n", version_info::GetProductName().data(),
+         version_info::GetHeliumVersionNumber().data(),
+         version_info::GetVersionNumber().data()));
+     return true;
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -49,6 +49,7 @@
+ #include "chrome/browser/signin/signin_ui_util.h"
+ #include "chrome/browser/subscription_eligibility/subscription_eligibility_service_factory.h"
+ #include "chrome/browser/sync/sync_service_factory.h"
++#include "chrome/browser/ui/atlas/brand/atlas_about.h"
+ #include "chrome/browser/ui/managed_ui.h"
+ #include "chrome/browser/ui/omnibox/omnibox_next_features.h"
+ #include "chrome/browser/ui/side_panel/side_panel_prefs.h"
+@@ -362,10 +363,8 @@
+           l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
+           base::Time::Now()));
+ 
+-  std::u16string license = l10n_util::GetStringFUTF16(
+-      IDS_VERSION_UI_LICENSE, chrome::kChromiumProjectURL,
+-      chrome::kChromeUICreditsURL16,
+-      l10n_util::GetStringUTF16(IDS_SETTINGS_OPENS_IN_NEW_TAB));
++  std::u16string license =
++      atlas::brand::LicenseSentence(chrome::kChromeUICreditsURL16);
+   html_source->AddString("aboutProductLicense", license);
+ 
+   html_source->AddBoolean("aboutObsoleteNowOrSoon",

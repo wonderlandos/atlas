@@ -1,0 +1,25 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/vector_icons/vector_icons.gni")
+
+assert(!is_android)
+
+# The frost mark of a resting tab (the WolOS symbolic glyph weather-snow).
+aggregate_vector_icons("atlas_rest_vector_icons") {
+  icon_directory = "."
+
+  sources = [ "atlas_rest.icon" ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":atlas_rest_vector_icons")
+
+  deps = [
+    ":atlas_rest_vector_icons",
+    "//base",
+    "//skia",
+    "//ui/gfx",
+  ]
+}

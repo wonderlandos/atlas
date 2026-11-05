@@ -1,0 +1,40 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+# Atlas rest (owner: ATLAS-REST). Linked into //chrome/browser/ui, which allows this target to include
+# its headers (anchor patch 0010). rest_mark: the resting row of the sidebar (dim title, frost mark),
+# hooked into the tab row by integration patch 0098.
+source_set("rest") {
+  sources = [
+    "rest_mark.cc",
+    "rest_mark.h",
+    "rest_prefs.cc",
+    "rest_prefs.h",
+  ]
+  public_deps = [
+    "//chrome/browser:browser_public_dependencies",
+    "//chrome/browser/ui/atlas/rest/vector_icons",
+    "//skia",
+  ]
+  deps = [
+    "//base",
+    "//chrome/browser/ui/atlas/chrome",
+    "//components/pref_registry",
+    "//ui/gfx",
+  ]
+}
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "rest_mark_unittest.cc" ]
+  deps = [
+    ":rest",
+    "//skia",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+}

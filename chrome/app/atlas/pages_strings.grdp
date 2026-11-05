@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Atlas strings of the pages area (owner: ATLAS-NTP and ATLAS-FIRSTRUN). A part of
+     chrome/app/generated_resources.grd (anchor patch 0010): add <message name="IDS_ATLAS_..."> elements
+     here, never in generated_resources.grd. -->
+<grit-part>
+  <message name="IDS_ATLAS_NEWTAB_PINNED" desc="Heading of the row of pinned pages on the new tab page.">
+    Pinned
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_RECENT" desc="Heading of the pages the person can go back to on the new tab page.">
+    Pick up where you left off
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_PINNED_EMPTY" desc="Shown on the new tab page under the Pinned heading when no page is pinned.">
+    Pages you pin appear here.
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_EMPTY_TITLE" desc="Title of the empty state that replaces the pick-up cards on the new tab page when there is nothing to go back to.">
+    Nothing to pick up yet
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_EMPTY_HINT" desc="One line under the empty state title on the new tab page.">
+    Pages you open show up here, so you can come back to them.
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_EMPTY_ACTION" desc="Button of the empty state on the new tab page. It moves the cursor to the search field.">
+    Search or enter an address
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_SEARCH_PLACEHOLDER" desc="Placeholder and name of the search field on the new tab page. The person can type a web address or words to search for.">
+    Search or enter an address
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_OPENED" desc="Second line of a pick-up card on the new tab page: when the page was last open. The time reads like '20 minutes ago' or 'yesterday', in the person's language.">
+    Opened <ph name="WHEN">$1<ex>20 minutes ago</ex></ph>
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_OPENED_JUST_NOW" desc="Second line of a pick-up card on the new tab page when the page was open less than a minute ago.">
+    Opened just now
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_REMOVE_FROM_PINNED" desc="Name of the button on a pinned card that takes the page off the Pinned row.">
+    Remove <ph name="TITLE">$1<ex>Mail</ex></ph> from Pinned
+  </message>
+  <message name="IDS_ATLAS_NEWTAB_REMOVED_FROM_PINNED" desc="Said by a screen reader after a page was taken off the Pinned row.">
+    <ph name="TITLE">$1<ex>Mail</ex></ph> removed from Pinned
+  </message>
+  <message name="IDS_ATLAS_DNT_IS_ON" desc="A quiet line at the bottom of the window and of the new tab page, shown while the setting that asks websites not to follow the person is on. Not an action.">
+    Do Not Track is on
+  </message>
+</grit-part>

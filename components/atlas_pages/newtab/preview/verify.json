@@ -1,0 +1,406 @@
+{
+  "url": "http://127.0.0.1:8472/index.html",
+  "requests": [
+    "http://127.0.0.1:8472/index.html?state=filled",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=empty&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=nopins&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=long&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&strip=1&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&dnt=0&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=empty&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=long&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js",
+    "http://127.0.0.1:8472/index.html?state=filled&enter=0",
+    "http://127.0.0.1:8472/theme.css",
+    "http://127.0.0.1:8472/categories.css",
+    "http://127.0.0.1:8472/newtab.css",
+    "http://127.0.0.1:8472/host.js",
+    "http://127.0.0.1:8472/newtab.js"
+  ],
+  "console": [],
+  "checks": {
+    "geometry": {
+      "h1": {
+        "text": "Atlas",
+        "size": "26px",
+        "weight": "700",
+        "count": 1
+      },
+      "badge": {
+        "x": 554,
+        "y": 87.9,
+        "w": 72,
+        "h": 72
+      },
+      "search": {
+        "x": 310,
+        "y": 234.7,
+        "w": 560,
+        "h": 40,
+        "radius": "10px"
+      },
+      "pinHeading": {
+        "text": "Pinned",
+        "size": "15px",
+        "weight": "600"
+      },
+      "pins": [
+        {
+          "x": 262,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Home",
+          "radius": "10px"
+        },
+        {
+          "x": 374,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Mail",
+          "radius": "10px"
+        },
+        {
+          "x": 486,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Files",
+          "radius": "10px"
+        },
+        {
+          "x": 598,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Video",
+          "radius": "10px"
+        },
+        {
+          "x": 710,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Store",
+          "radius": "10px"
+        },
+        {
+          "x": 822,
+          "y": 337.2,
+          "w": 96,
+          "h": 88,
+          "label": "Settings",
+          "radius": "10px"
+        }
+      ],
+      "tile": {
+        "x": 294,
+        "y": 349.2,
+        "w": 32,
+        "h": 32,
+        "radius": "8px"
+      },
+      "tiles": [
+        "rgb(29, 100, 176)",
+        "rgb(207, 58, 104)",
+        "rgb(12, 138, 128)",
+        "rgb(233, 98, 42)",
+        "rgb(242, 181, 58)",
+        "rgb(59, 71, 117)"
+      ],
+      "recentHeading": {
+        "text": "Pick up where you left off",
+        "hidden": false
+      },
+      "recents": [
+        {
+          "x": 262,
+          "y": 487.2,
+          "w": 320,
+          "h": 64,
+          "title": "Release notes",
+          "when": "Opened 20 minutes ago",
+          "radius": "10px"
+        },
+        {
+          "x": 598,
+          "y": 487.2,
+          "w": 320,
+          "h": 64,
+          "title": "Train times",
+          "when": "Opened yesterday",
+          "radius": "10px"
+        }
+      ],
+      "emptyVisible": false,
+      "emptyTitle": {
+        "text": "Nothing to pick up yet",
+        "size": "22px"
+      },
+      "status": {
+        "x": 0,
+        "y": 740,
+        "w": 1180,
+        "h": 24,
+        "hidden": false,
+        "text": "Do Not Track is on",
+        "size": "11px"
+      },
+      "overflowX": 0
+    },
+    "light-filled": {
+      "min": 5.06,
+      "texts": 15
+    },
+    "light-empty": {
+      "min": 5.06,
+      "texts": 8
+    },
+    "light-nopins": {
+      "min": 5.06,
+      "texts": 10
+    },
+    "light-long": {
+      "min": 5.06,
+      "texts": 15
+    },
+    "light-strip": {
+      "min": 5.67,
+      "texts": 14
+    },
+    "light-dntoff": {
+      "min": 5.67,
+      "texts": 14
+    },
+    "dark-filled": {
+      "min": 6.14,
+      "texts": 15
+    },
+    "dark-empty": {
+      "min": 6.14,
+      "texts": 8
+    },
+    "narrow-filled": {
+      "overflowX": 0,
+      "pins": 6,
+      "pinXs": [
+        24,
+        136,
+        248,
+        360,
+        24,
+        136
+      ],
+      "recentW": [
+        320,
+        320
+      ]
+    },
+    "narrow-long": {
+      "overflowX": 0,
+      "pins": 6,
+      "pinXs": [
+        24,
+        136,
+        248,
+        360,
+        24,
+        136
+      ],
+      "recentW": [
+        320,
+        320
+      ]
+    }
+  },
+  "motion": {
+    "entrance": [
+      {
+        "target": "hero",
+        "duration": 250,
+        "delay": 0,
+        "props": [
+          "transform",
+          "opacity"
+        ]
+      },
+      {
+        "target": "search",
+        "duration": 250,
+        "delay": 30,
+        "props": [
+          "transform",
+          "opacity"
+        ]
+      },
+      {
+        "target": "pinned",
+        "duration": 250,
+        "delay": 60,
+        "props": [
+          "transform",
+          "opacity"
+        ]
+      },
+      {
+        "target": "recent",
+        "duration": 250,
+        "delay": 90,
+        "props": [
+          "transform",
+          "opacity"
+        ]
+      }
+    ],
+    "order": [
+      "hero",
+      "search",
+      "pinned",
+      "recent"
+    ],
+    "reduced": {
+      "count": 0,
+      "opacity": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ]
+    },
+    "not-first": {
+      "count": 0,
+      "opacity": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ]
+    }
+  },
+  "keyboard": {
+    "tabOrder": [
+      "input \"Search or enter an address\"",
+      "a \"Home\"",
+      "a \"Mail\"",
+      "a \"Files\"",
+      "a \"Video\"",
+      "a \"Store\"",
+      "a \"Settings\"",
+      "a \"Release notesOpened 20 minutes ago\"",
+      "a \"Train timesOpened yesterday\"",
+      "body"
+    ],
+    "afterDelete": {
+      "labels": [
+        "Home",
+        "Files",
+        "Video",
+        "Store",
+        "Settings"
+      ],
+      "focus": "Files",
+      "live": ""
+    },
+    "adapterCalls": [
+      [
+        "getState",
+        [
+          1
+        ]
+      ],
+      [
+        "open",
+        [
+          "https://home.example/",
+          false
+        ]
+      ],
+      [
+        "submit",
+        [
+          "hello world"
+        ]
+      ],
+      [
+        "unpin",
+        [
+          2,
+          "https://mail.example/"
+        ]
+      ]
+    ]
+  },
+  "failures": []
+}

@@ -1,0 +1,11 @@
+include_rules = [
+  "+chrome/common/pref_names.h",
+  "+chrome/common/webui_url_constants.h",
+  "+components/helium_services/pref_names.h",
+  "+components/prefs",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
+  "+components/user_prefs",
+  "+testing/gtest",
+  "+ui/base/page_transition_types.h",
+  "+url",
+]

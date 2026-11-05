@@ -1,0 +1,173 @@
+Atlas overlay patch 0071: ui/omnibox-find-ring
+Why: the omnibox, load bar, find bar and downloads button of tokens.md section 4 and 8 (a download shows its ring and opens no popup unless clicked: the default of the partial-view pref is off, a one-line default because a first-run pref would not reach existing profiles; the list header is a section header: upper case, 11 px, dim; the omnibox centred in the toolbar and 560 px wide at most: the default of the centred-address-bar pref and its width constant): a 1 px `line` border on the idle omnibox, the focus ring 2 px outside the field, the load bar a solid 2 px `accent` line that follows the load value (the inherited bar has a glow and a pulse), the find bar 36 px high with its count at 11 px. The paint and the font helper are in chrome/browser/ui/atlas/chrome (overlay tree); the patch is the hook lines. No lower tier reaches view painting.
+Files: chrome/browser/ui/browser_ui_prefs.cc, chrome/browser/ui/views/toolbar/toolbar_view.cc, chrome/browser/download/download_prefs.cc, chrome/browser/ui/views/download/bubble/download_dialog_view.cc, chrome/browser/ui/BUILD.gn, chrome/browser/ui/views/location_bar/location_bar_view.cc, chrome/browser/ui/views/location_bar/location_bar_progress_view.cc, chrome/browser/ui/views/find_bar_view.cc
+Test filter: *AtlasTokens*; reel scenes R02 (omnibox, ring, load bar), R10 (find bar)
+Rebase risk: M (the progress view is a file of the inherited series; one early-return hook before its glow code)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series touches or adds)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/browser_ui_prefs.cc
++++ b/chrome/browser/ui/browser_ui_prefs.cc
+@@ -137,7 +137,8 @@
+ 
+   registry->RegisterBooleanPref(prefs::kHeliumNativeFrameMaterials, false);
+ 
+-  registry->RegisterBooleanPref(prefs::kHeliumCenteredLocationBar, false);
++  // Atlas tokens.md section 4: the omnibox is centred in the toolbar.
++  registry->RegisterBooleanPref(prefs::kHeliumCenteredLocationBar, true);
+ 
+   registry->RegisterBooleanPref(prefs::kHeliumMinimalLocationBar, false);
+ 
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -257,7 +257,8 @@
+                       : kBrowserAppMenuRefreshCollapsedMargin));
+ }
+ 
+-constexpr int kCenteredLocationBarMaxWidth = 700;
++// Atlas tokens.md section 4: the omnibox is 560 px wide at most.
++constexpr int kCenteredLocationBarMaxWidth = 560;
+ 
+ struct CenteredLocationBarStep {
+   int min_toolbar_width;
+@@ -2285,7 +2286,10 @@
+           views::kFlexBehaviorKey,
+           static_cast<ResponsiveToolbarLayout*>(layout_manager_.get())
+               ->ProtectedCompactFlex(
++                  // Atlas: flex along the toolbar only; the omnibox keeps its
++                  // own height (26) instead of the height of the row (28).
+                   views::FlexSpecification(
++                      views::LayoutOrientation::kHorizontal,
+                       views::MinimumFlexSizeRule::kScaleToMinimum, maximum)
+                       .WithOrder(kLocationBarFlexOrder),
+                   maximum));
+--- a/chrome/browser/download/download_prefs.cc
++++ b/chrome/browser/download/download_prefs.cc
+@@ -364,7 +364,10 @@
+   registry->RegisterIntegerPref(policy::policy_prefs::kDownloadRestrictions, 0);
+   // TODO(chlily): Clean up the following two prefs once SysUI integration is
+   // enabled by default.
+-  registry->RegisterBooleanPref(prefs::kDownloadBubblePartialViewEnabled, true);
++  // Atlas tokens.md section 8: a download shows its ring on the toolbar button
++  // and opens no popup unless the person clicks the button.
++  registry->RegisterBooleanPref(prefs::kDownloadBubblePartialViewEnabled,
++                                false);
+   registry->RegisterIntegerPref(prefs::kDownloadBubblePartialViewImpressions,
+                                 0);
+ 
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -3503,6 +3503,7 @@
+   if (is_linux) {
+     deps += [
+       "//chrome/browser:shell_integration_linux",
++      "//chrome/browser/ui/atlas/chrome",
+       "//chrome/browser/ui/views:eula_dialog_linux",
+       "//chrome/browser/ui/views:window_sizer_linux",
+       "//chrome/browser/ui/views/frame:browser_desktop_window_tree_host_linux",
+--- a/chrome/browser/ui/views/download/bubble/download_dialog_view.cc
++++ b/chrome/browser/ui/views/download/bubble/download_dialog_view.cc
+@@ -9,6 +9,7 @@
+ #include "base/functional/bind.h"
+ #include "base/logging.h"
+ #include "chrome/app/vector_icons/vector_icons.h"
++#include "chrome/browser/ui/atlas/chrome/atlas_chrome_views.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+ #include "chrome/browser/ui/chrome_pages.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
+@@ -148,6 +149,8 @@
+                                /*adjust_height_for_width=*/true));
+   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+   title->SetTextStyle(views::style::STYLE_HEADLINE_4);
++  // Atlas tokens.md section 8: the list header is a section header.
++  atlas::StyleSectionHeader(title);
+ 
+   close_button_ =
+       header->AddChildView(views::CreateVectorImageButtonWithNativeTheme(
+--- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
++++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
+@@ -31,6 +31,7 @@
+ #include "chrome/browser/translate/chrome_translate_client.h"
+ #include "chrome/browser/translate/translate_service.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
++#include "chrome/browser/ui/atlas/chrome/atlas_chrome_views.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window.h"
+@@ -274,6 +275,9 @@
+                  !v->GetOmniboxController()->IsPopupOpen();
+         }));
+     views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
++    // Atlas tokens.md section 4: the ring is 2 px, outside the field.
++    views::FocusRing::Get(this)->SetHaloInset(
++        -atlas::tokens::kFocusRingThickness);
+ 
+     // Same radius as the location bar.
+     views::InstallRoundRectHighlightPathGenerator(
+@@ -1487,7 +1491,10 @@
+     background_color_ = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
+   }
+ 
+-  SkColor border_color = SK_ColorTRANSPARENT;
++  // Atlas tokens.md section 4: the idle field has a 1 px `line` border.
++  SkColor border_color =
++      is_caret_visible ? SK_ColorTRANSPARENT
++                       : color_provider->GetColor(kColorLocationBarBorder);
+   if (high_contrast) {
+     // High contrast schemes get a border stroke even on a rounded omnibox.
+     border_color =
+--- a/chrome/browser/ui/views/location_bar/location_bar_progress_view.cc
++++ b/chrome/browser/ui/views/location_bar/location_bar_progress_view.cc
+@@ -14,6 +14,7 @@
+ #include "cc/paint/paint_filter.h"
+ #include "cc/paint/paint_flags.h"
+ #include "cc/paint/paint_shader.h"
++#include "chrome/browser/ui/atlas/chrome/atlas_chrome_views.h"
+ #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+ #include "chrome/common/pref_names.h"
+ #include "components/prefs/pref_service.h"
+@@ -269,6 +270,15 @@
+       gfx::RectToSkRect(GetLocalBounds()), corner_radius, corner_radius);
+   canvas->ClipPath(SkPath::RRect(clip), /*do_anti_alias=*/true);
+ 
++  // Atlas tokens.md section 4: a 2 px `accent` bar along the bottom edge,
++  // linear, driven by the load value; no glow, no pulse.
++  if (atlas::PaintProgressBar(canvas, gfx::SizeF(width(), height()),
++                              progress_width, static_cast<float>(fade),
++                              primary_color)) {
++    canvas->Restore();
++    return;
++  }
++
+   cc::PaintFlags flags;
+   flags.setAntiAlias(true);
+   flags.setStyle(cc::PaintFlags::kFill_Style);
+--- a/chrome/browser/ui/views/find_bar_view.cc
++++ b/chrome/browser/ui/views/find_bar_view.cc
+@@ -16,6 +16,7 @@
+ #include "chrome/browser/enterprise/data_protection/data_protection_clipboard_utils.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/themes/theme_properties.h"
++#include "chrome/browser/ui/atlas/chrome/atlas_chrome_views.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
+ #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+@@ -222,6 +223,8 @@
+                   .CopyAddressTo(&match_count_text_)
+                   .SetBackgroundColor(kColorFindBarBackground)
+                   .SetEnabledColor(kColorFindBarMatchCount)
++                  .SetFontList(atlas::SecondaryFontList(
++                      views::Label::GetDefaultFontList()))
+                   .SetCanProcessEventsWithinSubtree(false)
+                   .SetProperty(views::kMarginsKey,
+                                gfx::Insets(toast_label_vertical_margin +
+@@ -473,6 +476,8 @@
+   // up part of the space for the input textfield. This prevents the overall
+   // width from changing every time the match count text changes.
+   size.set_width(size.width() - match_count_text_->GetPreferredSize().width());
++  // The bar is kFindBarHeight high inside its shadow border.
++  size.set_height(atlas::tokens::kFindBarHeight + GetInsets().height());
+   return size;
+ }
+ 

@@ -1,0 +1,9 @@
+# Overlay series fragment int: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-INT (integration fixes found by the reel check). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0095-0099
+ui/0095-downloads-list.patch
+ui/0096-toolbar-glyphs.patch
+ui/0097-sidebar-foot.patch
+ui/0098-rest-mark.patch

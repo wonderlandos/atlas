@@ -1,0 +1,410 @@
+Atlas overlay patch 0021: ui/sidebar-metrics
+Why: the sidebar rows look like the reel (tokens.md section 3) and Super+Alt+S shows and hides the
+sidebar. Row fill (accent pill at 22% light / 30% dark, hover to the control fill), title colour (the
+text colour in every state) and title weight 500 come from chrome/browser/ui/atlas/sidebar/row_style;
+the engine files only call it. A pinned tab is a full row (icon and title) in the expanded sidebar
+instead of a square in a grid, without the outline; the audio glyph moves to the right of the title;
+a tab that waits for its page or loads it shows the spinner after 150 ms; a 1 px line runs along the edge that faces the page. The
+shortcut is one row of the accelerator table for the command the engine already has
+(IDC_TOGGLE_VERTICAL_TABS_COLLAPSE); Super reaches the app as Meta. The row height, inset and radius
+are layout constants (layout_constants.cc, ATLAS-CHROME). A first-run pref or a policy cannot reach
+these paint paths, so a lower tier was not enough.
+Files: chrome/browser/ui/accelerator_table.cc, chrome/browser/ui/views/tabs/common/BUILD.gn,
+ chrome/browser/ui/views/tabs/common/vertical_tab_style_views.cc,
+ chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc,
+ chrome/browser/ui/views/tabs/common/tab_view.cc,
+ chrome/browser/ui/views/tabs/common/pinned_tab_container_view.cc,
+ chrome/browser/ui/views/frame/vertical_tab_strip_region_view.{h,cc},
+ chrome/browser/ui/views/tabs/tab/tab_icon.{h,cc}
+Test filter: *AtlasSidebar*; journey R02 (pill colour at 22%, toggle with Super+Alt+S)
+Rebase risk: M (nine files; the vertical tab style and layout are young engine code that moves)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches), BSD-3-Clause (hunks in other engine files)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/accelerator_table.cc
++++ b/chrome/browser/ui/accelerator_table.cc
+@@ -81,6 +81,9 @@
+     {ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
+      IDC_RELOAD_BYPASSING_CACHE},
+     {ui::VKEY_S, ui::EF_PLATFORM_ACCELERATOR, IDC_CTRL_S_SHORTCUT},
++    // Atlas: Super+Alt+S shows and hides the tab sidebar.
++    {ui::VKEY_S, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN,
++     IDC_TOGGLE_VERTICAL_TABS_COLLAPSE},
+     {ui::VKEY_9, ui::EF_PLATFORM_ACCELERATOR, IDC_SELECT_LAST_TAB},
+     {ui::VKEY_NUMPAD9, ui::EF_PLATFORM_ACCELERATOR, IDC_SELECT_LAST_TAB},
+ #if BUILDFLAG(IS_LINUX)
+--- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
++++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.cc
+@@ -20,6 +20,7 @@
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
+ #include "chrome/browser/ui/animation/browser_animation_controller.h"
+ #include "chrome/browser/ui/animation/browser_animation_types.h"
++#include "chrome/browser/ui/atlas/sidebar/row_style.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+@@ -374,6 +375,19 @@
+   background->SetPaintWithNativeFrameMaterials(floating);
+ }
+ 
++void VerticalTabStripRegionView::OnPaint(gfx::Canvas* canvas) {
++  BaseTabStripRegionView::OnPaint(canvas);
++  // Atlas: a 1 px line along the edge that faces the page.
++  if (floating_style_ == FloatingStyle::kNone) {
++    if (const ui::ColorProvider* color_provider = GetColorProvider()) {
++      atlas::sidebar::PaintSidebarEdge(
++          canvas, GetLocalBounds(),
++          /*on_right=*/!state_controller_->IsTabStripRightAligned(),
++          *color_provider);
++    }
++  }
++}
++
+ void VerticalTabStripRegionView::AddedToWidget() {
+   BaseTabStripRegionView::AddedToWidget();
+   paint_as_active_subscription_ =
+--- a/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
++++ b/chrome/browser/ui/views/frame/vertical_tab_strip_region_view.h
+@@ -111,6 +111,7 @@
+       const views::SizeBounds& size_bounds) const override;
+ 
+   // views::View:
++  void OnPaint(gfx::Canvas* canvas) override;
+   void AddedToWidget() override;
+   void RemovedFromWidget() override;
+   void Layout(PassKey) override;
+--- a/chrome/browser/ui/views/tabs/common/BUILD.gn
++++ b/chrome/browser/ui/views/tabs/common/BUILD.gn
+@@ -103,6 +103,7 @@
+     "//chrome/browser/ui:layout_constants",
+     "//chrome/browser/ui:ui_features",
+     "//chrome/browser/ui/actions:actions_headers",
++    "//chrome/browser/ui/atlas/sidebar",
+     "//chrome/browser/ui/browser_window",
+     "//chrome/browser/ui/color:color_headers",
+     "//chrome/browser/ui/tab_contents",
+--- a/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.cc
++++ b/chrome/browser/ui/views/tabs/common/pinned_tab_container_view.cc
+@@ -28,6 +28,7 @@
+ 
+ namespace {
+ constexpr int kTabPadding = 4;
++constexpr int kRowGap = 2;
+ }  // namespace
+ 
+ PinnedTabContainerView::PinnedTabContainerView(
+@@ -38,7 +39,7 @@
+           collection_node && collection_node->orientation() ==
+                                  TabStripOrientation::kHorizontal
+               ? DragAxes::kHorizontalOnly
+-              : DragAxes::kBoth,
++              : DragAxes::kVerticalOnly,
+           collection_node && collection_node->orientation() ==
+                                  TabStripOrientation::kHorizontal
+               ? DragLayout::kHorizontal
+@@ -170,12 +171,9 @@
+       return index;
+     }
+   } else {
+-    auto collapse_state = GetTabStripCollapseState();
+-    if (collapse_state != tabs::VerticalTabStripCollapseState::kExpanded) {
+-      if (auto index = GetLinkDropIndexForCollapsed(loc_in_container)) {
+-        return index;
+-      }
+-    } else if (auto index = GetLinkDropIndexForExpanded(loc_in_container)) {
++    // Atlas: pinned tabs are one column of rows, expanded or collapsed, so the
++    // y-coordinate alone decides.
++    if (auto index = GetLinkDropIndexForCollapsed(loc_in_container)) {
+       return index;
+     }
+   }
+@@ -300,9 +298,8 @@
+   // Collapsed state only exists for the vertical orientation.
+   CHECK(!collection_node_ ||
+         collection_node_->orientation() == TabStripOrientation::kVertical);
+-  set_drag_axes(state == tabs::VerticalTabStripCollapseState::kCollapsed
+-                    ? DragAxes::kVerticalOnly
+-                    : DragAxes::kBoth);
++  // Atlas: one column of rows in every state.
++  set_drag_axes(DragAxes::kVerticalOnly);
+ }
+ 
+ views::ScrollView* PinnedTabContainerView::GetScrollViewForContainer() const {
+@@ -403,26 +400,14 @@
+   // Since all children are allocated the same width this will be the same for
+   // every row.
+   if (size_bounds.width().is_bounded() && size_bounds.width().value() > 0) {
+-    auto collapse_state = GetTabStripCollapseState();
+-
+     // Apply horizontal padding immediately at start of collapse animation by
+     // including collapsing state.
+     int available_width =
+         size_bounds.width().value() -
+         GetLayoutConstant(LayoutConstant::kVerticalTabStripHorizontalPadding);
+ 
+-    // When we are in collapsed state, only one child should be shown per row.
+-    // During collapse animation and other cases, fit as many as possible.
+-    children_on_row =
+-        tabs::IsVerticalTabsExpandOnHoverFeatureEnabled() &&
+-                collapse_state ==
+-                    tabs::VerticalTabStripCollapseState::kCollapsed
+-            ? 1
+-            : std::min(
+-                  children_on_row,
+-                  static_cast<int>(std::floor((available_width - child_width) /
+-                                              (child_width + kTabPadding)) +
+-                                   1));
++    // Atlas: a pinned tab is one full row of the sidebar, expanded or not.
++    children_on_row = 1;
+ 
+     // Allocate extra space to the tabs.
+     available_width -=
+@@ -460,7 +445,8 @@
+ 
+       row_index++;
+       if (row_index >= children_on_row) {
+-        y = total_height + kTabPadding;
++        // Atlas: the same gap between rows as the unpinned list.
++        y = total_height + kRowGap;
+         row_index = 0;
+         x = 0;
+       }
+--- a/chrome/browser/ui/views/tabs/common/tab_view.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_view.cc
+@@ -17,6 +17,7 @@
+ #include "chrome/browser/glic/browser_ui/tab_underline_view.h"
+ #include "chrome/browser/glic/public/glic_enabling.h"
+ #include "chrome/browser/themes/theme_properties.h"
++#include "chrome/browser/ui/atlas/sidebar/row_style.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+ #include "chrome/browser/ui/layout_constants.h"
+@@ -1103,6 +1104,8 @@
+     tabs::VerticalTabStripCollapseState state) {
+   collapsed_ = state == tabs::VerticalTabStripCollapseState::kCollapsed;
+   alert_indicator_->UpdateEnabledForMuteToggle();
++  // Atlas: the pinned outline belongs to the collapsed sidebar only.
++  UpdateBorder();
+   InvalidateLayout();
+ }
+ 
+@@ -1224,7 +1227,9 @@
+     return;
+   }
+ 
+-  if (pinned_) {
++  // Atlas: the pinned outline belongs to the collapsed sidebar only; expanded,
++  // a pinned tab is a plain row.
++  if (pinned_ && collapsed_) {
+     if (split_) {
+       // Insets for border handled by the `SplitTabView`.
+       SetBorder(views::CreateEmptyBorder(gfx::Insets(GetLayoutConstant(
+@@ -1252,6 +1257,11 @@
+   }
+   TabStyle::TabColors colors = tab_styling()->CalculateTargetColors();
+   title_->SetEnabledColor(colors.foreground_color);
++  if (orientation_ == TabStripOrientation::kVertical) {
++    // Atlas: the title of the tab in front is weight 500.
++    title_->SetFontList(
++        atlas::sidebar::RowTitleFont(title_->font_list(), active_));
++  }
+   close_button_->SetColors(colors);
+   alert_indicator_->OnParentTabButtonColorChanged();
+ 
+--- a/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_view_vertical_layout.cc
+@@ -32,14 +32,16 @@
+       TabChildConfig(TabView().close_button_, kIconDesignWidth, kDefaultPadding,
+                      /*align_leading=*/false,
+                      /*expand=*/false),
+-      TabChildConfig(TabView().icon_, kIconDesignWidth, kHorizontalInset,
+-                     /*align_leading=*/true,
+-                     /*expand=*/false),
++      // Atlas: the audio and alert glyph sits right of the title, next to the
++      // close button (tokens.md section 3).
+       TabChildConfig(TabView().alert_indicator_, kIconDesignWidth,
+                      kDefaultPadding,
+-                     /*align_leading=*/true,
++                     /*align_leading=*/false,
+                      /*expand=*/false,
+                      /*decorate_on_collapse=*/true),
++      TabChildConfig(TabView().icon_, kIconDesignWidth, kHorizontalInset,
++                     /*align_leading=*/true,
++                     /*expand=*/false),
+       TabChildConfig(TabView().title_, kTitleMinWidth, kDefaultPadding,
+                      /*align_leading=*/true,
+                      /*expand=*/true)};
+@@ -60,8 +62,9 @@
+ 
+   // If the tab is collapsed but animating with a wider width then we shouldn't
+   // center the contents.
+-  const bool is_centered = (TabView().pinned_ || TabView().collapsed_) &&
+-                           !TabView().IsInExpandOnHover(width);
++  // Atlas: a pinned tab is a full row (icon and title) in the expanded sidebar.
++  const bool is_centered =
++      TabView().collapsed_ && !TabView().IsInExpandOnHover(width);
+ 
+   int placed_children = 0;
+   for (const auto& child : tab_children_configs_) {
+@@ -147,7 +150,7 @@
+   if (child_view == TabView().title_) {
+     // Pinned titles should be visible in the expand on hover state when the
+     // width is sufficient to show the title.
+-    return !TabView().pinned_ || TabView().IsInExpandOnHover(width);
++    return !TabView().collapsed_ || TabView().IsInExpandOnHover(width);
+   }
+ 
+   if (child_view == TabView().alert_indicator_) {
+@@ -162,8 +165,7 @@
+   }
+ 
+   if (child_view == TabView().icon_) {
+-    const bool should_hide_icon_for_alert =
+-        TabView().pinned_ || TabView().collapsed_;
++    const bool should_hide_icon_for_alert = TabView().collapsed_;
+     return !should_hide_icon_for_alert ||
+            !IsChildVisible(TabView().alert_indicator_, width);
+   }
+--- a/chrome/browser/ui/views/tabs/common/vertical_tab_style_views.cc
++++ b/chrome/browser/ui/views/tabs/common/vertical_tab_style_views.cc
+@@ -9,6 +9,7 @@
+ 
+ #include "chrome/browser/ui/views/helium/native_frame_materials.h"
+ #include "chrome/browser/themes/theme_properties.h"
++#include "chrome/browser/ui/atlas/sidebar/row_style.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/views/frame/browser_frame_view.h"
+ #include "chrome/browser/ui/views/tabs/common/tab_collection_node.h"
+@@ -27,6 +28,22 @@
+ #include "ui/views/view_utils.h"
+ #include "ui/views/widget/widget.h"
+ 
++namespace {
++
++atlas::sidebar::RowState GetAtlasRowState(
++    TabStyle::TabSelectionState selection_state) {
++  switch (selection_state) {
++    case TabStyle::TabSelectionState::kActive:
++      return atlas::sidebar::RowState::kActive;
++    case TabStyle::TabSelectionState::kSelected:
++      return atlas::sidebar::RowState::kSelected;
++    default:
++      return atlas::sidebar::RowState::kIdle;
++  }
++}
++
++}  // namespace
++
+ VerticalTabStyleViews::VerticalTabStyleViews(
+     std::unique_ptr<TabStyleViewDelegate> delegate)
+     : delegate_(std::move(delegate)) {
+@@ -214,6 +231,13 @@
+ 
+ SkColor VerticalTabStyleViews::GetCurrentTabBackgroundColor(
+     TabStyle::TabSelectionState selection_state) const {
++  // Atlas: the row fill of the sidebar (selection pill, hover).
++  if (const ui::ColorProvider* color_provider =
++          delegate_->GetView()->GetColorProvider()) {
++    return atlas::sidebar::RowFillColor(
++        *color_provider, GetAtlasRowState(selection_state),
++        delegate_->GetHoverAnimationValue());
++  }
+   if (helium::ShouldUseNativeFrameMaterials(
+           delegate_->GetBrowserWindowInterface()) &&
+       selection_state == TabStyle::TabSelectionState::kInactive) {
+@@ -280,10 +304,17 @@
+ }
+ 
+ TabStyle::TabColors VerticalTabStyleViews::CalculateTargetColors() const {
+-  return tab_style()->CalculateTargetColors(
++  TabStyle::TabColors colors = tab_style()->CalculateTargetColors(
+       GetSelectionState(), IsApparentlyActive(), delegate_->IsHovering(),
+       delegate_->GetView()->GetWidget()
+           ? delegate_->GetView()->GetWidget()->ShouldPaintAsActive()
+           : true,
+       delegate_->GetView()->GetColorProvider());
++  // Atlas: the title is the text colour in every state, never the dim colour
++  // on the pill.
++  if (const ui::ColorProvider* color_provider =
++          delegate_->GetView()->GetColorProvider()) {
++    colors.foreground_color = atlas::sidebar::RowTitleColor(*color_provider);
++  }
++  return colors;
+ }
+--- a/chrome/browser/ui/views/tabs/tab/tab_icon.cc
++++ b/chrome/browser/ui/views/tabs/tab/tab_icon.cc
+@@ -51,13 +51,18 @@
+ 
+ namespace {
+ 
++// How long a tab loads before its spinner shows.
++constexpr base::TimeDelta kAtlasSpinnerDelay = base::Milliseconds(150);
++
+ constexpr int kAttentionIndicatorRadius = 3;
+ constexpr float kDiscardedFaviconDarkModeBrightness = 0.2f;
+ constexpr float kDiscardedFaviconOpacity = 0.5f;
+ constexpr int kLoadingAnimationStrokeWidthDp = 2;
+ 
+-bool NetworkStateIsAnimated(tabs::TabNetworkState) {
+-  return false;
++// Atlas: a tab that waits for its page or loads it shows a spinner.
++bool NetworkStateIsAnimated(tabs::TabNetworkState state) {
++  return state == tabs::TabNetworkState::kWaiting ||
++         state == tabs::TabNetworkState::kLoading;
+ }
+ 
+ }  // namespace
+@@ -175,6 +180,13 @@
+   return NetworkStateIsAnimated(network_state_);
+ }
+ 
++bool TabIcon::IsAtlasSpinnerVisible() const {
++  return GetShowingLoadingAnimation() &&
++         !loading_animation_start_time_.is_null() &&
++         clock_->NowTicks() - loading_animation_start_time_ >=
++             kAtlasSpinnerDelay;
++}
++
+ bool TabIcon::GetShowingAttentionIndicator() const {
+   return attention_types_ > 0;
+ }
+@@ -243,7 +255,17 @@
+   }
+ 
+   if (GetShowingLoadingAnimation()) {
+-    PaintLoadingAnimation(canvas, icon_bounds);
++    // Atlas: a page that loads faster than this shows no spinner at all; the
++    // animation steps repaint the icon after the delay.
++    if (loading_animation_start_time_.is_null()) {
++      loading_animation_start_time_ = clock_->NowTicks();
++    }
++    if (IsAtlasSpinnerVisible()) {
++      PaintLoadingAnimation(canvas, icon_bounds);
++    }
++    // Nothing steps the loading animation of the sidebar: ask for the next
++    // frame (this also ends the delay).
++    SchedulePaint();
+   }
+ }
+ 
+@@ -386,7 +408,7 @@
+     return;
+   }
+ 
+-  if (GetShowingLoadingAnimation()) {
++  if (IsAtlasSpinnerVisible()) {
+     // Never paint the favicon during the waiting animation.
+     if (network_state_ == tabs::TabNetworkState::kWaiting) {
+       return;
+--- a/chrome/browser/ui/views/tabs/tab/tab_icon.h
++++ b/chrome/browser/ui/views/tabs/tab/tab_icon.h
+@@ -68,6 +68,8 @@
+   void SetAttention(AttentionType type, bool enabled);
+ 
+   bool GetShowingLoadingAnimation() const;
++  // Atlas: the spinner shows once a tab has loaded for 150 ms.
++  bool IsAtlasSpinnerVisible() const;
+   bool GetShowingAttentionIndicator() const;
+   bool GetShowingDiscardIndicator() const;
+ 

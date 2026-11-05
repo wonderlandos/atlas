@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Atlas strings of the brand area (owner: ATLAS-BRAND-FORK). A part of
+     chrome/app/generated_resources.grd (anchor patch 0010): add <message name="IDS_ATLAS_..."> elements
+     here, never in generated_resources.grd. -->
+<grit-part>
+  <!-- Settings > About -->
+  <message name="IDS_ATLAS_ABOUT_VERSION" desc="The line of Settings > About that names the version of the browser and of its engine, when the computer is not running WolOS. Example: Version 0.13.0 (Official Build) (64-bit). Engine 156.0.8078.79.">
+    Version <ph name="ATLAS_VERSION">$1<ex>0.13.0</ex></ph> (<ph name="CHANNEL">$2<ex>Official Build</ex></ph>) <ph name="BITS">$3<ex>(64-bit)</ex></ph>. Engine <ph name="ENGINE_VERSION">$4<ex>156.0.8078.79</ex></ph>.
+  </message>
+  <message name="IDS_ATLAS_ABOUT_VERSION_WOLOS" desc="The line of Settings > About that names the version of the browser, the WolOS release and the engine. Example: Version 0.13.0 (Official Build) (64-bit). WolOS 0.13. Engine 156.0.8078.79.">
+    Version <ph name="ATLAS_VERSION">$1<ex>0.13.0</ex></ph> (<ph name="CHANNEL">$2<ex>Official Build</ex></ph>) <ph name="BITS">$3<ex>(64-bit)</ex></ph>. WolOS <ph name="WOLOS_RELEASE">$4<ex>0.13</ex></ph>. Engine <ph name="ENGINE_VERSION">$5<ex>156.0.8078.79</ex></ph>.
+  </message>
+  <message name="IDS_ATLAS_ABOUT_LICENSE" desc="The sentence below the copyright line of Settings > About. The link goes to the page that lists the licenses of the software inside the browser.">
+    Atlas is made possible by open source software. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1" aria-description="$2"&gt;</ph>See the credits<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ATLAS_ABOUT_OPENS_IN_NEW_TAB" desc="The accessibility description of a link that opens in a new tab.">
+    Opens in a new tab
+  </message>
+  <message name="IDS_ATLAS_ABOUT_UPDATES" desc="The row of Settings > About that says how the browser is updated. The link after it opens the Software Update pane of WolOS System Settings.">
+    Atlas updates with WolOS.
+  </message>
+  <message name="IDS_ATLAS_ABOUT_OPEN_UPDATES" desc="The link after the sentence about updates in Settings > About. It opens the Software Update pane of WolOS System Settings.">
+    Open Software Update
+  </message>
+
+  <!-- The version page (atlas://version) -->
+  <message name="IDS_ATLAS_VERSION_WOLOS_LABEL" desc="The label of the row of the version page that shows the WolOS release.">
+    WolOS
+  </message>
+  <message name="IDS_ATLAS_VERSION_ENGINE_LABEL" desc="The label of the row of the version page that shows the version of the browser engine.">
+    Engine
+  </message>
+  <message name="IDS_ATLAS_VERSION_NO_WOLOS" desc="The value of the WolOS row of the version page when the computer is not running WolOS.">
+    Not detected
+  </message>
+</grit-part>

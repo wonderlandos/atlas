@@ -1,0 +1,25 @@
+// Copyright 2026 The Atlas Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The WolOS symbolic glyph open-menu (16 px grid), path data as drawn by the design repository.
+
+CANVAS_DIMENSIONS, 16,
+MOVE_TO, 2.75f, 4.75f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 2.75f, 3.25f,
+LINE_TO, 13.25f, 3.25f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 13.25f, 4.75f,
+LINE_TO, 2.75f, 4.75f,
+CLOSE,
+MOVE_TO, 2.75f, 8.75f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 2.75f, 7.25f,
+LINE_TO, 13.25f, 7.25f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 13.25f, 8.75f,
+LINE_TO, 2.75f, 8.75f,
+CLOSE,
+MOVE_TO, 2.75f, 12.75f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 2.75f, 11.25f,
+LINE_TO, 13.25f, 11.25f,
+ARC_TO, 0.75f, 0.75f, 0, 0, 1, 13.25f, 12.75f,
+LINE_TO, 2.75f, 12.75f,
+CLOSE,

@@ -38,9 +38,9 @@ in a row is deleted or rewritten, not carried by force.
 3. Start the file with the patch header (Why, Files, Test filter, Rebase risk, Release, License,
    Verified at; the format is in [atlas/README.md](atlas/README.md)). "Why" says what changes for
    the person using Atlas and why a cheaper mechanism was not enough.
-4. Append the path to `atlas/patches/series`.
+4. Append the path to the fragment of your area, `atlas/patches/series.d/NN-area.series` (never to `atlas/patches/series`).
 5. Check on a fresh base tree: `tools/apply-overlay.sh --dry-run TREE` prints `ok` for every patch.
-6. Commit the patch file and the series line together, **one commit per patch**, with the header as
+6. Commit the patch file and the fragment line together, **one commit per patch**, with the header as
    the commit message (first line: `Atlas overlay patch NNNN: <area>/<name>`).
 
 To change an existing patch, amend its own commit (rebase `main`), so the history keeps one commit

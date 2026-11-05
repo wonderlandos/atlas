@@ -1,0 +1,95 @@
+Atlas overlay patch 0098: ui/rest-mark
+Why: scene 9 of the reel ("Tabs you are not using rest", still full-66): in the sidebar a tab that
+gave its memory back has a dim title and a frost mark (the WolOS glyph weather-snow, accent) at the
+right of its row, the tab in front never; one click wakes it. Memory Saver and the discarding are the
+engine's (inherited series); this is the picture. The logic and the glyph are new files
+(chrome/browser/ui/atlas/rest/rest_mark.*, rest/vector_icons); the row view gets three hooks: the
+title colour, the mark painted over the row where the close button of the tab in front sits, and a
+colour update when the discard state changes. No setting draws a row, so hook lines are the
+smallest tier. Integration stand-in for the rest area (numbers 0024-0029 stay free for it).
+Files: chrome/browser/ui/views/tabs/common/tab_view.{h,cc}
+Test filter: *AtlasRestMark*; reel-check scene R09 (5 resting rows dim with the mark, the selected one never)
+Rebase risk: M (tab_view.cc is also hooked by the sidebar patches 0021/0022; three small hunks)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/tabs/common/tab_view.cc
++++ b/chrome/browser/ui/views/tabs/common/tab_view.cc
+@@ -17,6 +17,7 @@
+ #include "chrome/browser/glic/browser_ui/tab_underline_view.h"
+ #include "chrome/browser/glic/public/glic_enabling.h"
+ #include "chrome/browser/themes/theme_properties.h"
++#include "chrome/browser/ui/atlas/rest/rest_mark.h"
+ #include "chrome/browser/ui/atlas/sidebar/row_style.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+@@ -77,6 +78,7 @@
+ #include "ui/base/theme_provider.h"
+ #include "ui/compositor/clip_recorder.h"
+ #include "ui/compositor/layer.h"
++#include "ui/compositor/paint_recorder.h"
+ #include "ui/events/keycodes/keyboard_codes.h"
+ #include "ui/events/types/event_type.h"
+ #include "ui/gfx/color_utils.h"
+@@ -822,6 +824,23 @@
+   }
+ 
+   View::PaintChildren(info);
++
++  // Atlas (patch 0098): a resting row carries the frost mark where the close
++  // button of the tab in front sits.
++  if (ShowsAtlasRestMark()) {
++    ui::PaintRecorder recorder(info.context(), size());
++    atlas::rest::PaintRestMark(
++        recorder.canvas(),
++        GetMirroredRect(atlas::rest::RestMarkBounds(width(), height())),
++        GetColorProvider()->GetColor(ui::kColorAccent));
++  }
++}
++
++bool TabView::ShowsAtlasRestMark() const {
++  return orientation_ == TabStripOrientation::kVertical && !collapsed_ &&
++         GetColorProvider() &&
++         atlas::rest::IsResting(tab_data_.is_tab_discarded, active_) &&
++         !close_button_->GetVisible();
+ }
+ 
+ void TabView::OnPaint(gfx::Canvas* canvas) {
+@@ -1211,6 +1230,10 @@
+   UpdateTitle(tab_data_.title, tab_data_.should_render_loading_title);
+   alert_indicator_->TransitionToAlertState(tab_data_.alert_state);
+   SetHoverCardDataFrom(tab_data_);
++  if (old_data.is_tab_discarded != tab_data_.is_tab_discarded) {
++    // Atlas (patch 0098): resting or awake again: title colour and mark.
++    UpdateColors();
++  }
+ }
+ 
+ void TabView::SetDataForTesting(const tabs::TabData& data) {
+@@ -1265,6 +1288,12 @@
+   }
+   TabStyle::TabColors colors = tab_styling()->CalculateTargetColors();
+   title_->SetEnabledColor(colors.foreground_color);
++  if (orientation_ == TabStripOrientation::kVertical &&
++      atlas::rest::IsResting(tab_data_.is_tab_discarded, active_)) {
++    // Atlas (patch 0098): the title of a resting row is dim.
++    title_->SetEnabledColor(atlas::rest::RestingTitleColor(
++        colors.foreground_color, colors.background_color));
++  }
+   if (orientation_ == TabStripOrientation::kVertical) {
+     // Atlas: the title of the tab in front is weight 500.
+     title_->SetFontList(
+--- a/chrome/browser/ui/views/tabs/common/tab_view.h
++++ b/chrome/browser/ui/views/tabs/common/tab_view.h
+@@ -125,6 +125,10 @@
+   views::BubbleBorder::Arrow GetAnchorPosition() const override;
+ 
+  private:
++  // Atlas (patch 0098): whether the row paints the frost mark of a resting
++  // tab (vertical, expanded, discarded, not in front, no close button shown).
++  bool ShowsAtlasRestMark() const;
++
+   friend class TabViewVerticalLayout;
+   friend class TabViewHorizontalLayout;
+ 

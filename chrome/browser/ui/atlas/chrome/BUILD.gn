@@ -1,0 +1,52 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_linux, "Atlas chrome is Linux only")
+
+# Atlas chrome (owner: ATLAS-CHROME): the WolOS tokens on the engine's own windows. The colour mixer
+# (called from chrome/browser/ui/color/chrome_color_mixers.cc, patch 0070) and the few view helpers
+# the omnibox, progress bar and find bar hooks (patch 0071) call. Linked into //chrome/browser/ui,
+# which allows this target to include its headers (anchor patch 0010) and into
+# //chrome/browser/ui/color:mixers (patch 0070).
+source_set("chrome") {
+  sources = [
+    "atlas_chrome_views.cc",
+    "atlas_chrome_views.h",
+    "atlas_color_mixer.cc",
+    "atlas_color_mixer.h",
+    "atlas_tokens.h",
+  ]
+  public_deps = [
+    "//chrome/browser/ui/color:color_headers",
+    "//skia",
+    "//ui/color",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/views",
+  ]
+  deps = [
+    "//base",
+    "//cc/paint",
+    "//ui/color:color_headers",
+  ]
+}
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "atlas_color_mixer_unittest.cc",
+    "atlas_tokens_unittest.cc",
+  ]
+  deps = [
+    ":chrome",
+    "//base",
+    "//chrome/browser/ui",
+    "//chrome/browser/ui/color:color_headers",
+    "//testing/gtest",
+    "//ui/color",
+    "//ui/color:test_support",
+    "//ui/gfx",
+  ]
+}

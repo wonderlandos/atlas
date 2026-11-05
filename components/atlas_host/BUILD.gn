@@ -1,0 +1,55 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# The client of the WolOS atlas bridge (owner: ATLAS-HOST): the Atlas Host
+# Protocol codec and a connection to the bridge socket. No WolOS source is
+# compiled in; the protocol is the contract (docs/modules/atlas.md of WolOS).
+# A dependency of //chrome/browser (anchor patch 0010).
+source_set("atlas_host") {
+  sources = [
+    "atlas_host.cc",
+    "atlas_host.h",
+    "atlas_host_prefs.cc",
+    "atlas_host_prefs.h",
+    "download_verbs.cc",
+    "download_verbs.h",
+    "protocol.cc",
+    "protocol.h",
+  ]
+  public_deps = [ "//base" ]
+  deps = [ "//components/pref_registry" ]
+}
+
+# Unit tests of this area (testonly), collected by //chrome/browser/ui/atlas:unit_tests.
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "atlas_host_unittest.cc",
+    "download_verbs_unittest.cc",
+    "protocol_unittest.cc",
+    "test_support.cc",
+    "test_support.h",
+  ]
+  deps = [
+    ":atlas_host",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  # The fixtures shared byte for byte with the bridge (testdata/).
+  data = [ "testdata/" ]
+}
+
+# The same tests alone, for a developer who does not want to link all of
+# unit_tests: out/Default/atlas_host_unittests --gtest_filter='*AtlasHost*'. (An executable, not the
+# test() template: the template wants the test fonts, which a pruned source tree does not carry.)
+executable("atlas_host_unittests") {
+  testonly = true
+  deps = [
+    ":unit_tests",
+    "//base/test:run_all_unittests",
+  ]
+}

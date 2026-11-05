@@ -1,0 +1,44 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+# Atlas brand (owner: ATLAS-BRAND-FORK): what the About pages say (Settings >
+# About and the version page) and the link to the WolOS Software Update pane.
+# Linked into //chrome/browser/ui through //chrome/browser/ui/atlas:atlas_ui, so
+# version_ui.cc and the settings strings provider may include it.
+source_set("brand") {
+  sources = [
+    "atlas_about.cc",
+    "atlas_about.h",
+  ]
+  public_deps = [ ":wolos_release" ]
+  deps = [
+    "//base",
+    "//chrome/app:generated_resources",
+    "//content/public/browser",
+    "//ui/base",
+  ]
+}
+
+# The WolOS release from os-release: base only, so its test is small.
+source_set("wolos_release") {
+  sources = [
+    "wolos_release.cc",
+    "wolos_release.h",
+  ]
+  deps = [ "//base" ]
+}
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests
+# collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "wolos_release_unittest.cc" ]
+  deps = [
+    ":wolos_release",
+    "//base",
+    "//testing/gtest",
+  ]
+}

@@ -1,0 +1,144 @@
+Atlas overlay patch 0053: ui/firstrun-page
+Why: a new profile opens the Atlas first-run page (four screens, WolOS look) instead of the
+upstream setup bundle. The inherited series already shows the setup host while the profile has not
+completed it and keeps the engine's own first run away, so the startup check and the host stay as
+they are (smallest hunk). Only what the host serves changes: the controller serves the page of
+components/atlas_pages/setup/ through the shared page source of patch 0010, and the bundle's
+entries leave the resource ids, the pak list, the browser deps and the root resource file (the
+bundle's deps.ini section stays: the inherited i18n tools read its version; nothing builds or ships
+the unpacked bundle). A first-run preference or a policy cannot
+replace the page; a new component is what the page is.
+Files: chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc, chrome/browser/ui/webui/BUILD.gn, chrome/browser/BUILD.gn, chrome/chrome_paks.gni, tools/gritsettings/resource_ids.spec, chrome/app/generated_resources.grd, chrome/app/generated_resources.grd.gritdeps
+Test filter: *AtlasFirstRun*; reel-check scene R04 (a fresh profile opens the setup page once; zero requests off the page)
+Rebase risk: M (removes lines the inherited onboarding patch adds; if it changes them, only this patch needs the same edit)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited, platform and 0010 patches applied
+
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -3599,7 +3599,6 @@
+     "//chrome/browser/ui/webui/user_education_internals:mojo_bindings",
+     "//chrome/browser/web_applications/mojom:mojom_web_apps_enum",
+     "//chrome/common/request_header_integrity:buildflags",
+-    "//components/helium_onboarding:generated_resources",
+     "//components/autofill/core/browser/ml_model/logging:mojo_bindings",
+     "//components/enterprise/connectors:mojom",
+     "//components/webui/chrome_urls/mojom:mojo_bindings",
+--- a/chrome/chrome_paks.gni
++++ b/chrome/chrome_paks.gni
+@@ -477,13 +477,11 @@
+       sources += [
+         "$root_gen_dir/chrome/default_browser_modal_resources.pak",
+         "$root_gen_dir/chrome/profile_picker_resources.pak",
+-        "$root_gen_dir/components/helium_onboarding/resources/helium_onboarding_generated.pak",
+       ]
+       deps += [
+         "//chrome/browser/resources/default_browser/default_browser_modal:resources",
+         "//chrome/browser/resources/intro:resources",
+         "//chrome/browser/resources/signin/profile_picker:resources",
+-        "//components/helium_onboarding:generated_resources",
+       ]
+     }
+ 
+--- a/tools/gritsettings/resource_ids.spec
++++ b/tools/gritsettings/resource_ids.spec
+@@ -1413,10 +1413,6 @@
+     "META": {"sizes": {"includes": [50]}},
+     "includes": [7505],
+   },
+-  "<(SHARED_INTERMEDIATE_DIR)/components/helium_onboarding/resources.grd": {
+-   "META": {"sizes": {"includes": [48],}},
+-    "includes": [7510],
+-  },
+   # Atlas: the pages of the overlay (all in one grd, one grdp per page).
+   "components/atlas_pages/atlas_pages_resources.grd": {
+     "includes": [7560],
+--- a/chrome/app/generated_resources.grd
++++ b/chrome/app/generated_resources.grd
+@@ -295,9 +295,6 @@
+       <!-- Global Media Controls specific strings -->
+       <part file="gmc_strings.grdp" />
+ 
+-      <!-- Helium onboarding strings -->
+-      <part file="../../components/helium_onboarding/helium_onboarding_strings.grdp" />
+-
+       <!-- Media live preview specific strings -->
+       <part file="media_live_preview_strings.grdp" />
+ 
+--- a/chrome/app/generated_resources.grd.gritdeps
++++ b/chrome/app/generated_resources.grd.gritdeps
+@@ -108,4 +108,3 @@
+ chrome/app/support_tool_strings.grdp
+ chrome/app/vr_strings.grdp
+ chrome/app/whats_new_strings.grdp
+-components/helium_onboarding/helium_onboarding_strings.grdp
+--- a/chrome/browser/ui/webui/BUILD.gn
++++ b/chrome/browser/ui/webui/BUILD.gn
+@@ -681,8 +681,8 @@
+     "//chrome/browser/extensions",
+     "//chrome/browser/profiles",
+     "//chrome/browser/ui/webui/settings",
+-    "//components/helium_onboarding:generated_resources",
+-    "//components/helium_onboarding:localized_strings",
++    "//components/atlas_pages/common",
++    "//components/atlas_pages/setup",
+     "//components/helium_services",
+     "//extensions/common",
+     "//ui/webui",
+--- a/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
++++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
+@@ -4,49 +4,24 @@
+ 
+ #include "chrome/browser/ui/webui/onboarding/onboarding_page_ui.h"
+ 
+-#include "base/strings/strcat.h"
+-#include "build/build_config.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
+ #include "chrome/browser/ui/webui/settings/brave_import_data_handler.h"
+ #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
+ #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
+ #include "chrome/common/webui_url_constants.h"
+-#include "components/helium_onboarding/helium_onboarding_localized_strings.h"
+-#include "components/helium_onboarding/resources/grit/helium_onboarding_generated.h"
+-#include "components/helium_onboarding/resources/grit/helium_onboarding_generated_map.h"
++#include "components/atlas_pages/common/atlas_page_source.h"
+ #include "content/public/browser/web_contents.h"
+ #include "content/public/browser/web_ui_controller.h"
+-#include "content/public/browser/web_ui_data_source.h"
+-#include "services/network/public/mojom/content_security_policy.mojom.h"
+-#include "ui/webui/webui_util.h"
+-
+-#if BUILDFLAG(IS_MAC)
+-#include "base/mac/mac_util.h"
+-#endif
+ 
+ HeliumOnboardingPage::HeliumOnboardingPage(content::WebUI* web_ui)
+     : WebUIController(web_ui) {
+   content::BrowserContext* browser_context =
+       web_ui->GetWebContents()->GetBrowserContext();
+   Profile* profile = Profile::FromBrowserContext(browser_context);
+-  content::WebUIDataSource* source =
+-      content::WebUIDataSource::CreateAndAdd(profile, chrome::kHeliumSetupHost);
+-
+-  webui::SetupWebUIDataSource(source, kHeliumOnboardingGenerated,
+-                              IDR_HELIUM_ONBOARDING_INDEX_HTML);
+-  source->AddLocalizedStrings(helium_onboarding::kLocalizedStrings);
+-  source->UseStringsJs();
+-
+-#if BUILDFLAG(IS_MAC)
+-  source->AddBoolean("showMacImportPermissionNotice",
+-                     base::mac::MacOSMajorVersion() >= 27);
+-#endif
+-
+-  source->OverrideContentSecurityPolicy(
+-      network::mojom::CSPDirectiveName::TrustedTypes,
+-      base::StrCat({webui::kDefaultTrustedTypesPolicies,
+-                    " svelte-trusted-html;"}));
++  // components/atlas_pages/setup/: the first-run page.
++  atlas_pages::AtlasPageSource::CreateAndAdd(
++      browser_context, chrome::kAtlasSetupHost, "setup");
+ 
+   web_ui->AddMessageHandler(
+       std::make_unique<OnboardingMessageHandler>(browser_context));

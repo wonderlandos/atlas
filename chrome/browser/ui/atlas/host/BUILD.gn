@@ -1,0 +1,24 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+# Tests of the downloads menu verbs (owner: ATLAS-HOST). The menu itself is a hook in the engine's
+# DownloadUiContextMenu (overlay patch 0041) and the client is //components/atlas_host, so this area has
+# only tests; //chrome/browser/ui/atlas:unit_tests collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "download_menu_unittest.cc" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//chrome/browser/download",
+    "//chrome/browser/profiles:profile",
+    "//components/atlas_host",
+    "//components/download/public/common:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/menus",
+  ]
+}

@@ -1,0 +1,9 @@
+# Overlay series fragment sidebar: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-SIDEBAR. One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0020-0023
+ui/0020-default-vertical.patch
+ui/0021-sidebar-metrics.patch
+ui/0022-sidebar-sections.patch
+ui/0023-sidebar-footer.patch

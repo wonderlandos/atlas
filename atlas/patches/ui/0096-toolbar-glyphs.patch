@@ -1,0 +1,83 @@
+Atlas overlay patch 0096: ui/toolbar-glyphs
+Why: the toolbar of the reel (scene 3 and 7, pose atlas-ntp-light, still full-52_6) draws the two
+buttons the engine paints itself with the WolOS glyphs: open-menu (three lines) for the app menu and
+folder-download for the downloads button, with the progress ring around it as before. The glyphs are
+the design repository's symbolic icons as vector icons of the toolbar area
+(chrome/browser/ui/atlas/toolbar/vector_icons, reached through toolbar_glyphs.h so an engine file
+includes no generated header). No setting picks a toolbar icon, so this is one line per button.
+Files: chrome/browser/ui/views/toolbar/browser_app_menu_button.cc,
+ chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc,
+ chrome/browser/ui/browser_actions.cc (the downloads action's first icon)
+Test filter: reel-check scenes R02 and R07 (toolbar pair: the menu and downloads glyphs)
+Rebase risk: L (one include and one icon line per file)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/browser_actions.cc
++++ b/chrome/browser/ui/browser_actions.cc
+@@ -93,6 +93,7 @@
+ #include "chrome/browser/ui/actions/chrome_action_properties.h"
+ #include "chrome/browser/ui/actions/chrome_actions.h"
+ #include "chrome/browser/ui/ai_overlay_dialog/ai_overlay_dialog_controller.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_glyphs.h"
+ #include "chrome/browser/ui/autofill/address_bubbles_icon_controller.h"
+ #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
+ #include "chrome/browser/ui/autofill/payments/filled_card_information_bubble_controller_impl.h"
+@@ -1681,9 +1682,8 @@
+               },
+               bwi),
+           kActionShowDownloads, IDS_SHOW_DOWNLOADS, IDS_TOOLTIP_DOWNLOAD_ICON,
+-          features::IsRoundedIconsEnabled()
+-              ? kDownloadIcon
+-              : kDownloadToolbarButtonChromeRefreshOldIcon)
++          // Atlas: the WolOS folder-download glyph (patch 0096).
++          atlas::toolbar::DownloadsIcon())
+           .Build());
+ 
+   if (tab_groups::SavedTabGroupUtils::SupportsSharedTabGroups()) {
+--- a/chrome/browser/ui/views/toolbar/browser_app_menu_button.cc
++++ b/chrome/browser/ui/views/toolbar/browser_app_menu_button.cc
+@@ -12,6 +12,7 @@
+ #include "base/task/single_thread_task_runner.h"
+ #include "base/time/time.h"
+ #include "build/branding_buildflags.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_glyphs.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/browser/ui/ui_features.h"
+ #include "chrome/browser/ui/views/app_menu/action_app_menu.h"
+@@ -151,12 +152,8 @@
+ }
+ 
+ void BrowserAppMenuButton::UpdateIcon() {
+-  const gfx::VectorIcon& icon =
+-      ui::TouchUiController::Get()->touch_ui()
+-          ? features::IsRoundedIconsEnabled() ? kMoreVertIcon
+-                                              : kBrowserToolsTouchOldIcon
+-      : features::IsRoundedIconsEnabled() ? kMoreVertIcon
+-                                          : kBrowserToolsChromeRefreshOldIcon;
++  // Atlas: the WolOS open-menu glyph (patch 0096).
++  const gfx::VectorIcon& icon = atlas::toolbar::AppMenuIcon();
+   const int icon_size = GetIconSize();
+ 
+   for (auto state : kButtonStates) {
+--- a/chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc
++++ b/chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc
+@@ -28,6 +28,7 @@
+ #include "chrome/browser/platform_util.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/ui/actions/chrome_action_id.h"
++#include "chrome/browser/ui/atlas/toolbar/toolbar_glyphs.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+@@ -701,6 +702,9 @@
+                            ? kDownloadIcon
+                            : kDownloadToolbarButtonChromeRefreshOldIcon);
+   }
++  // Atlas: the WolOS folder-download glyph in every state; the ring shows the
++  // progress around it (patch 0096).
++  new_icon = &atlas::toolbar::DownloadsIcon();
+   action_item_->SetProperty(kActionItemUnderlineIndicatorKey, is_icon_active);
+ 
+   action_item_->SetImage(ui::ImageModel::FromVectorIcon(*new_icon, icon_color));

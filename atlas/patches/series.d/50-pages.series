@@ -1,0 +1,9 @@
+# Overlay series fragment pages: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-NTP (0050-0052) and ATLAS-FIRSTRUN (0053-0059). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0050-0059
+ui/0050-newtab-url.patch
+ui/0053-firstrun-page.patch
+ui/0054-firstrun-handler.patch
+ui/0055-credits-licence-files.patch
