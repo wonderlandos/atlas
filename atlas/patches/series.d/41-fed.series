@@ -7,3 +7,4 @@ fed/0120-fed-scheme.patch
 fed/0121-fed-loader.patch
 fed/0122-fed-glyph.patch
 fed/0123-fed-guard.patch
+fed/0124-fed-omnibox.patch

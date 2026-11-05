@@ -1,0 +1,86 @@
+Atlas overlay patch 0124: fed/fed-omnibox
+Why: a Federate name typed in the address bar or the new tab page's field (home.fed, lobo.pagina, an http(s)
+ spelling of one) was classified as a search: the 23 Federate TLDs are not in the engine's registry data, so
+ AutocompleteInput::Parse() answered UNKNOWN ("foo.xxx: Chrome won't know it is a real URL") and the default
+ match was the search provider. The name left the machine (search request, suggest requests while typing) and
+ the page the person wanted did not open (QA-A9-WEB-ATLAS-1, lead rule: a Federate name never reaches the web).
+ Now (1) Parse() turns an input whose host ends in a known Federate TLD into a URL whose canonical form is the
+ fed:// address (atlas_fed::MapHttpToFed, the same function the loaders use); (2) SearchProvider::Start()
+ stops for such an input, so no suggest request and no search match is made for it ("?home.fed" still
+ searches). The TLD list is ONE definition in components/atlas_fed_tlds, read by the omnibox and by the fed
+ area (chrome/browser/atlas/fed/fed_url.h forwards to it). The new tab page needs no hook: its field uses the
+ same classifier (and newtab_handler.cc opens a Federate name directly, before asking it).
+Files: components/omnibox/browser/autocomplete_input.cc, components/omnibox/browser/search_provider.cc, components/omnibox/browser/BUILD.gn
+Test filter: *AtlasFedOmnibox*; journey: type lobo.pagina in the address bar and the new tab field, Enter: fed://lobo.pagina opens, no request to the search provider
+Rebase risk: M (one early return in Parse(), one early return in SearchProvider::Start(), one include and one dependency each)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, base tree plus the patches before it in the series (dev slot 4)
+
+--- a/components/omnibox/browser/BUILD.gn
++++ b/components/omnibox/browser/BUILD.gn
+@@ -407,6 +407,7 @@
+   deps = [
+     "//build:android_buildflags",
+     "//build:branding_buildflags",
++    "//components/atlas_fed_tlds",
+     "//components/bookmarks/browser",
+     "//components/component_updater",
+     "//components/contextual_tasks/public:feature_list",
+--- a/components/omnibox/browser/autocomplete_input.cc
++++ b/components/omnibox/browser/autocomplete_input.cc
+@@ -19,6 +19,7 @@
+ #include "base/trace_event/memory_usage_estimator.h"
+ #include "base/trace_event/typed_macros.h"
+ #include "build/build_config.h"
++#include "components/atlas_fed_tlds/fed_tlds.h"
+ #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
+ #include "components/search_engines/template_url.h"
+ #include "components/search_engines/template_url_service.h"
+@@ -283,6 +284,19 @@
+   if (!canonicalized_url->is_valid())
+     return metrics::OmniboxInputType::QUERY;
+ 
++  // Atlas (ADR 0052): a Federate name is exclusively fed://. A bare name
++  // (home.fed, lobo.pagina/x) or an http(s) spelling of it is an address whose
++  // host has a known Federate TLD, so it is a URL (fixed up to fed://), never
++  // the "unknown TLD" guess that sends it to the search provider.
++  // (SegmentURL() reports "http" for an input typed without a scheme.)
++  if (base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8, url::kHttpScheme) ||
++      base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
++    if (std::optional<GURL> fed = atlas_fed::MapHttpToFed(*canonicalized_url)) {
++      *canonicalized_url = *fed;
++      return metrics::OmniboxInputType::URL;
++    }
++  }
++
+ #if BUILDFLAG(IS_CHROMEOS)
+   if (base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8,
+                                        chromeos::kAppInstallUriScheme)) {
+--- a/components/omnibox/browser/search_provider.cc
++++ b/components/omnibox/browser/search_provider.cc
+@@ -32,6 +32,7 @@
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/timer/elapsed_timer.h"
+ #include "base/trace_event/trace_event.h"
++#include "components/atlas_fed_tlds/fed_tlds.h"
+ #include "components/history/core/browser/history_types.h"
+ #include "components/history/core/browser/in_memory_database.h"
+ #include "components/history/core/browser/keyword_search_term.h"
+@@ -245,6 +246,16 @@
+     return;
+   }
+ 
++  // Atlas (ADR 0052): a Federate name is an address, never a search. Nothing
++  // typed as one (home.fed, https://home.fed/x) goes to the default search
++  // provider, neither as a suggest request nor as a verbatim match; a search
++  // for the same words is still possible with the "?" prefix.
++  if (input.type() == metrics::OmniboxInputType::URL &&
++      atlas_fed::IsFederateTldUrl(input.canonicalized_url())) {
++    Stop(AutocompleteStopReason::kClobbered);
++    return;
++  }
++
+ #if !BUILDFLAG(IS_IOS)
+   if (auto* geo_service = client()->GetGeolocationHeaderService()) {
+     geo_service->PrimeLocation();
