@@ -1,0 +1,47 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+# The browser-UI parts of the Atlas overlay. //chrome/browser/ui depends on these targets and lists
+# them in allow_circular_includes_from (anchor patch 0010), so an area may include headers of
+# //chrome/browser/ui; it then public_deps //chrome/browser:browser_public_dependencies like the other
+# targets that do so. Each area owns its directory and its BUILD.gn.
+source_set("atlas_ui") {
+  sources = [
+    "atlas_prefs.cc",
+    "atlas_prefs.h",
+  ]
+  public_deps = [
+    "//chrome/browser/ui/atlas/brand",
+    "//components/pref_registry",
+  ]
+  deps = [
+    "//base",
+    "//chrome/browser/ui/atlas/chrome",
+    "//chrome/browser/ui/atlas/newtab",
+    "//chrome/browser/ui/atlas/rest",
+    "//chrome/browser/ui/atlas/sidebar",
+    "//chrome/browser/ui/atlas/toolbar",
+    "//components/atlas_host",
+    "//components/atlas_pages/setup",
+  ]
+}
+
+# Every area's unit tests: one dependency of //chrome/test:unit_tests (anchor patch 0010) instead of
+# one line per area. An area puts its tests in its own :unit_tests and never edits chrome/test/BUILD.gn.
+group("unit_tests") {
+  testonly = true
+  deps = [
+    "//chrome/browser/ui/atlas/brand:unit_tests",
+    "//chrome/browser/ui/atlas/chrome:unit_tests",
+    "//chrome/browser/ui/atlas/host:unit_tests",
+    "//chrome/browser/ui/atlas/newtab:unit_tests",
+    "//chrome/browser/ui/atlas/rest:unit_tests",
+    "//chrome/browser/ui/atlas/sidebar:unit_tests",
+    "//chrome/browser/ui/atlas/toolbar:unit_tests",
+    "//components/atlas_host:unit_tests",
+    "//components/atlas_pages:unit_tests",
+  ]
+}

@@ -1,0 +1,186 @@
+Atlas overlay patch 0010: build/atlas-anchors
+Why: the hook lines every Atlas area would otherwise add to the same engine files, added once so
+14 patch authors never edit the same file: the string parts chrome/app/atlas/<area>_strings.grdp in
+the root grd, the build targets of chrome/browser/ui/atlas and components/atlas_{host,pages}, the
+pak and resource ids of the Atlas pages, one call of atlas::RegisterProfilePrefs() (each area
+registers its own prefs there), one dependency for the unit tests of every area, and the hosts of
+the new tab and first-run pages. The new files themselves are the overlay tree (atlas/tree.list),
+not part of this patch. No lower tier reaches build files.
+Files: chrome/app/generated_resources.grd, chrome/browser/BUILD.gn, chrome/browser/ui/BUILD.gn,
+ chrome/chrome_paks.gni, tools/gritsettings/resource_ids.spec, chrome/common/webui_url_constants.h,
+ chrome/browser/prefs/browser_prefs.cc, chrome/test/BUILD.gn, chrome/app/generated_resources.grd.gritdeps
+Test filter: compile of a dev slot with the empty areas; atlas/tests/test_series.sh
+Rebase risk: M (nine files, all lists that move often; hunks are new blocks between engine lines,
+ the resource_ids one sits under the inherited onboarding entry)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/app/generated_resources.grd
++++ b/chrome/app/generated_resources.grd
+@@ -370,6 +370,15 @@
+         <part file="vr_strings.grdp" />
+       </if>
+ 
++      <!-- Atlas: one part per area, chrome/app/atlas/<area>_strings.grdp -->
++      <part file="atlas/brand_strings.grdp" />
++      <part file="atlas/host_strings.grdp" />
++      <part file="atlas/pages_strings.grdp" />
++      <part file="atlas/rest_strings.grdp" />
++      <part file="atlas/sidebar_strings.grdp" />
++      <part file="atlas/toolbar_strings.grdp" />
++      <part file="atlas/vault_strings.grdp" />
++
+       <message name="IDS_WILDCARD" is_accessibility_with_no_ui="true" translateable="false" desc="A wildcard that allows for programmatically replacing IDS text based on context.">
+         <ph name="BODY">$1<ex>another IDS string</ex></ph>
+       </message>
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -3389,6 +3389,16 @@
+     }
+   }
+ 
++  # Atlas: the overlay's components and its pref registrar
++  # (atlas::RegisterProfilePrefs, called from prefs/browser_prefs.cc).
++  if (!is_android) {
++    deps += [
++      "//chrome/browser/ui/atlas:atlas_ui",
++      "//components/atlas_host",
++      "//components/atlas_pages",
++    ]
++  }
++
+   # This target intentionally has no sources of its own and no
+   # allow_circular_includes_from; it only aggregates dependencies. Do NOT add
+   # sources here -- new code belongs in a dedicated, properly-scoped target.
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -3481,6 +3481,25 @@
+     deps += [ "//chrome/browser/ui/views:first_run_dialog" ]
+   }
+ 
++  # Atlas: the browser-UI parts of the overlay (chrome/browser/ui/atlas). They
++  # include headers of this target.
++  if (!is_android) {
++    deps += [
++      "//chrome/browser/ui/atlas:atlas_ui",
++      "//chrome/browser/ui/atlas/newtab",
++      "//chrome/browser/ui/atlas/rest",
++      "//chrome/browser/ui/atlas/sidebar",
++      "//chrome/browser/ui/atlas/toolbar",
++    ]
++    allow_circular_includes_from += [
++      "//chrome/browser/ui/atlas:atlas_ui",
++      "//chrome/browser/ui/atlas/newtab",
++      "//chrome/browser/ui/atlas/rest",
++      "//chrome/browser/ui/atlas/sidebar",
++      "//chrome/browser/ui/atlas/toolbar",
++    ]
++  }
++
+   if (is_linux) {
+     deps += [
+       "//chrome/browser:shell_integration_linux",
+--- a/chrome/chrome_paks.gni
++++ b/chrome/chrome_paks.gni
+@@ -492,6 +492,12 @@
+       deps += [ "//chrome/browser/resources/management:resources" ]
+     }
+ 
++    # Atlas: the pages the overlay serves itself (components/atlas_pages).
++    if (!is_android) {
++      sources += [ "$root_gen_dir/components/atlas_pages/atlas_pages_resources.pak" ]
++      deps += [ "//components/atlas_pages:resources" ]
++    }
++
+     if (is_win || is_mac || is_linux || is_chromeos || is_desktop_android) {
+       sources += [ "$root_gen_dir/chrome/discards_resources.pak" ]
+       deps += [
+--- a/tools/gritsettings/resource_ids.spec
++++ b/tools/gritsettings/resource_ids.spec
+@@ -1417,6 +1417,11 @@
+    "META": {"sizes": {"includes": [48],}},
+     "includes": [7510],
+   },
++  # Atlas: the pages of the overlay (all in one grd, one grdp per page).
++  "components/atlas_pages/atlas_pages_resources.grd": {
++    "META": {"sizes": {"includes": [40]}},
++    "includes": [7560],
++  },
+   # END components/ section.
+ 
+   # START ios/ section.
+--- a/chrome/common/webui_url_constants.h
++++ b/chrome/common/webui_url_constants.h
+@@ -643,6 +643,15 @@
+ // consumption.
+ base::span<const base::cstring_view> ChromeDebugURLs();
+ 
++// Atlas: the hosts of the pages the overlay serves (components/atlas_pages).
++// The new tab page keeps the engine's host: it replaces the engine's page at
++// that host, so every place that keys on the host keeps working. The first-run
++// page has a host of its own.
++inline constexpr char kAtlasNewTabHost[] = "new-tab-page";
++inline constexpr char kAtlasNewTabURL[] = "chrome://new-tab-page/";
++inline constexpr char kAtlasSetupHost[] = "setup";
++inline constexpr char kAtlasSetupURL[] = "chrome://setup/";
++
+ }  // namespace chrome
+ 
+ #endif  // CHROME_COMMON_WEBUI_URL_CONSTANTS_H_
+--- a/chrome/browser/prefs/browser_prefs.cc
++++ b/chrome/browser/prefs/browser_prefs.cc
+@@ -1851,6 +1851,15 @@
+   RegisterLocalStatePrefsForMigration(registry);
+ }
+ 
++#if !BUILDFLAG(IS_ANDROID)
++namespace atlas {
++// Atlas: the registrar of the overlay's prefs, defined in
++// chrome/browser/ui/atlas/atlas_prefs.cc (declared here so this file needs no
++// new include and its target no new dependency).
++void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
++}  // namespace atlas
++#endif  // !BUILDFLAG(IS_ANDROID)
++
+ // Register prefs applicable to all profiles.
+ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+                           const std::string& locale) {
+@@ -2386,6 +2395,11 @@
+ #endif  // BUILDFLAG(IS_ANDROID)
+ 
+   registry->RegisterBooleanPref(prefs::kStaticStorageQuotaEnabled, false);
++
++#if !BUILDFLAG(IS_ANDROID)
++  // Atlas: every area registers its prefs from here (chrome/browser/ui/atlas).
++  atlas::RegisterProfilePrefs(registry);
++#endif  // !BUILDFLAG(IS_ANDROID)
+ }
+ 
+ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+--- a/chrome/test/BUILD.gn
++++ b/chrome/test/BUILD.gn
+@@ -5566,6 +5566,7 @@
+       "//chrome/browser/ui:browser_actions",
+       "//chrome/browser/ui:browser_window_state",
+       "//chrome/browser/ui:tab_ui_helper",
++      "//chrome/browser/ui/atlas:unit_tests",
+       "//chrome/browser/ui/browser_active_state_manager:unit_tests",
+       "//chrome/browser/ui/fullscreen",
+       "//chrome/browser/ui/side_panel:test_support",
+--- a/chrome/app/generated_resources.grd.gritdeps
++++ b/chrome/app/generated_resources.grd.gritdeps
+@@ -3,6 +3,13 @@
+ chrome/app/access_code_cast_strings.grdp
+ chrome/app/actor_strings.grdp
+ chrome/app/app_management_strings.grdp
++chrome/app/atlas/brand_strings.grdp
++chrome/app/atlas/host_strings.grdp
++chrome/app/atlas/pages_strings.grdp
++chrome/app/atlas/rest_strings.grdp
++chrome/app/atlas/sidebar_strings.grdp
++chrome/app/atlas/toolbar_strings.grdp
++chrome/app/atlas/vault_strings.grdp
+ chrome/app/bookmarks_strings.grdp
+ chrome/app/certificate_manager.grdp
+ chrome/app/chromeos_shared_strings.grdp

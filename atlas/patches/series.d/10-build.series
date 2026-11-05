@@ -1,0 +1,6 @@
+# Overlay series fragment build: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-ANCHOR (the anchor patch). One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0010-0010
+build/0010-atlas-anchors.patch

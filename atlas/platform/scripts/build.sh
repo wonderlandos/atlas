@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Derived from the upstream platform repository (GPL-3.0, see ../LICENSE). Changes: stage timing,
 # the options of shared.sh (ATLAS_*), --pgo also with -f, -s STAGE (stop after it), -f STAGE (skip the stages before it:
-# the prepared tree is reused; the version, name and i18n steps are not repeatable on a patched tree).
+# the prepared tree is reused; the version, name and i18n steps are not repeatable on a patched tree), stage atlas
+# (the overlay's transforms, once, after resources).
 set -euo pipefail
 
 clone=false
@@ -28,7 +29,7 @@ if [ "$with_pgo" = true ] && [ "$_build_arch" = x64 ]; then
     _has_pgo=true
 fi
 
-STAGES="fetch patch domsub names i18n version resources gn build"
+STAGES="fetch patch domsub names i18n version resources atlas gn build"
 _idx() {
     local i=0 s
     for s in $STAGES; do
@@ -60,6 +61,7 @@ step names helium_substitution
 step i18n helium_apply_translations
 step version helium_version
 step resources helium_resources
+step atlas atlas_transforms
 write_gn_args
 step gn gn_gen
 step build build

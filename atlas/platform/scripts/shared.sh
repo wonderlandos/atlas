@@ -99,7 +99,15 @@ fetch_sources() {
 apply_patches() {
     if [ ! -f "${_src_dir}/.patched.stamp" ]; then
         "${_main_repo}/utils/prune_binaries.py" --keep-build-dependencies "${_src_dir}" "${_main_repo}/pruning.list"
-        "${_main_repo}/utils/patches.py" apply "${_src_dir}" "${_main_repo}/patches" "${_root_dir}/patches" "${_main_repo}/atlas/patches"
+        # One combined series (inherited minus atlas/drop.list, platform, overlay series and the
+        # area fragments atlas/patches/series.d/*.series), written by atlas-series; the overlay's
+        # new-file directories (atlas/tree.list) are copied in first so patches may hook them.
+        local combined
+        combined="$(mktemp -d "${TMPDIR:-/tmp}/atlas-series.XXXXXX")"
+        python3 -I "${_main_repo}/atlas/tools/atlas-series" --root "${_main_repo}" write-series "${combined}" >/dev/null
+        python3 -I "${_main_repo}/atlas/tools/atlas-series" --root "${_main_repo}" install-tree "${_src_dir}"
+        "${_main_repo}/utils/patches.py" apply "${_src_dir}" "${combined}"
+        rm -rf "${combined}"
         touch "${_src_dir}/.patched.stamp"
     fi
 }
@@ -130,6 +138,15 @@ helium_version() {
 helium_resources() {
     python3 "$_main_repo/utils/generate_resources.py" "$_main_repo/resources/generate_resources.txt" "$_main_repo/resources"
     python3 "$_main_repo/utils/replace_resources.py" "$_main_repo/resources/helium_resources.txt" "$_main_repo/resources" "$_src_dir"
+}
+
+# Stage `atlas`: the overlay's transforms (brand strings, scheme, hosts, the blocker's list set, the brand
+# slot; atlas/transform/README.md) once, after `resources` and before gn. apply.py writes .atlas.stamp and
+# refuses a second run; the stamp makes the stage a no-op on a prepared tree.
+atlas_transforms() {
+    if [ -f "${_main_repo}/atlas/transform/apply.py" ] && [ ! -f "${_src_dir}/.atlas.stamp" ]; then
+        python3 -I "${_main_repo}/atlas/transform/apply.py" --apply "${_src_dir}"
+    fi
 }
 
 write_gn_args() {
