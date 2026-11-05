@@ -1,0 +1,96 @@
+Atlas overlay patch 0023: ui/sidebar-footer
+Why: the foot of the sidebar is the "New tab" row with its shortcut in 11 px dim and a rule above it
+(reel scene R02, tokens.md section 3). The engine already has a new-tab button at the bottom of the
+sidebar (VerticalNewTabButton); this gives it the Atlas label (sentence case, from the sidebar string
+part) and draws the rule and the shortcut through chrome/browser/ui/atlas/sidebar/footer_row. A row
+with different content needs no new view, so no lower tier than a paint hook exists.
+Files: chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.{h,cc},
+ chrome/browser/ui/views/tabs/vertical/BUILD.gn
+Test filter: *AtlasSidebar*; journey R02 (footer row)
+Rebase risk: L (one small class)
+Release: 0.13
+License: BSD-3-Clause (hunks in engine files the inherited series does not patch)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/tabs/vertical/BUILD.gn
++++ b/chrome/browser/ui/views/tabs/vertical/BUILD.gn
+@@ -57,6 +57,7 @@
+     "//chrome/browser/ui:layout_constants",
+     "//chrome/browser/ui:ui_features",
+     "//chrome/browser/ui/actions:actions_headers",
++    "//chrome/browser/ui/atlas/sidebar",
+     "//chrome/browser/ui/browser_window",
+     "//chrome/browser/ui/color:color_headers",
+     "//chrome/browser/ui/tab_contents",
+--- a/chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.cc
++++ b/chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.cc
+@@ -4,10 +4,13 @@
+ 
+ #include "chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.h"
+ 
++#include "base/i18n/rtl.h"
++#include "chrome/browser/ui/atlas/sidebar/footer_row.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ #include "chrome/grit/generated_resources.h"
+ #include "ui/base/l10n/l10n_util.h"
++#include "ui/color/color_id.h"
+ #include "ui/base/metadata/metadata_impl_macros.h"
+ 
+ namespace {
+@@ -24,18 +27,30 @@
+           GetLayoutConstant(LayoutConstant::kVerticalTabStripNewTabButtonSize),
+           kIconSize) {
+   SetCornerRadius(GetLayoutConstant(LayoutConstant::kVerticalTabCornerRadius));
+-  SetForegroundColorId(kColorToolbarButtonIconDisabled);
++  // Atlas: the glyph and the label of the footer row are the text colour.
++  SetForegroundColorId(ui::kColorPrimaryForeground);
+   SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+   SetLabelInsets(gfx::Insets::VH(kBasePadding, kBigPadding),
+                  gfx::Insets::VH(kBasePadding, kBigPadding));
+   SetImageLabelSpacing(kBigPadding);
+   SetShouldShowLabel(true);
+-  SetLabelText(l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
++  // Atlas: the footer row of the sidebar says "New tab".
++  SetLabelText(l10n_util::GetStringUTF16(IDS_ATLAS_SIDEBAR_NEW_TAB));
+   SetPreferredSize(
+       gfx::Size(-1, GetLayoutConstant(LayoutConstant::kVerticalTabHeight)));
+ }
+ 
+ VerticalNewTabButton::~VerticalNewTabButton() = default;
+ 
++void VerticalNewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
++  shared::NewTabButton::PaintButtonContents(canvas);
++  // Atlas: the rule above the footer row and the shortcut at its right.
++  if (const ui::ColorProvider* color_provider = GetColorProvider()) {
++    atlas::sidebar::PaintFooterDecorations(canvas, GetLocalBounds(),
++                                           /*row_inset=*/0, base::i18n::IsRTL(),
++                                           *color_provider);
++  }
++}
++
+ BEGIN_METADATA(VerticalNewTabButton)
+ END_METADATA
+--- a/chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.h
++++ b/chrome/browser/ui/views/tabs/vertical/vertical_new_tab_button.h
+@@ -10,6 +10,10 @@
+ 
+ class BrowserWindowInterface;
+ 
++namespace gfx {
++class Canvas;
++}
++
+ // A new tab button for the vertical tab strip bottom container. Uses the shared
+ // new tab button behavior while allowing a label in the expanded vertical strip.
+ class VerticalNewTabButton : public shared::NewTabButton {
+@@ -17,6 +21,9 @@
+  public:
+   explicit VerticalNewTabButton(BrowserWindowInterface* browser);
+   ~VerticalNewTabButton() override;
++
++  // views::Button:
++  void PaintButtonContents(gfx::Canvas* canvas) override;
+ };
+ 
+ #endif  // CHROME_BROWSER_UI_VIEWS_TABS_VERTICAL_VERTICAL_NEW_TAB_BUTTON_H_

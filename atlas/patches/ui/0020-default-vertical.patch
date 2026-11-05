@@ -1,0 +1,37 @@
+Atlas overlay patch 0020: ui/default-vertical
+Why: the window opens with the tabs in a 220 px sidebar (reel scene R02, patches-0 P-06). The layout
+pref `helium.browser.layout` registers with the vertical value as its default, so every profile that
+never chose a layout gets the sidebar, and the default sidebar width becomes 220 px (the width
+constant also drives the resize snap, so dragging snaps back to 220). A first-run pref only reaches
+new profiles and would store an explicit value, which is why the registered default changes.
+Files: chrome/browser/ui/tabs/tab_strip_prefs.cc, chrome/browser/ui/tabs/vertical_tab_strip_state.h
+Test filter: *VerticalTabStripStateController*; journey R02 (sidebar width 220 +-2)
+Rebase risk: L (two one-line edits in files the inherited layout patch already changed)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/tabs/tab_strip_prefs.cc
++++ b/chrome/browser/ui/tabs/tab_strip_prefs.cc
+@@ -32,8 +32,8 @@
+   registry->RegisterIntegerPref(prefs::kVerticalTabsUncollapsedWidth,
+                                 kVerticalTabStripDefaultUncollapsedWidth);
+ 
+-  registry->RegisterIntegerPref(prefs::kHeliumLayout,
+-                                std::to_underlying(HeliumLayoutType::kClassic));
++  registry->RegisterIntegerPref(
++      prefs::kHeliumLayout, std::to_underlying(HeliumLayoutType::kVertical));
+   registry->RegisterBooleanPref(prefs::kHeliumVerticalRightAligned, false);
+   registry->RegisterBooleanPref(prefs::kHeliumZenMode, false);
+   registry->RegisterBooleanPref(prefs::kHeliumZenModeSidebarPinned, false);
+--- a/chrome/browser/ui/tabs/vertical_tab_strip_state.h
++++ b/chrome/browser/ui/tabs/vertical_tab_strip_state.h
+@@ -7,7 +7,7 @@
+ 
+ namespace tabs {
+ 
+-inline constexpr int kVerticalTabStripDefaultUncollapsedWidth = 200;
++inline constexpr int kVerticalTabStripDefaultUncollapsedWidth = 220;
+ 
+ // Per-window state for the vertical tab strip.
+ struct VerticalTabStripState {
