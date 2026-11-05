@@ -61,10 +61,16 @@ void BookmarkButton::URLStarredChanged(content::WebContents* web_contents,
   SetStarred(starred);
 }
 
+void BookmarkButton::WebContentsDestroyed() {
+  tab_helper_observation_.Reset();
+  Observe(nullptr);
+}
+
 void BookmarkButton::ActiveTabChanged() {
   tab_helper_observation_.Reset();
   tabs::TabInterface* tab = browser_->GetActiveTabInterface();
   content::WebContents* contents = tab ? tab->GetContents() : nullptr;
+  Observe(contents);
   BookmarkTabHelper* helper =
       contents ? BookmarkTabHelper::FromWebContents(contents) : nullptr;
   if (helper) {

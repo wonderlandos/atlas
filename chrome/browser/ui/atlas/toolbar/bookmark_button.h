@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class BrowserWindowInterface;
 
@@ -20,7 +21,9 @@ namespace atlas::toolbar {
 // The bookmark button of the toolbar: an outline star that fills (in the accent colour) when the
 // page in the current tab is bookmarked. Pressing it runs the same command as the omnibox star
 // (Ctrl D); the tooltip and accessible name say "Bookmark this tab" or "Bookmarked".
-class BookmarkButton : public ToolbarButton, public BookmarkTabHelperObserver {
+class BookmarkButton : public ToolbarButton,
+                       public BookmarkTabHelperObserver,
+                       public content::WebContentsObserver {
   METADATA_HEADER(BookmarkButton, ToolbarButton)
 
  public:
@@ -38,6 +41,11 @@ class BookmarkButton : public ToolbarButton, public BookmarkTabHelperObserver {
   // BookmarkTabHelperObserver:
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
+
+  // content::WebContentsObserver: the tab helper belongs to the tab's
+  // WebContents, which closes before the toolbar (on a window close every tab
+  // goes first), so the observation ends when the WebContents does.
+  void WebContentsDestroyed() override;
 
  private:
   void ActiveTabChanged();
