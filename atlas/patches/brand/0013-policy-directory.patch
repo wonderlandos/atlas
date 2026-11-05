@@ -1,0 +1,23 @@
+Atlas overlay patch 0013: brand/policy-directory
+Why: the engine reads system-wide policy files from /etc/chromium/policies; the platform branding
+patch renames the data directory, desktop file and environment variables but not this one. WolOS
+ships its policies (crates/core/src/browser.rs) in /etc/atlas/policies/{managed,recommended}, so
+without this line the browser reads none of them. One string, no logic.
+Files: components/policy/core/common/policy_paths.cc
+Test filter: atlas/tests/test_series.sh; on a dev slot, a managed policy file in /etc/atlas/policies/managed is read (chrome://policy lists it)
+Rebase risk: L (one string in a stable file)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in a file the inherited series touches or may touch)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/components/policy/core/common/policy_paths.cc
++++ b/components/policy/core/common/policy_paths.cc
+@@ -18,7 +18,7 @@ const char kPolicyPath[] = "/etc/opt/chrome/policies";
+ #elif BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
+ const char kPolicyPath[] = "/etc/opt/chrome_for_testing/policies";
+ #else
+-const char kPolicyPath[] = "/etc/chromium/policies";
++const char kPolicyPath[] = "/etc/atlas/policies";
+ #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+ #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
+ 

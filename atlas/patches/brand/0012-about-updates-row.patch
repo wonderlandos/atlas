@@ -1,0 +1,164 @@
+Atlas overlay patch 0012: brand/about-updates-row
+Why: Atlas has no updater of its own, so Settings > About must not offer to check for updates: the
+ update status, the throbber and the relaunch button give way to one row, "Atlas updates with WolOS."
+ and a link that opens the Software Update pane of WolOS System Settings (reel scene 11, R11). The
+ link goes through a settings message to atlas::brand::OpenSoftwareUpdate(), which runs
+ `wol-settings "Software Update"` (what the WolOS shell does for its update badge). No lower tier:
+ the row is page markup and a message handler.
+Files: chrome/browser/resources/settings/about_page/about_page.html.ts, about_page.ts, about_page_browser_proxy.ts,
+ chrome/browser/ui/webui/settings/about_handler.{h,cc}, chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+Test filter: *WolosRelease*; journey J-A9/R11 (About text, no "Check for updates" button, the link starts Software Update)
+Rebase risk: M (about_page.html.ts is patched by about-page-tweaks and reenable-update-status; the hunk replaces the block those two edit)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/resources/settings/about_page/about_page.html.ts
++++ b/chrome/browser/resources/settings/about_page/about_page.html.ts
+@@ -21,46 +21,16 @@
+     <div class="product-title">$i18n{aboutProductTitle}</div>
+   </div>
+   <div class="cr-row two-line">
+-    <!-- Set the icon from the iconset (when it's obsolete/EOL and
+-      when update is done) or set the src (when it's updating). -->
+-<if expr="not is_chromeos">
+-    <div class="icon-container"
+-        ?hidden="${!this.shouldShowIcons_()}">
+-      <cr-icon
+-          ?hidden="${this.shouldShowThrobber_()}"
+-          icon="${this.getUpdateStatusIcon_()}">
+-      </cr-icon>
+-      <img id="throbber" src="chrome://resources/images/throbber_small.svg"
+-          ?hidden="${!this.shouldShowThrobber_()}">
+-    </div>
+-</if>
+     <div class="flex cr-padded-text">
+-<if expr="not is_chromeos">
+-      <div id="updateStatusMessage" ?hidden="${!this.showUpdateStatus_}">
+-        <div role="alert" aria-live="polite"
+-            .innerHTML="${this.getUpdateStatusMessage_()}">
+-        </div>
+-      </div>
+-      <span id="deprecationWarning"
+-          ?hidden="${!this.obsoleteSystemInfo_.obsolete}">
+-        $i18n{aboutObsoleteSystem}
+-        <a href="$i18n{aboutObsoleteSystemURL}" target="_blank"
+-            aria-label="$i18nPolymer{aboutLearnMoreSystemRequirements}">
+-          $i18n{learnMore}
++      <div id="atlasUpdates">
++        $i18n{atlasAboutUpdates}
++        <a id="atlasOpenUpdates" href="#"
++            @click="${this.onOpenSoftwareUpdateClick_}">
++          $i18n{atlasAboutOpenUpdates}
+         </a>
+-      </span>
+-</if>
++      </div>
+       <div class="secondary">$i18n{aboutBrowserVersion}</div>
+     </div>
+-<if expr="not is_chromeos">
+-    <div class="separator" ?hidden="${!this.showButtonContainer_}"></div>
+-    <span id="buttonContainer" ?hidden="${!this.showButtonContainer_}">
+-      <cr-button id="relaunch" ?hidden="${!this.showRelaunch_}"
+-          @click="${this.onRelaunchClick_}">
+-        $i18n{aboutRelaunch}
+-      </cr-button>
+-    </span>
+-</if>
+   </div>
+ <if expr="_google_chrome and is_macosx">
+   ${!this.promoteUpdaterStatus_.hidden ? html`
+--- a/chrome/browser/resources/settings/about_page/about_page_browser_proxy.ts
++++ b/chrome/browser/resources/settings/about_page/about_page_browser_proxy.ts
+@@ -59,6 +59,9 @@
+   /** Opens the help page. */
+   openHelpPage(): void;
+ 
++  /** Opens the Software Update pane of the system settings. */
++  openSoftwareUpdate(): void;
++
+   // <if expr="_google_chrome">
+   /**
+    * Opens the feedback dialog.
+@@ -94,6 +97,10 @@
+     chrome.send('openHelpPage');
+   }
+ 
++  openSoftwareUpdate() {
++    chrome.send('openSoftwareUpdate');
++  }
++
+   // <if expr="_google_chrome">
+   openFeedbackDialog() {
+     chrome.send('openFeedbackDialog');
+--- a/chrome/browser/resources/settings/about_page/about_page.ts
++++ b/chrome/browser/resources/settings/about_page/about_page.ts
+@@ -225,6 +225,11 @@
+     this.aboutBrowserProxy_.openHelpPage();
+   }
+ 
++  protected onOpenSoftwareUpdateClick_(event: Event) {
++    event.preventDefault();
++    this.aboutBrowserProxy_.openSoftwareUpdate();
++  }
++
+   protected onRelaunchClick_() {
+     this.performRestart(RestartType.RELAUNCH);
+   }
+--- a/chrome/browser/ui/webui/settings/about_handler.h
++++ b/chrome/browser/ui/webui/settings/about_handler.h
+@@ -80,6 +80,10 @@
+   // Opens the help page. |args| must be empty.
+   void HandleOpenHelpPage(const base::ListValue& args);
+ 
++  // Opens the Software Update pane of the system settings. |args| must be
++  // empty.
++  void HandleOpenSoftwareUpdate(const base::ListValue& args);
++
+ #if BUILDFLAG(IS_CHROMEOS)
+   // Checks if ReleaseNotes is enabled.
+   void HandleGetEnabledReleaseNotes(const base::ListValue& args);
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -329,6 +329,8 @@
+       {"aboutUpgradeUpdatingPercent", IDS_SETTINGS_UPGRADE_UPDATING_PERCENT},
+       {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
+       {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
++      {"atlasAboutUpdates", IDS_ATLAS_ABOUT_UPDATES},
++      {"atlasAboutOpenUpdates", IDS_ATLAS_ABOUT_OPEN_UPDATES},
+       {"aboutProductTitle", IDS_PRODUCT_NAME},
+       {"aboutLearnMoreUpdatingErrors",
+        IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATE_ERRORS},
+--- a/chrome/browser/ui/webui/settings/about_handler.cc
++++ b/chrome/browser/ui/webui/settings/about_handler.cc
+@@ -28,6 +28,7 @@
+ #include "chrome/browser/chrome_content_browser_client.h"
+ #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
+ #include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/atlas/brand/atlas_about.h"
+ #include "chrome/browser/ui/browser_commands.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+ #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
+@@ -314,6 +315,10 @@
+   web_ui()->RegisterMessageCallback(
+       "openHelpPage", base::BindRepeating(&AboutHandler::HandleOpenHelpPage,
+                                           base::Unretained(this)));
++  web_ui()->RegisterMessageCallback(
++      "openSoftwareUpdate",
++      base::BindRepeating(&AboutHandler::HandleOpenSoftwareUpdate,
++                          base::Unretained(this)));
+ #if BUILDFLAG(IS_CHROMEOS)
+   web_ui()->RegisterMessageCallback(
+       "openDiagnostics",
+@@ -527,6 +532,11 @@
+   chrome::ShowHelp(browser, chrome::HelpSource::kWebUI);
+ }
+ 
++void AboutHandler::HandleOpenSoftwareUpdate(const base::ListValue& args) {
++  DCHECK(args.empty());
++  atlas::brand::OpenSoftwareUpdate();
++}
++
+ #if BUILDFLAG(IS_CHROMEOS)
+ void AboutHandler::HandleOpenDiagnostics(const base::ListValue& args) {
+   DCHECK(args.empty());

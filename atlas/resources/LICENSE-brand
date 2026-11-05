@@ -1,0 +1,17 @@
+The art in this directory (the Folio mark and everything rendered from it: branding/, generated/,
+the two favicons favicon_ntp_16.png and favicon_ntp_32.png, product_logo.svg and the two .icon files)
+is licensed under the Wonderland Brand License, Version 1.0.
+
+  SPDX identifier: LicenseRef-Wonderland-Brand-1.0
+  Licensor:        Julia Klee and her company (with affiliates and successors)
+  Copyright:       (c) 2026 Julia Klee
+  Text:            LICENSE in the design repository (brand/atlas/ is where the drawings live)
+
+It is NOT covered by the GPL of the rest of this repository. Forks that ship it follow section 4 of
+the License (marked unofficial, own name and logo).
+
+The other favicons in favicons/ (bookmarks, conflicts, downloads, management, plugins, settings,
+flags, history) are the plain page glyphs of the engine and keep the licence of the engine files.
+
+regenerate.py renders the files from the design drawings; MANIFEST.sha256 records what was rendered
+(renderer: RENDERER).

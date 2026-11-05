@@ -1,0 +1,75 @@
+{
+  "engine": "156.0.8078.79",
+  "expected": {
+    "blocker.plowe_entry": 1,
+    "blocker.plowe_files": 2,
+    "brand.blocker.about_label": 1,
+    "brand.blocker.about_name": 1,
+    "brand.blocker.list_titles": 4,
+    "brand.branding.bundle": 1,
+    "brand.branding.name": 7,
+    "brand.grit.files": 76,
+    "brand.grit.messages": 3212,
+    "brand.grit.rule.name": 3514,
+    "brand.text.crash_product": 1,
+    "brand.text.flags_page": 23,
+    "brand.text.services_dialog": 2,
+    "brand.text.webstore_fixup": 2,
+    "brand.text.webstore_fixup_log": 4,
+    "brand.xtb.files": 1226,
+    "brand.xtb.rule.name": 179650,
+    "brand.xtb.translations": 159139,
+    "hosts.blocker_about": 2,
+    "hosts.crash_page_bug": 1,
+    "hosts.crash_url": 1,
+    "hosts.dummy_origin": 1,
+    "hosts.extension_ping": 1,
+    "hosts.services_base": 1,
+    "hosts.services_placeholder": 1,
+    "hosts.update_base": 1,
+    "resources.files": 56,
+    "scheme.constant.content": 1,
+    "scheme.constant.url_fixer": 1,
+    "scheme.grit.files": 12,
+    "scheme.grit.messages": 18,
+    "scheme.grit.rule.url": 21,
+    "scheme.omnibox_builtin": 1,
+    "scheme.tab_search": 2,
+    "scheme.xtb.files": 422,
+    "scheme.xtb.rule.url": 1413,
+    "scheme.xtb.translations": 1295
+  },
+  "internal": {
+    "blocker_assets": {
+      "paths": [
+        "third_party/ublock/assets/helium/*"
+      ],
+      "why": "filter list headers of the bundled blocker (comments inside list files, not shown in the UI)"
+    },
+    "credits": {
+      "paths": [
+        "third_party/helium/*",
+        "tools/licenses/licenses.py",
+        "AUTHORS"
+      ],
+      "why": "the credits page lists the licences of what is inside the browser, including the inherited project; the notice is a licence obligation"
+    },
+    "hsts_preload_data": {
+      "paths": [
+        "net/http/transport_security_state_static.json"
+      ],
+      "why": "data of the engine's HSTS preload list, not text a person reads; an entry for a host only forces https to it"
+    },
+    "identifiers": {
+      "paths": [],
+      "why": "names in code that no person reads and that are not worth a rename (a rename is a rebase cost): pref keys 'helium.*' and the constants that name them (prefs::kHelium*), class and namespace names (helium::, HeliumLayoutType, Helium*Handler), Mojo and message names ('getHeliumCrashReporting', 'setHeliumCrashReportingMode'), directory and file names (components/helium_services, helium_flag_entries.h, patches/helium), custom element names (settings-helium-services-page), the scheme constant content::kHeliumUIScheme (its VALUE is now 'atlas'), histogram enum labels, MAC_TEAM_ID in BRANDING (macOS only)"
+    },
+    "licence_comments": {
+      "paths": [
+        "components/extstore_fixups/manifest.json",
+        "extensions/common/api/_permission_features.json"
+      ],
+      "why": "copyright and licence comments in json files; attribution must stay"
+    }
+  }
+}
