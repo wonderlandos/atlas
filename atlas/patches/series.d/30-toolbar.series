@@ -1,0 +1,6 @@
+# Overlay series fragment toolbar: applied after atlas/patches/series and the fragments before it
+# (file-name order). Owner: ATLAS-TOOLBAR. One entry per line, a path under atlas/patches.
+# atlas-series refuses a patch listed twice and a patch number used twice, and warns when a number
+# is outside this range:
+# range: 0030-0039
+ui/0030-privacy-button.patch

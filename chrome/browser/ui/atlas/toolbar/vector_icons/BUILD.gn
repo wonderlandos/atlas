@@ -1,0 +1,28 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/vector_icons/vector_icons.gni")
+
+assert(!is_android)
+
+aggregate_vector_icons("atlas_toolbar_vector_icons") {
+  icon_directory = "."
+
+  sources = [
+    "atlas_app_menu.icon",
+    "atlas_downloads.icon",
+    "atlas_privacy.icon",
+  ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":atlas_toolbar_vector_icons")
+
+  deps = [
+    ":atlas_toolbar_vector_icons",
+    "//base",
+    "//skia",
+    "//ui/gfx",
+  ]
+}

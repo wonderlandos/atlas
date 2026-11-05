@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Atlas strings of the toolbar area (owner: ATLAS-TOOLBAR). A part of
+     chrome/app/generated_resources.grd (anchor patch 0010): add <message name="IDS_ATLAS_..."> elements
+     here, never in generated_resources.grd. -->
+<grit-part>
+  <message name="IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_ON" desc="Tooltip and accessible name of the privacy button in the toolbar while Do Not Track is on. Do Not Track is a request that sites may ignore, so the text never says anything is blocked.">
+    Do Not Track is on
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_OFF" desc="Tooltip and accessible name of the privacy button in the toolbar after the person turned Do Not Track off.">
+    Do Not Track is off
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_PRIVACY_TITLE" desc="Title of the small window that opens from the privacy button in the toolbar.">
+    Privacy
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_DNT" desc="Name of a row in the privacy window: the Do Not Track request.">
+    Do Not Track
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_DNT_INFO" desc="One line under the Do Not Track row: what the setting does.">
+    Sites are asked not to follow you. Some sites ignore the request.
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_GPC" desc="Name of a row in the privacy window: Global Privacy Control, a signal sent to sites.">
+    Global Privacy Control
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_GPC_INFO" desc="One line under the Global Privacy Control row: what the setting does.">
+    Sites are told not to sell or share your data.
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_TRACKERS" desc="Name of a row in the privacy window: the list-based tracker blocker.">
+    Tracker blocking
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_TRACKERS_INFO" desc="One line under the Tracker blocking row: what the setting does.">
+    A list built into Atlas stops known trackers from loading.
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_NOISE" desc="Name of a row in the privacy window: small random changes in what a page can read back from the canvas and audio, so sites cannot use those reads to recognise the person.">
+    Fingerprint noise
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_ROW_NOISE_INFO" desc="One line under the Fingerprint noise row: what the setting does. Pages still look and sound as the site made them.">
+    Adds tiny changes to canvas and audio reads, so sites cannot use them to recognise you. Pages look and sound as made.
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_VALUE_ON" desc="Value shown at the right of a row in the privacy window when the setting is on.">
+    On
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_VALUE_OFF" desc="Value shown at the right of a row in the privacy window when the setting is off.">
+    Off
+  </message>
+  <message name="IDS_ATLAS_TOOLBAR_PRIVACY_SETTINGS_LINK" desc="Link at the bottom of the privacy window that opens the privacy page of Settings.">
+    Privacy settings
+  </message>
+</grit-part>
