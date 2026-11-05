@@ -1,0 +1,68 @@
+Atlas overlay patch 0123: fed/fed-guard
+Why: a Federate name is exclusively fed:// (lead rule 2026-11-05, ADR 0052), so no code path of the browser may
+ look one up in DNS or open a socket to it. Two fences besides the loaders of patch 0121. (1) The DNS prefetch and
+ preconnect predictors (loading predictor, network hints from <link rel=dns-prefetch|preconnect>, omnibox) all
+ use one content::PreconnectManager; the loading predictor's is wrapped by FedPreconnectGuard, which drops every
+ call about a host under a Federate TLD before the real manager sees it. (2) The browser adds one host-resolver
+ rule per Federate TLD (MAP *.fed ~NOTFOUND, ...) to its own --host-resolver-rules at startup, which content
+ passes on to the network service: whatever path is left (a redirect from the web, WebSocket, prefetch, an
+ extension) cannot resolve such a name. The rules go in before the network service starts.
+Files: chrome/browser/chrome_content_browser_client.cc, chrome/browser/predictors/loading_predictor.cc, chrome/browser/predictors/BUILD.gn
+Test filter: *AtlasFedExclusive*; journey: a page with <link rel=dns-prefetch href=//home.fed> makes no lookup, ws://x.fed fails to resolve
+Rebase risk: L (a one-line call at the top of a constructor, one include, one wrapped call, one dependency)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, base tree plus the patches before it in the series (dev slot 4)
+
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -60,5 +60,6 @@
+ #include "chrome/browser/actor/actor_commit_deferring_condition.h"
+ #include "chrome/browser/after_startup_task_utils.h"
++#include "chrome/browser/atlas/fed/fed_dns_guard.h"
+ #include "chrome/browser/atlas/fed/fed_http_interceptor.h"
+ #include "chrome/browser/atlas/fed/fed_subresource_proxy.h"
+ #include "chrome/browser/atlas/fed/fed_url.h"
+@@ -1577,6 +1578,10 @@
+ }
+ 
+ ChromeContentBrowserClient::ChromeContentBrowserClient() {
++  // Atlas: Federate names are never looked up in DNS: the network service,
++  // started after this, gets a rule per Federate TLD that makes them
++  // unresolvable (chrome/browser/atlas/fed/fed_dns_guard.h).
++  atlas_fed::AppendDnsGuard(base::CommandLine::ForCurrentProcess());
+ #if BUILDFLAG(ENABLE_PLUGINS)
+   extra_parts_.push_back(
+       std::make_unique<ChromeContentBrowserClientPluginsPart>());
+--- a/chrome/browser/predictors/loading_predictor.cc
++++ b/chrome/browser/predictors/loading_predictor.cc
+@@ -10,6 +10,7 @@
+ #include "base/trace_event/trace_event.h"
+ #include "base/unguessable_token.h"
+ #include "build/build_config.h"
++#include "chrome/browser/atlas/fed/fed_preconnect_guard.h"
+ #include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_util.h"
+ #include "chrome/browser/predictors/lcp_critical_path_predictor/prewarm_http_disk_cache_manager.h"
+ #include "chrome/browser/predictors/loading_data_collector.h"
+@@ -243,8 +244,9 @@
+ content::PreconnectManager* LoadingPredictor::preconnect_manager() {
+   CHECK(!shutdown_);
+   if (!preconnect_manager_) {
+-    preconnect_manager_ =
+-        content::PreconnectManager::Create(GetWeakPtr(), profile_);
++    // Atlas: no DNS prefetch or preconnect for a Federate TLD host.
++    preconnect_manager_ = atlas_fed::FedPreconnectGuard::Wrap(
++        content::PreconnectManager::Create(GetWeakPtr(), profile_));
+   }
+ 
+   return preconnect_manager_.get();
+--- a/chrome/browser/predictors/BUILD.gn
++++ b/chrome/browser/predictors/BUILD.gn
+@@ -90,6 +90,7 @@
+   deps = [
+     ":config",
+     ":predictors",
++    "//chrome/browser/atlas/fed",
+     "lcp_critical_path_predictor:impl",
+     "//chrome/browser:browser_features",
+     "//chrome/browser:browser_process",

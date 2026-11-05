@@ -1,0 +1,25 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/vector_icons/vector_icons.gni")
+
+assert(!is_android)
+
+# The Federate mark shown in the location bar of a fed:// page.
+aggregate_vector_icons("atlas_fed_vector_icons") {
+  icon_directory = "."
+
+  sources = [ "fed_mark.icon" ]
+}
+
+source_set("vector_icons") {
+  sources = get_target_outputs(":atlas_fed_vector_icons")
+
+  deps = [
+    ":atlas_fed_vector_icons",
+    "//base",
+    "//skia",
+    "//ui/gfx",
+  ]
+}

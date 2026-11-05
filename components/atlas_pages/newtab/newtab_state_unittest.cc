@@ -16,13 +16,14 @@
 #include "components/atlas_pages/newtab/newtab_categories.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 namespace atlas::newtab {
 
 namespace {
 
 base::ListValue ListFromJson(const char* json) {
-  std::optional<base::Value> value = base::JSONReader::Read(json);
+  std::optional<base::Value> value = base::JSONReader::Read(json, base::JSON_PARSE_RFC);
   CHECK(value && value->is_list());
   return std::move(value->GetList());
 }
@@ -63,6 +64,50 @@ TEST(AtlasNewTabStateTest, OnlyWebAddresses) {
   EXPECT_FALSE(IsWebUrl(GURL("file:///etc/passwd")));
   EXPECT_FALSE(IsWebUrl(GURL("data:text/html,x")));
   EXPECT_FALSE(IsWebUrl(GURL()));
+}
+
+// QA-A9-WEB-ATLAS-15: a Federate page is pinned and opened like any other page.
+TEST(AtlasNewTabStateTest, AFederatePageIsAPageToPinAndOpen) {
+  url::ScopedSchemeRegistryForTests registry;
+  url::AddStandardScheme("fed", url::SCHEME_WITH_HOST);
+  EXPECT_TRUE(IsWebUrl(GURL("fed://home.fed/")));
+  EXPECT_TRUE(IsWebUrl(GURL("fed://lobo.pagina/a?b=1")));
+  EXPECT_FALSE(IsWebUrl(GURL("fed://example.com/")));  // not a Federate name
+  EXPECT_FALSE(IsWebUrl(GURL("fed:///x")));
+
+  bool changed = false;
+  std::vector<PinnedPage> pages = WithPinned(
+      {}, GURL("fed://home.fed/"), "Home", &changed);
+  EXPECT_TRUE(changed);
+  ASSERT_EQ(1u, pages.size());
+  std::vector<PinnedPage> again = ParsePinned(PinnedToList(pages));
+  ASSERT_EQ(1u, again.size());  // the pref round trip keeps it
+  EXPECT_EQ(GURL("fed://home.fed/"), again[0].url);
+}
+
+// QA-A9-WEB-ATLAS-1: what the page's field names as a Federate page opens as
+// one, and is never handed to the search provider.
+TEST(AtlasNewTabStateTest, ABareFederateNameIsAnAddressNotASearch) {
+  url::ScopedSchemeRegistryForTests registry;
+  url::AddStandardScheme("fed", url::SCHEME_WITH_HOST);
+  EXPECT_EQ(GURL("fed://home.fed/"), FederateAddressFor("home.fed"));
+  EXPECT_EQ(GURL("fed://home.fed/"), FederateAddressFor("  Home.FED "));
+  EXPECT_EQ(GURL("fed://lobo.pagina/x?y=1"),
+            FederateAddressFor("lobo.pagina/x?y=1"));
+  EXPECT_EQ(GURL("fed://home.fed/"), FederateAddressFor("http://home.fed"));
+  EXPECT_EQ(GURL("fed://home.fed/x"),
+            FederateAddressFor("https://home.fed:8443/x#f"));
+  EXPECT_EQ(GURL("fed://home.fed/"), FederateAddressFor("fed://home.fed"));
+  EXPECT_EQ(GURL("fed://home.fed/"), FederateAddressFor("home.fed."));
+  // Everything else stays a search or another address.
+  EXPECT_FALSE(FederateAddressFor("foo.zzzz"));
+  EXPECT_FALSE(FederateAddressFor("fed"));
+  EXPECT_FALSE(FederateAddressFor("home fed"));
+  EXPECT_FALSE(FederateAddressFor("minha casa.fed azul"));
+  EXPECT_FALSE(FederateAddressFor("example.com"));
+  EXPECT_FALSE(FederateAddressFor("javascript:alert(1)"));
+  EXPECT_FALSE(FederateAddressFor("fed://example.com"));
+  EXPECT_FALSE(FederateAddressFor(""));
 }
 
 TEST(AtlasNewTabStateTest, ParsePinnedDropsWhatIsNotAWebPage) {

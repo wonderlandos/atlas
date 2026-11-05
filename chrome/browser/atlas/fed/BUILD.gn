@@ -1,0 +1,107 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(!is_android)
+
+# fed:// in Atlas (ADR 0052): the browser's end of the Federate helper (atlas-fed, a WolOS program
+# beside the browser binary; the resolver and every check live there, none in the engine). A load
+# of fed://label.tld goes to the helper and comes back as an ordinary response, so a Federate page
+# is a normal page. Hooked into the engine by overlay patches 0120 (scheme), 0121 (loaders) and
+# 0122 (location icon).
+source_set("fed") {
+  sources = [
+    "fed_helper_client.cc",
+    "fed_helper_client.h",
+    "fed_dns_guard.cc",
+    "fed_dns_guard.h",
+    "fed_http_interceptor.cc",
+    "fed_http_interceptor.h",
+    "fed_location_icon.cc",
+    "fed_location_icon.h",
+    "fed_preconnect_guard.cc",
+    "fed_preconnect_guard.h",
+    "fed_protocol.cc",
+    "fed_protocol.h",
+    "fed_subresource_proxy.cc",
+    "fed_subresource_proxy.h",
+    "fed_url.h",
+    "fed_url_loader_factory.cc",
+    "fed_url_loader_factory.h",
+  ]
+  public_deps = [
+    "//base",
+    "//components/atlas_fed_tlds",
+    "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+    "//services/network/public/mojom",
+    "//url",
+  ]
+  deps = [
+    "//chrome/browser/atlas/fed/vector_icons",
+    "//components/vector_icons",
+    "//net",
+    "//services/network/public/cpp",
+    "//ui/gfx",
+  ]
+}
+
+# The tests that need nothing but gtest and //base.
+_plain_test_sources = [
+  "fed_exclusive_unittest.cc",
+  "fed_helper_client_unittest.cc",
+  "fed_location_icon_unittest.cc",
+  "fed_protocol_unittest.cc",
+  "fed_url_unittest.cc",
+]
+
+_plain_test_deps = [
+  "//base",
+  "//components/atlas_fed_tlds",
+  "//content/public/browser",
+  "//mojo/public/cpp/bindings",
+  "//net/traffic_annotation:test_support",
+  "//services/network/public/cpp",
+  "//testing/gtest",
+  "//url",
+]
+
+# The loader test also needs a message loop, mojo and the network service's test client.
+_loader_test_sources = [ "fed_url_loader_factory_unittest.cc" ]
+_loader_test_deps = [
+  ":fed",
+  "//base",
+  "//mojo/core/embedder",
+  "//mojo/public/cpp/bindings",
+  "//net",
+  "//net/traffic_annotation:test_support",
+  "//services/network/public/cpp",
+  "//services/network/public/mojom",
+  "//testing/gtest",
+]
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests collects them. The loader
+# test needs its own main (a message loop and mojo): atlas_fed_loader_unittests below.
+source_set("unit_tests") {
+  testonly = true
+  sources = _plain_test_sources
+  deps = _plain_test_deps + [ ":fed" ]
+}
+
+# The same tests as binaries of their own (like atlas_sidebar_unittests: the monolithic
+# //chrome/test:unit_tests cannot be built in a dev slot): `ATLAS_TEST_TARGET=atlas_fed_unittests slot-remote.sh N test '*AtlasFed*'`.
+test("atlas_fed_unittests") {
+  sources = _plain_test_sources
+  deps = _plain_test_deps + [
+    ":fed",
+    "//testing/gtest:gtest_main",
+  ]
+}
+
+# `ATLAS_TEST_TARGET=atlas_fed_loader_unittests slot-remote.sh N test '*AtlasFedUrlLoader*'`.
+test("atlas_fed_loader_unittests") {
+  sources = _loader_test_sources + [ "fed_loader_test_main.cc" ]
+  deps = _loader_test_deps
+}

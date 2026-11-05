@@ -1,0 +1,86 @@
+Atlas overlay patch 0121: fed/fed-loader
+Why: the fed:// loader and the exclusive http mapping (a Federate name is fed:// and nothing else, lead rule
+ 2026-11-05, ADR 0052). A fed:// navigation and every subresource of a fed:// page (styles, scripts, images,
+ fetch()) get the Federate loader (chrome/browser/atlas/fed), which asks the helper atlas-fed over a local
+ socket and hands the verified bytes and content type to the engine as an ordinary response (no cookies,
+ nothing cached, GET and HEAD only). A navigation (page or frame) to http(s)://x.<Federate TLD> is redirected
+ (307) to fed://x.tld first in the interceptor list; every other load a frame, worker or service worker makes
+ to such a host (subresources, fetch, XHR) goes through a proxying URLLoaderFactory put first in the chain of
+ WillCreateURLLoaderFactory and is answered by the Federate loader, never by the network service. There is
+ no preference: the mapping is always on, and a failed fed:// load is an error, never a retry over http(s).
+ A web page may not read Federate names (probe, fingerprint): a subresource, fetch, XHR or worker request
+ to such a host is answered only when its initiator is a fed:// page; any other initiator gets the honest 403
+ page. Frames and top-level navigations are allowed (they become fed:// documents).
+ Every check lives in the helper; no resolver code is in the engine (ADR 0043 D4).
+Files: chrome/browser/chrome_content_browser_client.cc, chrome/browser/BUILD.gn
+Test filter: *AtlasFed* (chrome/browser/atlas/fed unit tests); journey: fed://home.fed shows the page; a changed signature shows the refusal page
+Rebase risk: M (the three functions are hooked at their first lines; they are long and change often, the hunks do not)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, base tree plus the patches before it in the series (dev slot 4)
+
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -59,6 +59,10 @@
+ #include "chrome/browser/accessibility/caption_settings_dialog.h"
+ #include "chrome/browser/actor/actor_commit_deferring_condition.h"
+ #include "chrome/browser/after_startup_task_utils.h"
++#include "chrome/browser/atlas/fed/fed_http_interceptor.h"
++#include "chrome/browser/atlas/fed/fed_subresource_proxy.h"
++#include "chrome/browser/atlas/fed/fed_url.h"
++#include "chrome/browser/atlas/fed/fed_url_loader_factory.h"
+ #include "chrome/browser/ai/ai_manager.h"
+ #include "chrome/browser/app_mode/app_mode_utils.h"
+ #include "chrome/browser/back_forward_cache/back_forward_cache_util.h"
+@@ -6273,6 +6277,10 @@
+ ChromeContentBrowserClient::CreateNonNetworkNavigationURLLoaderFactory(
+     const std::string& scheme,
+     content::FrameTreeNodeId frame_tree_node_id) {
++  // Atlas: fed:// documents come from the Federate helper.
++  if (scheme == atlas_fed::kFedScheme) {
++    return atlas_fed::FedURLLoaderFactory::Create();
++  }
+ #if BUILDFLAG(ENABLE_EXTENSIONS_CORE) || BUILDFLAG(IS_CHROMEOS) || \
+     !BUILDFLAG(IS_ANDROID)
+   content::WebContents* web_contents =
+@@ -6692,6 +6700,10 @@
+         int render_frame_id,
+         const std::optional<url::Origin>& request_initiator_origin,
+         NonNetworkURLLoaderFactoryMap* factories) {
++  // Atlas: the styles, scripts, images and fetch() of a fed:// page.
++  factories->emplace(atlas_fed::kFedScheme,
++                     atlas_fed::FedURLLoaderFactory::Create());
++
+ #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_EXTENSIONS_CORE) || \
+     !BUILDFLAG(IS_ANDROID)
+   content::RenderFrameHost* frame_host =
+@@ -6796,5 +6805,9 @@
+     scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner,
+     bool is_for_network_service) {
++  // Atlas: a request to http(s)://x.<Federate TLD> from a frame or a worker is
++  // answered by the Federate loader, never by the network service.
++  atlas_fed::FedSubresourceProxy::Install(factory_builder);
++
+ #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
+   auto* web_request_api =
+       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+@@ -6902,6 +6924,9 @@
+     scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) {
+   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
+       interceptors;
++  // Atlas: a navigation to http(s)://x.<Federate TLD> opens as fed://x.tld
++  // (always; there is no preference).
++  interceptors.push_back(std::make_unique<atlas_fed::FedHttpInterceptor>());
+ #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+   interceptors.push_back(
+       std::make_unique<offline_pages::OfflinePageURLLoaderRequestInterceptor>(
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -3393,6 +3393,7 @@
+   # (atlas::RegisterProfilePrefs, called from prefs/browser_prefs.cc).
+   if (!is_android) {
+     deps += [
++      "//chrome/browser/atlas/fed",
+       "//chrome/browser/ui/atlas:atlas_ui",
+       "//components/atlas_host",
+       "//components/atlas_pages",

@@ -66,6 +66,20 @@ cp "$_root_dir/package/atlas.desktop" "$_tarball_dir"
 cp "$_root_dir/package/apparmor.cfg" "$_tarball_dir"
 cp "$_root_dir/package/atlas-wrapper.sh" "$_tarball_dir/atlas-wrapper"
 
+# The Federate helper (ADR 0052, overlay area fed): the browser starts atlas-fed from the directory of its
+# own executable on the first fed:// load. It is built from the WolOS source (crates/atlas-fed) and handed
+# over with ATLAS_FED_HELPER; the official build sets it, a developer build without it shows the honest
+# "helper is not at ..." error on a fed:// page.
+if [ -n "${ATLAS_FED_HELPER:-}" ]; then
+    if [ ! -x "$ATLAS_FED_HELPER" ]; then
+        echo "package.sh: ATLAS_FED_HELPER=$ATLAS_FED_HELPER is not an executable file" >&2
+        exit 2
+    fi
+    install -m 0755 "$ATLAS_FED_HELPER" "$_tarball_dir/atlas-fed"
+else
+    echo "package.sh: warning: no ATLAS_FED_HELPER, this tarball has no atlas-fed (fed:// will not load)" >&2
+fi
+
 wait
 (cd "$_tarball_dir" && ln -sf atlas chrome)
 

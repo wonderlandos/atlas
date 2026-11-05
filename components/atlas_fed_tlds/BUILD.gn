@@ -1,0 +1,37 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+# The spelling of a Federate name and the 23 known Federate TLDs (ADR 0052): one source for the
+# browser's fed area (chrome/browser/atlas/fed) and the omnibox input classifier (overlay patch
+# 0124), neither of which may depend on the other.
+source_set("atlas_fed_tlds") {
+  sources = [
+    "fed_tlds.cc",
+    "fed_tlds.h",
+  ]
+  public_deps = [
+    "//base",
+    "//url",
+  ]
+}
+
+# `ATLAS_TEST_TARGET=atlas_fed_omnibox_unittests slot-remote.sh N test '*AtlasFed*'`: the address
+# bar classifies a bare Federate name as an address (patch 0124).
+test("atlas_fed_omnibox_unittests") {
+  sources = [
+    "fed_omnibox_test_main.cc",
+    "fed_omnibox_unittest.cc",
+  ]
+  deps = [
+    ":atlas_fed_tlds",
+    "//base",
+    "//base:i18n",
+    "//components/omnibox/browser",
+    "//testing/gtest",
+    "//third_party/metrics_proto",
+    "//url",
+  ]
+}

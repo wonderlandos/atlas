@@ -1,0 +1,76 @@
+Atlas overlay patch 0120: fed/fed-scheme
+Why: fed://label.tld is the Federate Network's address (ADR 0052); the lead wants a real fed:// site open in
+ Atlas. fed is only the transport (the helper atlas-fed verifies and hands back plain bytes), so the page is
+ ordinary HTML in the ordinary renderer. Registering the scheme: standard (host-based origin, one site per
+ Federate name), secure (a secure context, no mixed-content warning), CORS enabled and fetch()-able (a page
+ loads its own files), web-safe (a link from one fed:// page to another is allowed), and a handled protocol
+ (else the URL goes to the desktop's protocol handler). No cookie or storage scheme is registered: a fed page
+ has none by default. Literals "fed" because chrome/common and chrome/renderer cannot include
+ chrome/browser/atlas/fed.
+Files: chrome/common/chrome_content_client.cc, chrome/renderer/chrome_content_renderer_client.cc, chrome/browser/profiles/profile_io_data.cc, chrome/browser/browser_process_impl.cc
+Test filter: *AtlasFedUrl* (the scheme name); journey: fed://home.fed opens and its stylesheet loads
+Rebase risk: L (a list entry and three one-line calls next to the chrome-search ones)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches); BSD-3-Clause (hunks in the other engine files)
+Verified at: 156.0.8078.79, base tree plus the patches before it in the series (dev slot 4)
+
+--- a/chrome/common/chrome_content_client.cc
++++ b/chrome/common/chrome_content_client.cc
+@@ -200,6 +200,8 @@
+ #if BUILDFLAG(IS_ANDROID)
+     content::kAndroidAppScheme,
+ #endif
++    // Atlas: Federate Network addresses, fed://label.tld/path (ADR 0052).
++    "fed",
+ };
+ 
+ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
+@@ -230,6 +232,13 @@
+   // chrome-search: resources shouldn't trigger insecure content warnings.
+   schemes->secure_schemes.push_back(chrome::kChromeSearchScheme);
+ 
++  // Atlas: fed:// pages are verified by the Federate helper (a signed chain
++  // from a pinned root key), so they are a secure context, may fetch() their
++  // own files and give no mixed-content warnings. fed is only transport: the
++  // page is ordinary HTML in the ordinary renderer.
++  schemes->secure_schemes.push_back("fed");
++  schemes->cors_enabled_schemes.push_back("fed");
++
+ #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
+   // Treat extensions as secure because communication with them is entirely in
+   // the browser, so there is no danger of manipulation or eavesdropping on
+--- a/chrome/renderer/chrome_content_renderer_client.cc
++++ b/chrome/renderer/chrome_content_renderer_client.cc
+@@ -619,6 +619,10 @@
+   WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(
+       WebString::FromAscii(chrome::kChromeExperimentalSiteTokenProviderScheme));
+ 
++  // Atlas: a fed:// page may fetch() its own files.
++  WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(
++      WebString::FromAscii("fed"));
++
+   // This doesn't work in single-process mode.
+   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kSingleProcess)) {
+--- a/chrome/browser/profiles/profile_io_data.cc
++++ b/chrome/browser/profiles/profile_io_data.cc
+@@ -57,6 +57,7 @@
+       url::kBlobScheme,
+       url::kFileSystemScheme,
+       chrome::kChromeSearchScheme,
++      "fed",  // Atlas: served by the Federate helper (chrome/browser/atlas/fed).
+ #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+     BUILDFLAG(IS_CHROMEOS)
+       webapps::kIsolatedAppScheme,
+--- a/chrome/browser/browser_process_impl.cc
++++ b/chrome/browser/browser_process_impl.cc
+@@ -393,6 +393,9 @@
+   }
+ #endif
+ 
++  // Atlas: fed:// pages may link to and load other fed:// pages.
++  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme("fed");
++
+ #if BUILDFLAG(IS_MAC)
+   ui::InitIdleMonitor();
+ #endif

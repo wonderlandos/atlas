@@ -9,7 +9,7 @@
 set -u
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 dir="$root/atlas/patches"
-areas="privacy security brand memory host ui kit debloat build tor"
+areas="privacy security brand memory host ui kit debloat build tor fed"
 fields="Why: Files: Test filter: Rebase risk: Release: License: Verified at:"
 rc=0
 err() { echo "FAIL $*"; rc=1; }
@@ -79,5 +79,16 @@ new="$(awk 'NF && !/^#/ {print $2}' "$root/atlas/resources/atlas_resources.txt" 
 while read -r src _; do
     [ -f "$root/atlas/resources/$src" ] || err "atlas/resources/atlas_resources.txt: missing source $src"
 done < <(awk 'NF && !/^#/' "$root/atlas/resources/atlas_resources.txt")
+# a Federate name is exclusively fed:// (lead rule 2026-11-05): there is no preference that maps it,
+# no pref is registered for it, and no code in the fed area loads one over http(s) without the mapping
+if grep -rIl 'atlas\.fed\.map_http\|kMapHttpPref' "$root/chrome" "$root/atlas/patches" 2>/dev/null | grep -q .; then
+    err "atlas.fed.map_http: the Federate mapping has no preference (always on)"
+fi
+[ ! -e "$root/chrome/browser/atlas/fed/fed_prefs.h" ] || err "chrome/browser/atlas/fed/fed_prefs.h: the Federate mapping has no preference"
+for f in fed_subresource_proxy.cc fed_preconnect_guard.cc fed_dns_guard.cc; do
+    [ -f "$root/chrome/browser/atlas/fed/$f" ] || err "chrome/browser/atlas/fed/$f: missing (the exclusive-fed fences)"
+done
+# the Federate helper must reach the tarball beside the browser binary (the browser starts it from its own directory)
+grep -q 'ATLAS_FED_HELPER' "$root/atlas/platform/scripts/package.sh" || err "atlas/platform/scripts/package.sh: no ATLAS_FED_HELPER (the atlas-fed helper must be packaged beside the binary)"
 [ "$rc" -eq 0 ] && echo "ok   overlay series: ${#series[@]} patches, headers and names valid"
 exit "$rc"

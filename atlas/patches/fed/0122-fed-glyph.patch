@@ -1,0 +1,46 @@
+Atlas overlay patch 0122: fed/fed-glyph
+Why: on a fed:// page the security indicator of the location bar is not the padlock but the Federate mark
+ (lead, 2026-11-05): a page the helper verified (HTTP status 200) shows the mark, a page whose check failed
+ (502, nothing of it shown) shows the dangerous icon, any other answer keeps the engine's icon. The security
+ level itself stays NONE (the scheme is secure; there is no "Not secure" chip). One override at the top of
+ GetVectorIconOverride(); the choice and the vector icon are new files (chrome/browser/atlas/fed).
+Files: chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc, chrome/browser/ui/BUILD.gn
+Test filter: *AtlasFedLocationIcon*; journey: the omnibox of fed://home.fed shows the mark
+Rebase risk: L (one early return in a short function, one dependency line)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, base tree plus the patches before it in the series (dev slot 4)
+
+--- a/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
++++ b/chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.cc
+@@ -7,6 +7,7 @@
+ #include "base/check.h"
+ #include "base/feature_list.h"
+ #include "build/build_config.h"
++#include "chrome/browser/atlas/fed/fed_location_icon.h"
+ #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+ #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+ #include "chrome/browser/contextual_tasks/contextual_tasks_ui_interface.h"
+@@ -190,6 +191,12 @@
+   GURL url;
+   GetURL(&url);
+ 
++  // Atlas: a fed:// page shows the Federate mark in place of the padlock.
++  if (const gfx::VectorIcon* fed_icon =
++          atlas_fed::LocationIconFor(url, GetActiveWebContents())) {
++    return fed_icon;
++  }
++
+   if (IsContextualTasksPage()) {
+     return &vector_icons::kGoogleColorIcon;
+   }
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -3485,6 +3485,7 @@
+   # include headers of this target.
+   if (!is_android) {
+     deps += [
++      "//chrome/browser/atlas/fed",
+       "//chrome/browser/ui/atlas:atlas_ui",
+       "//chrome/browser/ui/atlas/newtab",
+       "//chrome/browser/ui/atlas/rest",

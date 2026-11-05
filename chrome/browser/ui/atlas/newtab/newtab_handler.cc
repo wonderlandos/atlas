@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/atlas/newtab/newtab_handler.h"
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <utility>
 
@@ -232,6 +233,14 @@ void NewTabHandler::HandleSubmit(const base::ListValue& args) {
   }
   const std::string& text = args[0].GetString();
   if (text.empty() || text.size() > 2048) {
+    return;
+  }
+  // A Federate name (home.fed, lobo.pagina/x) opens as the fed:// page it
+  // names, before anything else is asked: it is never a search, whatever the
+  // classifier below says (QA-A9-WEB-ATLAS-1; patch 0124 teaches the classifier
+  // the same).
+  if (std::optional<GURL> fed = FederateAddressFor(text)) {
+    OpenWebUrl(*fed, WindowOpenDisposition::CURRENT_TAB);
     return;
   }
   // The same decision the address bar makes, with no suggestion request: an
