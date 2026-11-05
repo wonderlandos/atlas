@@ -4,10 +4,12 @@ Why: a Federate name is exclusively fed:// (lead rule 2026-11-05, ADR 0052), so 
  preconnect predictors (loading predictor, network hints from <link rel=dns-prefetch|preconnect>, omnibox) all
  use one content::PreconnectManager; the loading predictor's is wrapped by FedPreconnectGuard, which drops every
  call about a host under a Federate TLD before the real manager sees it. (2) The browser adds one host-resolver
- rule per Federate TLD (MAP *.fed ~NOTFOUND, ...) to its own --host-resolver-rules at startup, which content
+ rule per Federate TLD, in both spellings (MAP *.fed ~NOTFOUND and MAP *.fed. ~NOTFOUND: the fully-qualified host is fenced too), to its own --host-resolver-rules at startup, which content
  passes on to the network service: whatever path is left (a redirect from the web, WebSocket, prefetch, an
- extension) cannot resolve such a name. The rules go in before the network service starts.
-Files: chrome/browser/chrome_content_browser_client.cc, chrome/browser/predictors/loading_predictor.cc, chrome/browser/predictors/BUILD.gn
+ extension) cannot resolve such a name. The rules go in before the network service starts. The engine lists
+ --host-resolver-rules among its "unsupported command-line flag" infobar flags, so the infobar skips the browser's
+ own guard (exact match of the rule list), and still warns about rules of the person's own.
+Files: chrome/browser/chrome_content_browser_client.cc, chrome/browser/predictors/loading_predictor.cc, chrome/browser/predictors/BUILD.gn, chrome/browser/ui/startup/bad_flags_prompt.cc, chrome/browser/ui/startup/BUILD.gn
 Test filter: *AtlasFedExclusive*; journey: a page with <link rel=dns-prefetch href=//home.fed> makes no lookup, ws://x.fed fails to resolve
 Rebase risk: L (a one-line call at the top of a constructor, one include, one wrapped call, one dependency)
 Release: 0.13
@@ -66,3 +68,37 @@ Verified at: 156.0.8078.79, base tree plus the patches before it in the series (
      "lcp_critical_path_predictor:impl",
      "//chrome/browser:browser_features",
      "//chrome/browser:browser_process",
+--- a/chrome/browser/ui/startup/bad_flags_prompt.cc
++++ b/chrome/browser/ui/startup/bad_flags_prompt.cc
+@@ -18,6 +18,7 @@
+ #include "base/trace_event/memory_dump_manager.h"
+ #include "build/build_config.h"
+ #include "cc/base/switches.h"
++#include "chrome/browser/atlas/fed/fed_dns_guard.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/infobars/browser_infobar_manager.h"
+ #include "chrome/browser/infobars/infobar_features.h"
+@@ -290,6 +291,13 @@
+ #if !BUILDFLAG(IS_ANDROID)
+   for (const char* flag : kBadFlags) {
+     if (base::CommandLine::ForCurrentProcess()->HasSwitch(flag)) {
++      // Atlas: the Federate DNS guard (--host-resolver-rules, added by the
++      // browser itself) is not a flag the person passed.
++      if (std::string_view(flag) == network::switches::kHostResolverRules &&
++          atlas_fed::IsOnlyOwnDnsGuard(
++              *base::CommandLine::ForCurrentProcess())) {
++        continue;
++      }
+       ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
+       return;
+     }
+--- a/chrome/browser/ui/startup/BUILD.gn
++++ b/chrome/browser/ui/startup/BUILD.gn
+@@ -134,6 +134,7 @@
+     "//base",
+     "//cc/base",
+     "//chrome/app:branded_strings",
++    "//chrome/browser/atlas/fed",
+     "//chrome/app:generated_resources",
+     "//chrome/app/vector_icons",
+     "//chrome/browser:browser_features",

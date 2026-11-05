@@ -25,6 +25,13 @@ namespace atlas_fed {
 // --host-resolver-rules, if any) after them.
 std::string HostResolverRules(std::string_view existing);
 
+// Whether `command_line` carries --host-resolver-rules and nothing else in it than
+// HostResolverRules("") (the browser's own guard): the engine's "unsupported
+// command-line flag" infobar (bad_flags_prompt.cc, patch 0123) must not warn every
+// person about a flag the browser added itself. A rule list with anything more in it
+// (the user's own rules) is still warned about.
+bool IsOnlyOwnDnsGuard(const base::CommandLine& command_line);
+
 // Puts HostResolverRules() on `command_line` (ChromeContentBrowserClient's
 // constructor, before the network service starts). Idempotent.
 void AppendDnsGuard(base::CommandLine* command_line);

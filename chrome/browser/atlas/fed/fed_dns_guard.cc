@@ -28,6 +28,12 @@ std::string HostResolverRules(std::string_view existing) {
   return rules;
 }
 
+bool IsOnlyOwnDnsGuard(const base::CommandLine& command_line) {
+  return command_line.HasSwitch(network::switches::kHostResolverRules) &&
+         command_line.GetSwitchValueASCII(
+             network::switches::kHostResolverRules) == HostResolverRules("");
+}
+
 void AppendDnsGuard(base::CommandLine* command_line) {
   std::string existing = command_line->GetSwitchValueASCII(
       network::switches::kHostResolverRules);

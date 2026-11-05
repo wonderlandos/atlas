@@ -190,6 +190,24 @@ TEST(AtlasFedExclusiveTest, TheResolverRefusesEveryFederateTldBeforeAnyQuery) {
   EXPECT_EQ(cl.GetSwitchValueASCII(network::switches::kHostResolverRules), once);
 }
 
+// The browser's own guard is not a flag the person passed: the "unsupported command-line flag"
+// infobar (bad_flags_prompt.cc) lists --host-resolver-rules and would show the guard's whole
+// rule list to everyone at every start. Rules of the person's own are still a warning.
+TEST(AtlasFedExclusiveTest, TheOwnDnsGuardIsNotABadFlagButTheUsersRulesAre) {
+  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
+  EXPECT_FALSE(IsOnlyOwnDnsGuard(cl));  // no switch at all
+  AppendDnsGuard(&cl);
+  EXPECT_TRUE(IsOnlyOwnDnsGuard(cl));
+  AppendDnsGuard(&cl);  // idempotent
+  EXPECT_TRUE(IsOnlyOwnDnsGuard(cl));
+
+  base::CommandLine mine(base::CommandLine::NO_PROGRAM);
+  mine.AppendSwitchASCII(network::switches::kHostResolverRules, "MAP a.test b.test");
+  EXPECT_FALSE(IsOnlyOwnDnsGuard(mine));
+  AppendDnsGuard(&mine);  // guard + the user's rule
+  EXPECT_FALSE(IsOnlyOwnDnsGuard(mine));
+}
+
 // QA-A9-WEB-ATLAS-5: the two fences must agree. A host the proxies refuse
 // (IsFederateTldHost, trailing dot ignored) is also unresolvable for the network
 // service's host-resolver rules, which only see the host they are given
