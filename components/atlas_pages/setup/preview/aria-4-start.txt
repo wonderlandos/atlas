@@ -1,0 +1,15 @@
+- region "Ready to start":
+  - heading "Ready to start" [level=1]
+  - paragraph: Bring what you have from another browser, or start with an empty Atlas.
+  - group "How to start":
+    - text: How to start Bring my things over Bookmarks, history and saved passwords, copied from another browser on this PC. Nothing leaves it.
+    - radio "Bring my things over"
+    - text: Start clean Nothing is copied. You can still import later in Settings.
+    - radio "Start clean" [checked]
+  - list "Default browser":
+    - listitem:
+      - text: Make Atlas the default browser Links you open in other apps open here.
+      - switch "Make Atlas the default browser"
+  - text: Everything here can be changed later in Settings.
+  - button "Back"
+  - button "Start browsing"

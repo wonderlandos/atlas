@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- Copyright 2026 The Atlas Authors. -->
+<!-- Files of the first-run page, each with resource_path="setup/<file>"; setup/index.html is the
+     page. host_webui.js is served under the name host.js. theme.css is not listed: the shared
+     page source writes it from the live theme. host.js and theme.css of this directory are the
+     preview host and the preview tokens and are not part of the build. -->
+<grit-part>
+  <include name="IDR_ATLAS_SETUP_INDEX_HTML"
+           file="setup/index.html"
+           resource_path="setup/index.html"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_SETUP_ONBOARDING_CSS"
+           file="setup/onboarding.css"
+           resource_path="setup/onboarding.css"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_SETUP_ONBOARDING_JS"
+           file="setup/onboarding.js"
+           resource_path="setup/onboarding.js"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_SETUP_HOST_JS"
+           file="setup/host_webui.js"
+           resource_path="setup/host.js"
+           type="BINDATA" />
+</grit-part>

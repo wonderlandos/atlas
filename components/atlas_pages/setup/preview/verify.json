@@ -1,0 +1,156 @@
+{
+  "url": "http://127.0.0.1:8471/index.html",
+  "requests": [
+    "http://127.0.0.1:8471/index.html",
+    "http://127.0.0.1:8471/theme.css",
+    "http://127.0.0.1:8471/onboarding.css",
+    "http://127.0.0.1:8471/host.js",
+    "http://127.0.0.1:8471/onboarding.js",
+    "http://127.0.0.1:8471/index.html",
+    "http://127.0.0.1:8471/theme.css",
+    "http://127.0.0.1:8471/onboarding.css",
+    "http://127.0.0.1:8471/host.js",
+    "http://127.0.0.1:8471/onboarding.js"
+  ],
+  "console": [],
+  "screens": {
+    "light-welcome": {
+      "shot": "preview/atlas-onboard-1-welcome-light.png",
+      "min": 5.06,
+      "texts": 8,
+      "low": [],
+      "tabOrder": [
+        "button[button] \"Skip setup\"",
+        "button[button] \"Get started\""
+      ]
+    },
+    "light-privacy": {
+      "shot": "preview/atlas-onboard-2-privacy-light.png",
+      "min": 5.06,
+      "texts": 19,
+      "low": [],
+      "tabOrder": [
+        "button[role=switch][button] \"Do Not Track\"",
+        "button[role=switch][button] \"Global Privacy Control\"",
+        "button[role=switch][button] \"Tracker blocking\"",
+        "button[button] \"Skip setup\"",
+        "button[button] \"Back\"",
+        "button[button] \"Continue\""
+      ],
+      "switchCheck": {
+        "focused": "button[role=switch][button] \"Do Not Track\"",
+        "afterSpace": "false",
+        "afterSecondSpace": "true"
+      }
+    },
+    "light-yours": {
+      "shot": "preview/atlas-onboard-3-yours-light.png",
+      "min": 5.06,
+      "texts": 30,
+      "low": [],
+      "tabOrder": [
+        "button[button] \"Skip setup\"",
+        "button[button] \"Back\"",
+        "button[button] \"Continue\""
+      ]
+    },
+    "light-start": {
+      "shot": "preview/atlas-onboard-4-start-light.png",
+      "min": 5.06,
+      "texts": 13,
+      "low": [],
+      "tabOrder": [
+        "input[radio] \"Start clean\""
+      ],
+      "importLabel": "Choose a browser…",
+      "finish": "Preview, nothing was changed: {\"skipped\":false,\"privacy\":{\"doNotTrack\":true,\"globalPrivacyControl\":true,\"trackerBlocking\":true},\"start\":\"import\",\"makeDefault\":false}"
+    },
+    "dark-welcome": {
+      "shot": "preview/atlas-onboard-1-welcome-dark.png",
+      "min": 5.41,
+      "texts": 8,
+      "low": [],
+      "tabOrder": [
+        "button[button] \"Skip setup\"",
+        "button[button] \"Get started\""
+      ]
+    },
+    "dark-privacy": {
+      "shot": "preview/atlas-onboard-2-privacy-dark.png",
+      "min": 5.41,
+      "texts": 19,
+      "low": [],
+      "tabOrder": [
+        "button[role=switch][button] \"Do Not Track\"",
+        "button[role=switch][button] \"Global Privacy Control\"",
+        "button[role=switch][button] \"Tracker blocking\"",
+        "button[button] \"Skip setup\"",
+        "button[button] \"Back\"",
+        "button[button] \"Continue\""
+      ],
+      "switchCheck": {
+        "focused": "button[role=switch][button] \"Do Not Track\"",
+        "afterSpace": "false",
+        "afterSecondSpace": "true"
+      }
+    },
+    "dark-yours": {
+      "shot": "preview/atlas-onboard-3-yours-dark.png",
+      "min": 5.41,
+      "texts": 30,
+      "low": [],
+      "tabOrder": [
+        "button[button] \"Skip setup\"",
+        "button[button] \"Back\"",
+        "button[button] \"Continue\""
+      ]
+    },
+    "dark-start": {
+      "shot": "preview/atlas-onboard-4-start-dark.png",
+      "min": 5.41,
+      "texts": 13,
+      "low": [],
+      "tabOrder": [
+        "input[radio] \"Start clean\""
+      ],
+      "importLabel": "Choose a browser…",
+      "finish": "Preview, nothing was changed: {\"skipped\":false,\"privacy\":{\"doNotTrack\":true,\"globalPrivacyControl\":true,\"trackerBlocking\":true},\"start\":\"import\",\"makeDefault\":false}"
+    }
+  },
+  "motion": {
+    "no-preference": {
+      "count": 7,
+      "maxDuration": 400,
+      "maxDelay": 120,
+      "props": [
+        "transform",
+        "opacity"
+      ]
+    },
+    "reduce": {
+      "count": 0,
+      "maxDuration": 0,
+      "maxDelay": 0,
+      "props": []
+    }
+  },
+  "narrow": [
+    {
+      "scroll": 480,
+      "client": 480
+    },
+    {
+      "scroll": 480,
+      "client": 480
+    },
+    {
+      "scroll": 480,
+      "client": 480
+    },
+    {
+      "scroll": 480,
+      "client": 480
+    }
+  ],
+  "failures": []
+}

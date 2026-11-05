@@ -1,0 +1,8 @@
+- region "Welcome to Atlas":
+  - heading "Welcome to Atlas" [level=1]
+  - paragraph: Just use it.
+  - paragraph: Atlas is the browser of WolOS. It wears your theme, keeps what you do on this PC and leaves the page to you.
+  - paragraph: Three short steps. Each choice can be changed later in Settings.
+  - button "Skip setup"
+  - text: Atlas starts with the private settings.
+  - button "Get started"

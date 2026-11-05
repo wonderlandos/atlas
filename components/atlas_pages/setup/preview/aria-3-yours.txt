@@ -1,0 +1,22 @@
+- region "Make it yours":
+  - heading "Make it yours" [level=1]
+  - paragraph: Atlas wears your WolOS theme. Change the theme in WolOS and Atlas changes with it.
+  - list "Look":
+    - listitem: Light and dark Follows the system. When WolOS turns dark, so does Atlas. Automatic
+    - listitem: Your theme Colours and the accent come from your WolOS theme. The sample is drawn from it now.
+    - listitem: Keyboard first Tab moves between controls, Enter or Space chooses. Every control in Atlas can be reached this way.
+  - heading "Keys worth knowing" [level=2]
+  - term: Super L
+  - definition: Go to the address bar
+  - term: Super T
+  - definition: New tab
+  - term: Super W
+  - definition: Close the tab
+  - term: Super F
+  - definition: Find on the page
+  - term: Super ,
+  - definition: Settings
+  - button "Skip setup"
+  - text: Keeps the privacy settings you chose.
+  - button "Back"
+  - button "Continue"

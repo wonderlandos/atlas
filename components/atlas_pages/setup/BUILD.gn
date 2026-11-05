@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright 2026 The Atlas Authors.
+
+import("//testing/test.gni")
+
+# The first-run page (owner: ATLAS-FIRSTRUN), served at chrome::kAtlasSetupHost by
+# atlas_pages::AtlasPageSource. Its files are in setup_resources.grdp.
+
+# What the choices do (no engine dependency, tested on its own).
+source_set("apply") {
+  sources = [
+    "first_run_apply.cc",
+    "first_run_apply.h",
+  ]
+}
+
+source_set("setup") {
+  sources = [
+    "first_run_handler.cc",
+    "first_run_handler.h",
+    "setup_prefs.cc",
+    "setup_prefs.h",
+  ]
+  public_deps = [
+    ":apply",
+    "//base",
+    "//components/atlas_pages/common",
+    "//content/public/browser",
+    "//url",
+  ]
+  deps = [
+    "//chrome/common",
+    "//chrome/common:constants",
+    "//components/helium_services",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/user_prefs",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "first_run_apply_unittest.cc",
+    "first_run_handler_unittest.cc",
+  ]
+  deps = [
+    ":apply",
+    ":setup",
+    "//base",
+    "//chrome/common",
+    "//chrome/common:constants",
+    "//components/helium_services",
+    "//components/pref_registry",
+    "//components/prefs:test_support",
+    "//components/sync_preferences:test_support",
+    "//testing/gtest",
+  ]
+}

@@ -1,0 +1,205 @@
+/* SPDX-License-Identifier: BSD-3-Clause
+   Atlas first run. Colours are the WolOS theme variables of theme.css, never a literal
+   (hig.md section 2; the Atlas brand set, tokens.md section 1). Type sizes are the HIG scale:
+   26 large title, 15 heading, 13 body, 11 secondary. Motion: the brand set's motion.md. */
+
+:root {
+  /* Filled controls: the theme's accent, darkened, so the white label clears 4.5:1
+     (accentText on accent is 4.35:1 light and 3.69:1 dark, tokens.md section 7).
+     A theme token for filled controls, if the system adds one, replaces this line. */
+  --accent-filled: color-mix(in srgb, var(--accent) 80%, black);
+  --accent-tint: color-mix(in srgb, var(--accent) 22%, transparent);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --column: 520px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --accent-tint: color-mix(in srgb, var(--accent) 30%, transparent); }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--surface);
+  color: var(--text);
+  font: 400 13px/1.45 Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* Frame: one centred column */
+.frame {
+  min-height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  /* the step bar stays in one place from screen to screen */
+  padding: max(var(--space-6), 10vh) var(--space-6) var(--space-6);
+  gap: var(--space-3);
+}
+.screen {
+  width: min(var(--column), 100%);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.screen[hidden] { display: none; }
+
+/* Step: four pips and the words; the words are what assistive technology reads */
+.progress { display: flex; gap: var(--space-1); width: min(var(--column), 100%); }
+.pip { flex: 1; height: var(--space-1); border-radius: var(--space-1); background: var(--control); }
+.pip.is-done, .pip.is-current { background: var(--accent); }
+.step { margin: 0; width: min(var(--column), 100%); font-size: 11px; color: var(--dim); }
+
+/* Headings */
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-2); padding-block: var(--space-6); }
+.badge { width: 96px; height: 96px; margin-bottom: var(--space-4); }
+.head { display: flex; flex-direction: column; gap: var(--space-2); }
+h1 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+/* The heading takes focus on each step so a screen reader reads it; it is not a control,
+   so it shows no ring. */
+h1:focus { outline: none; }
+h2.section { margin: var(--space-2) 0 0; font-size: 15px; font-weight: 600; }
+.line { margin: 0; font-size: 15px; font-weight: 600; }
+.hint { margin: 0; color: var(--dim); }
+.hero .hint { max-width: 44ch; margin-inline: auto; }
+
+/* Card and rows (tokens.md section 6) */
+.card {
+  margin: 0; padding: 0; list-style: none; border: 0;
+  background: var(--card);
+  border-radius: var(--radius-m);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.row {
+  min-height: 56px;
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  position: relative;
+}
+.row + .row::before {
+  content: ""; position: absolute; top: 0; left: var(--space-4); right: var(--space-4);
+  height: 1px; background: var(--line);
+}
+.glyph {
+  flex: none; width: 16px; height: 16px;
+  color: var(--accent);
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.glyph .fill { fill: currentColor; stroke: none; }
+.text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.title { font-weight: 600; }
+.sub { font-size: 11px; color: var(--dim); }
+.state { flex: none; font-size: 11px; color: var(--dim); }
+
+/* The theme sample: drawn from the tokens, so it is the person's theme */
+.sample {
+  flex: none; width: 56px; height: 36px; border-radius: var(--radius-s);
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sample-bar { height: var(--space-2); background: var(--glass); box-shadow: 0 1px 0 var(--line); }
+.sample-card {
+  flex: 1; margin: var(--space-1); border-radius: var(--space-1);
+  background: var(--card); display: flex; align-items: center; justify-content: flex-end; padding: var(--space-1);
+}
+.sample-dot { width: var(--space-3); height: var(--space-2); border-radius: var(--space-1); background: var(--accent); }
+
+/* Keys */
+.keys { display: grid; grid-template-columns: 1fr 1fr; padding: var(--space-2) var(--space-4); column-gap: var(--space-6); }
+.key-row { display: flex; align-items: center; gap: var(--space-3); min-height: 28px; }
+.key-row dt { flex: none; min-width: 72px; white-space: nowrap; }
+.key-row dd { margin: 0; }
+kbd {
+  display: inline-block; min-width: 20px; padding: 0 var(--space-1);
+  font: 500 11px/18px Inter, sans-serif; text-align: center;
+  color: var(--text); background: var(--control);
+  border-radius: var(--space-1); box-shadow: inset 0 -1px 0 var(--line);
+}
+
+/* Choices: native radios in the row; the selected row gets an accent outline (never a tint
+   under dim text: dim on the tint is 3.9:1 in light) */
+.choice { cursor: pointer; }
+.choice input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.choice:has(input:checked)::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--radius-m);
+  box-shadow: inset 0 0 0 2px var(--accent); pointer-events: none;
+}
+.choice:has(input:focus-visible)::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--radius-m);
+  box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 2px var(--accent); pointer-events: none;
+}
+.choice input:focus-visible { outline: none; }
+
+/* Switch: accent track and accentText knob when on, as tokens.md section 6 draws it (3:1 for
+   state: 4.35 light, 3.69 dark; the filled accent would be 2.7:1 against the dark card) */
+.switch {
+  flex: none; position: relative; width: 36px; height: 20px; padding: 0; border: 0;
+  border-radius: 10px; background: var(--control);
+  box-shadow: inset 0 0 0 1px var(--dim);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease);
+}
+.switch .knob {
+  position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--dim);
+  transition: transform var(--motion-fast) var(--ease), background-color var(--motion-fast) var(--ease);
+}
+.switch[aria-checked="true"] { background: var(--accent); box-shadow: none; }
+.switch[aria-checked="true"] .knob { transform: translateX(16px); background: var(--accent-text); }
+
+/* Buttons */
+button { font: inherit; color: inherit; }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.aside { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.buttons { display: flex; gap: var(--space-2); margin-inline-start: auto; }
+.primary, .secondary {
+  min-width: 96px; height: 36px; padding: 0 var(--space-4);
+  border: 0; border-radius: var(--radius-s);
+  font-weight: 600; cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease);
+}
+.primary { min-width: 140px; background: var(--accent-filled); color: var(--accent-text); }
+.primary:hover { background: color-mix(in srgb, var(--accent-filled) 88%, black); }
+.secondary { background: var(--control); color: var(--text); }
+.secondary:hover { background: color-mix(in srgb, var(--control) 90%, var(--text)); }
+.quiet {
+  padding: 0; border: 0; background: none; cursor: pointer;
+  color: var(--text); text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: var(--dim);
+}
+.note { font-size: 11px; color: var(--dim); }
+:is(.primary, .secondary, .quiet, .switch):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.quiet:focus-visible { border-radius: var(--space-1); }
+
+.preview-status { margin: 0; min-height: 16px; font-size: 11px; color: var(--dim); width: min(var(--column), 100%); }
+
+/* Motion (motion.md section 2, "First run"): the card enters on slow, its rows
+   follow on normal, 30 ms apart, transform and opacity only. Input is never held. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes leave { to { opacity: 0; } }
+.is-entering .hero, .is-entering .head { animation: rise var(--motion-slow) var(--ease) both; }
+.is-entering .card { animation: rise var(--motion-slow) var(--ease) both; }
+.is-entering .row, .is-entering .key-row {
+  animation: rise var(--motion-normal) var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+.frame.is-leaving { animation: leave var(--motion-fast) var(--ease-in) both; }
+
+/* Reduce motion: every move jumps to its end state */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+:root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+  animation: none !important; transition: none !important;
+}
+
+/* Contrast mode of the system: boundaries become text at 55% (wolkit-style.md) */
+@media (prefers-contrast: more) {
+  .card, .sample { box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 55%, transparent); }
+}
+
+@media (max-width: 560px) {
+  .keys { grid-template-columns: 1fr; }
+}

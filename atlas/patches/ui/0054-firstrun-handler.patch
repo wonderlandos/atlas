@@ -1,0 +1,92 @@
+Atlas overlay patch 0054: ui/firstrun-handler
+Why: finishing the first-run page has to do things: write Do Not Track, Global Privacy Control and
+the tracker-blocker choice, record that the first run is over, make Atlas the default browser when
+asked, and open the new tab page or the import page. The page talks to the settings page's own
+default-browser handler for the system call (no new code for it) and to the new handler of
+components/atlas_pages/setup/ for the rest, in place of the handlers of the upstream setup
+bundle. The tracker blocker is a built-in component whose disable state the engine clears at every
+start, so switching it off for good is a profile preference read where the component is added
+(one early return) plus an unload now. A first-run preference cannot do this: it runs after the
+person chooses.
+Files: chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc, chrome/browser/extensions/component_loader.cc
+Test filter: *AtlasFirstRun*; reel-check scene R04 (choices written; blocker off survives a restart)
+Rebase risk: M (the component loader function is added by the inherited blocker patch; the page file by the inherited onboarding patch)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited, platform and 0010 patches applied
+
+--- a/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
++++ b/chrome/browser/ui/webui/onboarding/onboarding_page_ui.cc
+@@ -4,33 +4,47 @@
+ 
+ #include "chrome/browser/ui/webui/onboarding/onboarding_page_ui.h"
+ 
+-#include "chrome/browser/profiles/profile.h"
+-#include "chrome/browser/ui/webui/onboarding/onboarding_handler.h"
+-#include "chrome/browser/ui/webui/settings/brave_import_data_handler.h"
+-#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
++#include "base/functional/bind.h"
++#include "chrome/browser/extensions/component_loader.h"
+ #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
+ #include "chrome/common/webui_url_constants.h"
+ #include "components/atlas_pages/common/atlas_page_source.h"
++#include "components/atlas_pages/setup/first_run_handler.h"
++#include "components/helium_services/extension_ids.h"
++#include "content/public/browser/browser_context.h"
+ #include "content/public/browser/web_contents.h"
+ #include "content/public/browser/web_ui_controller.h"
+ 
++namespace {
++
++// Switching the tracker blocker off unloads the built-in component now; the preference keeps
++// it off at every start (component_loader.cc).
++void UnloadTrackerBlocker(content::BrowserContext* context, bool on) {
++  if (!on) {
++    extensions::ComponentLoader::Get(context)->Remove(
++        helium::kUBlockOriginComponentId);
++  }
++}
++
++}  // namespace
++
+ HeliumOnboardingPage::HeliumOnboardingPage(content::WebUI* web_ui)
+     : WebUIController(web_ui) {
+   content::BrowserContext* browser_context =
+       web_ui->GetWebContents()->GetBrowserContext();
+-  Profile* profile = Profile::FromBrowserContext(browser_context);
+   // components/atlas_pages/setup/: the first-run page.
+   atlas_pages::AtlasPageSource::CreateAndAdd(
+       browser_context, chrome::kAtlasSetupHost, "setup");
+ 
+-  web_ui->AddMessageHandler(
+-      std::make_unique<OnboardingMessageHandler>(browser_context));
+-  web_ui->AddMessageHandler(
+-      std::make_unique<settings::SearchEnginesHandler>(profile));
++  // Whether Atlas is the default browser, and making it so: the handler the settings page
++  // uses. The privacy choices, completion and the next page: the first-run handler.
+   web_ui->AddMessageHandler(
+       std::make_unique<settings::DefaultBrowserHandler>());
+   web_ui->AddMessageHandler(
+-      std::make_unique<settings::BraveImportDataHandler>());
++      std::make_unique<atlas_pages::setup::AtlasFirstRunHandler>(
++          browser_context,
++          base::BindRepeating(&UnloadTrackerBlocker,
++                              base::Unretained(browser_context))));
+ }
+ 
+ HeliumOnboardingPage::~HeliumOnboardingPage() = default;
+--- a/chrome/browser/extensions/component_loader.cc
++++ b/chrome/browser/extensions/component_loader.cc
+@@ -616,6 +616,12 @@
+ }
+ 
+ void ComponentLoader::AddUBlock() {
++  // Off when the person switched the tracker blocker off ("atlas.tracker_blocking",
++  // components/atlas_pages/setup/setup_prefs.h).
++  if (!profile_->GetPrefs()->GetBoolean("atlas.tracker_blocking")) {
++    return;
++  }
++
+   Add(IDR_UBLOCK_MANIFEST_JSON, base::FilePath(FILE_PATH_LITERAL("ublock")));
+ 
+   using namespace extension_l10n_util;
