@@ -1,0 +1,29 @@
+Atlas overlay patch 0106: ui/kit-sidebar-pane
+Why: with the Kit chrome the tab sidebar is a view of our own inside the engine's vertical tab strip region, and the
+ engine's F6 (pane focus) list names the region, which has nothing visible to focus once the engine's own strip is
+ hidden: F6 cycled toolbar and page and never reached the sidebar (ATLAS-E2E-15; the sidebar was reachable only by
+ Tab). BrowserView::GetAccessiblePanes names the Kit sidebar in place of the region when it is there; the sidebar
+ puts focus on the row of the tab in front (KitSidebarView::RequestFocus). Off unless --atlas-kit-chrome.
+Files: chrome/browser/ui/views/frame/browser_view.cc
+Test filter: AtlasKit (journey e2e_keys_hover.py: F6 x4 visits the sidebar)
+Rebase risk: L (one branch in a list of panes; kit_chrome.h is already included by patch 0100)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series and patch 0100 applied (dev slot 8)
+
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -5219,7 +5219,12 @@
+     panes->push_back(horizontal_tab_strip_region_view_);
+   }
+   if (vertical_tab_strip_region_view_) {
+-    panes->push_back(vertical_tab_strip_region_view_);
++    // Atlas: with the Kit chrome the sidebar itself is the pane, so F6 lands
++    // on its rows (the engine's region has nothing visible to focus).
++    views::View* kit_sidebar =
++        atlas::kit::KitSidebarOf(vertical_tab_strip_region_view_);
++    panes->push_back(kit_sidebar ? kit_sidebar
++                                 : vertical_tab_strip_region_view_.get());
+   }
+   if (toolbar_ && toolbar_->custom_tab_bar()) {
+     panes->push_back(toolbar_->custom_tab_bar());

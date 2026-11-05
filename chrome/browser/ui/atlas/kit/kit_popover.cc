@@ -73,12 +73,17 @@ class Item : public views::Button {
   Item& operator=(const Item&) = delete;
   ~Item() override = default;
 
+  bool has_icon() const { return !icon_.IsEmpty(); }
+  // Reserve the icon column although this row has no icon of its own, so the
+  // labels of a menu in which some rows have one line up (QA E2E-12).
+  void set_icon_column(bool column) { icon_column_ = column; }
+
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override {
     const gfx::FontList body = FontOfSize(13, gfx::Font::Weight::NORMAL);
     const gfx::FontList small = FontOfSize(11, gfx::Font::Weight::NORMAL);
     int w = kPad + gfx::GetStringWidth(label_, body) + kPad;
-    if (!icon_.IsEmpty()) {
+    if (icon_column_ || !icon_.IsEmpty()) {
       w += kGlyph + kPad;
     }
     if (end_glyph_) {
@@ -125,6 +130,8 @@ class Item : public views::Button {
         image = icon_.Rasterize(provider);
       }
       canvas->DrawImageInt(image, x, (height() - image.height()) / 2);
+      x += kGlyph + kPad;
+    } else if (icon_column_) {
       x += kGlyph + kPad;
     }
     int right = width() - kPad;
@@ -188,6 +195,7 @@ class Item : public views::Button {
   const std::u16string label_;
   const std::u16string trailing_;
   const ui::ImageModel icon_;
+  bool icon_column_ = false;
   raw_ptr<const gfx::VectorIcon> end_glyph_;
 };
 
@@ -291,6 +299,19 @@ views::View* KitPopover::AddCustom(std::unique_ptr<views::View> view) {
 // static
 views::Widget* KitPopover::Show(std::unique_ptr<KitPopover> popover) {
   KitPopover* p = popover.get();
+  // One icon column for the whole menu when any row has an icon.
+  bool any_icon = false;
+  for (views::View* child : p->contents_->children()) {
+    if (views::IsViewClass<Item>(child) &&
+        static_cast<Item*>(child)->has_icon()) {
+      any_icon = true;
+    }
+  }
+  for (views::View* child : p->contents_->children()) {
+    if (views::IsViewClass<Item>(child)) {
+      static_cast<Item*>(child)->set_icon_column(any_icon);
+    }
+  }
   for (views::View* child : p->contents_->children()) {
     if (views::IsViewClass<Item>(child) && child->GetEnabled()) {
       p->SetInitiallyFocusedView(child);

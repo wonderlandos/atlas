@@ -41,7 +41,7 @@ def lint(j, im, tag, sidebar=True):
         centre = (vb[0] + vb[1]) / 2 if vb else -1
         j.info(f"{tag} omnibox pill {w}x{h} at x{big[0]}..{big[1]}, centre line y={centre}", f"toolbar centre 17.5; RU-701 heights 24/28/36/40; reel P09 says 26")
         j.check(f"{tag} RU-702/toolbar centre line: omnibox centred on the toolbar (|dy|<=1)", abs(centre - 17.5) <= 1, f"centre {centre}")
-        j.check(f"{tag} RU-701 omnibox height in {{24,28,36,40}} (reel P09 says 26)", h in (24, 28, 36, 40), f"h={h}", cat="DESIGN")
+        j.check(f"{tag} omnibox height is 24 (lead decision: 24 incl. border; was 26)", h == 24, f"h={h}", cat="DESIGN")
     if sidebar:
         # sidebar edge: width = first column of the vertical line at y=300
         edge = [x for x in range(150, 260) if dist(px(im, x, 300), px(im, 100, 300)) > 6 and dist(px(im, x, 300), px(im, 600, 400)) > 0 or False]

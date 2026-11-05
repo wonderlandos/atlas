@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/atlas/kit/kit_sidebar_view.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -12,9 +13,11 @@
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/atlas/kit/kit_layout.h"
 #include "chrome/browser/ui/atlas/kit/kit_metrics.h"
 #include "chrome/browser/ui/atlas/kit/kit_tab_menu.h"
@@ -25,12 +28,18 @@
 #include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/alert/tab_alert_controller.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_muted_utils.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/tabs/public/tab_alert.h"
 #include "components/tabs/public/tab_group.h"
+#include "components/tabs/public/tab_interface.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -51,6 +60,9 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
@@ -74,6 +86,8 @@ constexpr int kBody = 13;
 constexpr int kSecondary = 11;
 // Below this width the rows show the glyph alone.
 constexpr int kMinWidthForText = 120;
+// A tab inside a group is indented by this much under the group's header.
+constexpr int kGroupIndent = 12;
 
 gfx::FontList FontOfSize(int size, gfx::Font::Weight weight) {
   const gfx::FontList base;
@@ -95,7 +109,11 @@ class Row : public views::Button, public views::ContextMenuController {
     base::RepeatingCallback<void(const gfx::Point&)> menu;
     // Reorder by dragging: the pointer at `point` in the row's own space.
     base::RepeatingCallback<void(Drag, const gfx::Point&)> drag;
+    // Mute or unmute the tab (the speaker glyph of a tab that has sound).
+    base::RepeatingClosure toggle_mute;
   };
+  // The sound state of a tab, drawn as a glyph left of the close glyph.
+  enum class Audio { kNone, kPlaying, kMuted };
 
   Row(PressedCallback callback,
       std::u16string title,
@@ -127,6 +145,25 @@ class Row : public views::Button, public views::ContextMenuController {
   // A tab that gave its memory back (REST): dim title and favicon, and the
   // frost mark where the close glyph is.
   void set_resting(bool resting) { resting_ = resting; }
+  void set_audio(Audio audio) { audio_ = audio; }
+  // A tab inside a group is indented under the group's header.
+  void set_indent(int indent) { indent_ = indent; }
+  // Takes the changed facts of the row's tab in place: the row, its focus, its
+  // drag and its menu stay what they are.
+  void Update(std::u16string title,
+              gfx::ImageSkia favicon,
+              bool resting,
+              Audio audio) {
+    if (title != title_) {
+      title_ = std::move(title);
+      SetTooltipText(WrapToLineChars(title_, metrics::kRichTooltipLineChars));
+      GetViewAccessibility().SetName(title_);
+    }
+    favicon_ = std::move(favicon);
+    resting_ = resting;
+    audio_ = audio;
+    SchedulePaint();
+  }
   void set_dragged(bool dragged) {
     if (dragged_ != dragged) {
       dragged_ = dragged;
@@ -183,7 +220,7 @@ class Row : public views::Button, public views::ContextMenuController {
     const gfx::Rect row = RowRect();
     const sidebar::RowState state =
         active_ ? sidebar::RowState::kActive : sidebar::RowState::kIdle;
-    const int glyph_x = row.x() + kContentInset;
+    const int glyph_x = row.x() + kContentInset + indent_;
     const int glyph_y = row.y() + (row.height() - kGlyph) / 2;
     if (glyph_) {
       canvas->DrawImageInt(
@@ -201,6 +238,19 @@ class Row : public views::Button, public views::ContextMenuController {
       return;
     }
     int text_right = row.right() - kContentInset;
+    if (audio_ != Audio::kNone && hooks_.toggle_mute) {
+      // Left of where the close glyph appears, always in the same place.
+      const gfx::Rect at = AudioRect();
+      canvas->DrawImageInt(
+          gfx::CreateVectorIcon(
+              audio_ == Audio::kMuted ? kKitAudioVolumeMutedIcon
+                                      : kKitAudioVolumeHighIcon,
+              kGlyph,
+              audio_ == Audio::kMuted ? sidebar::DimTextColor(*provider)
+                                      : provider->GetColor(ui::kColorAccent)),
+          at.x(), at.y());
+      text_right = std::min(text_right, at.x() - kGap);
+    }
     if (resting_ && !ShowsClose()) {
       // The mark sits where the close glyph of the tab in front is.
       gfx::Rect mark = atlas::rest::RestMarkBounds(row.width(), row.height());
@@ -243,6 +293,12 @@ class Row : public views::Button, public views::ContextMenuController {
     SchedulePaint();
   }
 
+  // The speaker glyph: one glyph and one gap left of the close glyph.
+  gfx::Rect AudioRect() const {
+    const gfx::Rect close = CloseRect();
+    return gfx::Rect(close.x() - kGap - kGlyph, close.y(), kGlyph, kGlyph);
+  }
+
   // The close glyph is where the trailing text of other rows is.
   gfx::Rect CloseRect() const {
     const gfx::Rect row = RowRect();
@@ -251,6 +307,12 @@ class Row : public views::Button, public views::ContextMenuController {
   }
 
   void NotifyClick(const ui::Event& event) override {
+    if (audio_ != Audio::kNone && hooks_.toggle_mute && event.IsMouseEvent() &&
+        width() >= kMinWidthForText &&
+        AudioRect().Contains(event.AsMouseEvent()->location())) {
+      hooks_.toggle_mute.Run();
+      return;
+    }
     if (hooks_.close) {
       const bool middle = event.IsMouseEvent() &&
                           (event.AsMouseEvent()->changed_button_flags() &
@@ -333,7 +395,7 @@ class Row : public views::Button, public views::ContextMenuController {
     return gfx::Rect(0, top, width(), kRow);
   }
 
-  const std::u16string title_;
+  std::u16string title_;
   const bool active_;
   const bool dim_title_;
   gfx::ImageSkia favicon_;
@@ -345,6 +407,8 @@ class Row : public views::Button, public views::ContextMenuController {
   bool drag_started_ = false;
   bool dragged_ = false;
   bool resting_ = false;
+  Audio audio_ = Audio::kNone;
+  int indent_ = 0;
 };
 
 BEGIN_METADATA(Row)
@@ -368,9 +432,11 @@ class Header : public views::View {
   // a right click opens the engine's group editor.
   void SetGroup(ui::ColorId color,
                 bool collapsed,
+                int tab_count,
                 base::RepeatingClosure toggle,
                 base::RepeatingClosure edit) {
     color_ = color;
+    tab_count_ = tab_count;
     collapsed_ = collapsed;
     toggle_ = std::move(toggle);
     edit_ = std::move(edit);
@@ -419,6 +485,15 @@ class Header : public views::View {
                                 kGlyph, sidebar::DimTextColor(*provider)),
           right - kGlyph, (height() - kGlyph) / 2);
       right -= kGlyph + kGap;
+      // How many tabs it holds, so a group with no name still says what it is.
+      const std::u16string count = base::NumberToString16(tab_count_);
+      const gfx::FontList small =
+          FontOfSize(kSecondary, gfx::Font::Weight::NORMAL);
+      const int w = gfx::GetStringWidth(count, small);
+      canvas->DrawStringRectWithFlags(
+          count, small, sidebar::DimTextColor(*provider),
+          gfx::Rect(right - w, 0, w, height()), gfx::Canvas::TEXT_ALIGN_RIGHT);
+      right -= w + kGap;
     }
     canvas->DrawStringRectWithFlags(
         text_, FontOfSize(kSecondary, gfx::Font::Weight::SEMIBOLD),
@@ -432,6 +507,7 @@ class Header : public views::View {
 
   const std::u16string text_;
   std::optional<ui::ColorId> color_;
+  int tab_count_ = 0;
   bool collapsed_ = false;
   base::RepeatingClosure toggle_;
   base::RepeatingClosure edit_;
@@ -439,6 +515,44 @@ class Header : public views::View {
 
 BEGIN_METADATA(Header)
 END_METADATA
+
+// What the row says for a tab: the engine's own title (a tab that crashed or
+// has not loaded has none), else the host, else the product's word.
+std::u16string TitleOf(tabs::TabInterface* tab, content::WebContents* contents) {
+  std::u16string title;
+  if (const TabUIHelper* helper = TabUIHelper::From(tab)) {
+    title = helper->GetTitle();
+  }
+  if (title.empty()) {
+    title = contents->GetTitle();
+  }
+  if (title.empty()) {
+    const GURL& url = contents->GetVisibleURL();
+    if (url.has_host()) {
+      title = base::UTF8ToUTF16(url.host());
+    } else if (!url.is_empty()) {
+      title = base::UTF8ToUTF16(url.spec());
+    } else {
+      title = l10n_util::GetStringUTF16(IDS_ATLAS_SIDEBAR_UNTITLED_TAB);
+    }
+  }
+  return title;
+}
+
+Row::Audio AudioOf(tabs::TabInterface* tab, content::WebContents* contents) {
+  if (contents->IsAudioMuted()) {
+    // Only a tab that has made sound (or is making it) shows the glyph, so a
+    // muted tab can be unmuted; a silent one shows nothing.
+    const tabs::TabAlertController* alerts = tabs::TabAlertController::From(tab);
+    if (!alerts || alerts->IsAlertActive(tabs::TabAlert::kAudioMuting)) {
+      return Row::Audio::kMuted;
+    }
+  }
+  if (contents->IsCurrentlyAudible()) {
+    return Row::Audio::kPlaying;
+  }
+  return Row::Audio::kNone;
+}
 
 gfx::ImageSkia FaviconOf(content::WebContents* contents) {
   if (auto* driver =
@@ -454,8 +568,26 @@ gfx::ImageSkia FaviconOf(content::WebContents* contents) {
 }  // namespace
 
 KitSidebarView::KitSidebarView(BrowserWindowInterface* browser) : browser_(browser) {
-  list_ = AddChildView(std::make_unique<views::View>());
-  list_->GetViewAccessibility().SetRole(ax::mojom::Role::kTabList);
+  // The rows scroll when there are more than fit above the footer: a window
+  // with 30 tabs has all of them reachable by pointer and wheel.
+  auto scroll = std::make_unique<views::ScrollView>();
+  scroll->SetBackgroundColor(std::nullopt);
+  scroll->SetDrawOverflowIndicator(false);
+  // A bounded scroll view sizes its contents to the rows (the sidebar sets the
+  // view's own height): without this the rows get no size at all.
+  scroll->ClipHeightTo(0, std::numeric_limits<int>::max());
+  scroll->SetHorizontalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kDisabled);
+  auto list = std::make_unique<views::View>();
+  list->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+  list->GetViewAccessibility().SetRole(ax::mojom::Role::kTabList);
+  // The rows are inset 8 px on every side INSIDE the scroll view, so a focus
+  // ring (outside its row) is not cut by the viewport.
+  list->SetBorder(views::CreateEmptyBorder(gfx::Insets(kInset)));
+  list_ = list.get();
+  scroll->SetContents(std::move(list));
+  scroll_ = AddChildView(std::move(scroll));
 
   auto footer = std::make_unique<Row>(
       base::BindRepeating(
@@ -510,12 +642,25 @@ void KitSidebarView::Layout(PassKey) {
   const int footer_y = height() - kInset - footer_h;
   footer_->SetBounds(kInset, footer_y, w, footer_h);
 
-  list_->SetBounds(kInset, kInset, w, std::max(0, footer_y - 2 * kInset));
-  int y = 0;
-  for (views::View* child : list_->children()) {
-    const int h = child->GetPreferredSize().height();
-    child->SetBounds(0, y, w, h);
-    y += h;
+  scroll_->SetBounds(0, 0, width(), std::max(0, footer_y - kInset));
+  // The scroll view lays out its own rows (this override does not do it).
+  LayoutSuperclass<views::View>(this);
+}
+
+void KitSidebarView::RequestFocus() {
+  TabStripModel* model = browser_->GetTabStripModel();
+  views::View* first = nullptr;
+  for (const TabRow& r : tab_rows_) {
+    if (!first) {
+      first = r.view;
+    }
+    if (r.index == model->active_index()) {
+      r.view->RequestFocus();
+      return;
+    }
+  }
+  if (first) {
+    first->RequestFocus();
   }
 }
 
@@ -524,8 +669,15 @@ void KitSidebarView::OnPaintBackground(gfx::Canvas* canvas) {
   if (!provider) {
     return;
   }
-  sidebar::PaintSidebarEdge(canvas, GetLocalBounds(), /*on_right=*/true,
-                            *provider);
+  // The 1 px `line` is the content area's: along its left edge (the column
+  // right of the sidebar) and along its top, which starts at the window's left.
+  // The region that hosts the sidebar paints a line of its own at its last
+  // column (the default chrome's), which would make the edge 2 px thick: the
+  // sidebar covers it with its fill, and draws only the top part of the line,
+  // over itself, in the content area's own colour and row (E2E-11).
+  canvas->DrawColor(provider->GetColor(kColorToolbar));
+  canvas->FillRect(gfx::Rect(0, 0, width(), 1),
+                   provider->GetColor(kColorToolbarContentAreaSeparator));
 }
 
 void KitSidebarView::OnThemeChanged() {
@@ -538,8 +690,19 @@ void KitSidebarView::AddHeader(const std::u16string& text) {
 }
 
 void KitSidebarView::Rebuild() {
+  // The focused row's tab, so focus goes back to it: the rows are made again.
+  content::WebContents* focused = nullptr;
+  if (views::FocusManager* focus = GetFocusManager()) {
+    const views::View* view = focus->GetFocusedView();
+    for (const TabRow& r : tab_rows_) {
+      if (view && r.view == view) {
+        focused = r.contents.get();
+      }
+    }
+  }
   ClearDrag();
   tab_rows_.clear();
+  alert_subscriptions_.clear();
   list_->RemoveAllChildViews();
   TabStripModel* model = browser_->GetTabStripModel();
 
@@ -576,9 +739,15 @@ void KitSidebarView::Rebuild() {
         const tab_groups::TabGroupId id = groups[*e.group];
         const tab_groups::TabGroupVisualData* visual =
             model->group_model()->GetTabGroup(id)->visual_data();
-        auto header = std::make_unique<Header>(visual->title());
+        // A group with no name says so (dimmed like every header) and counts
+        // its tabs.
+        auto header = std::make_unique<Header>(
+            visual->title().empty()
+                ? l10n_util::GetStringUTF16(IDS_ATLAS_SIDEBAR_GROUP_UNTITLED)
+                : visual->title());
         header->SetGroup(
             GetTabGroupDialogColorId(visual->color()), visual->is_collapsed(),
+            model->group_model()->GetTabGroup(id)->tab_count(),
             base::BindRepeating(&KitSidebarView::ToggleGroup,
                                 weak_factory_.GetWeakPtr(), id),
             base::BindRepeating(&KitSidebarView::EditGroup,
@@ -602,6 +771,7 @@ void KitSidebarView::Rebuild() {
       }
       case EntryKind::kTab: {
         content::WebContents* contents = model->GetWebContentsAt(e.tab);
+        tabs::TabInterface* tab = model->GetTabAtIndex(e.tab);
         auto row = std::make_unique<Row>(
             base::BindRepeating(
                 [](TabStripModel* model, content::WebContents* contents) {
@@ -611,14 +781,21 @@ void KitSidebarView::Rebuild() {
                   }
                 },
                 base::Unretained(model), base::Unretained(contents)),
-            contents->GetTitle(), e.tab == model->active_index(),
+            TitleOf(tab, contents), e.tab == model->active_index(),
             /*dim_title=*/false);
         row->set_favicon(FaviconOf(contents));
+        row->set_audio(AudioOf(tab, contents));
+        if (facts[e.tab].group) {
+          row->set_indent(kGroupIndent);
+        }
         row->set_resting(atlas::rest::IsResting(contents->WasDiscarded(),
                                                 e.tab == model->active_index()));
         Row::TabHooks hooks;
         hooks.close = base::BindRepeating(&KitSidebarView::CloseTab,
                                           weak_factory_.GetWeakPtr(), base::Unretained(contents));
+        hooks.toggle_mute = base::BindRepeating(
+            &KitSidebarView::ToggleMute, weak_factory_.GetWeakPtr(),
+            base::Unretained(contents));
         hooks.menu = base::BindRepeating(&KitSidebarView::ShowTabMenu,
                                          weak_factory_.GetWeakPtr(), base::Unretained(contents));
         Row* raw = row.get();
@@ -633,7 +810,21 @@ void KitSidebarView::Rebuild() {
             weak_factory_.GetWeakPtr(), base::Unretained(contents),
             base::Unretained(raw));
         row->SetTabHooks(std::move(hooks));
-        tab_rows_.push_back({row.get(), e.tab});
+        tab_rows_.push_back({row.get(), e.tab, contents->GetWeakPtr()});
+        // The sound of this tab starts or stops: its row alone follows.
+        if (tabs::TabAlertController* alerts =
+                tabs::TabAlertController::From(tab)) {
+          alert_subscriptions_.push_back(alerts->AddAlertToShowChangedCallback(
+              base::BindRepeating(
+                  [](base::WeakPtr<KitSidebarView> self,
+                     base::WeakPtr<content::WebContents> contents,
+                     std::optional<tabs::TabAlert>) {
+                    if (self && contents) {
+                      self->RefreshRow(contents.get());
+                    }
+                  },
+                  weak_factory_.GetWeakPtr(), contents->GetWeakPtr())));
+        }
         list_->AddChildView(std::move(row));
         break;
       }
@@ -644,8 +835,57 @@ void KitSidebarView::Rebuild() {
     a11y.SetPosInSet(static_cast<int>(i) + 1);
     a11y.SetSetSize(static_cast<int>(tab_rows_.size()));
   }
+  for (const TabRow& r : tab_rows_) {
+    if (focused && r.contents.get() == focused) {
+      r.view->RequestFocus();
+    }
+  }
   InvalidateLayout();
   SchedulePaint();
+  // The tab in front stays in view; the layout of the new rows comes first.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(&KitSidebarView::ScrollActiveRowToVisible,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void KitSidebarView::RefreshRow(content::WebContents* contents) {
+  if (!contents) {
+    return;
+  }
+  TabStripModel* model = browser_->GetTabStripModel();
+  tabs::TabInterface* tab = model->GetTabForWebContents(contents);
+  if (!tab) {
+    return;
+  }
+  const bool active = model->GetIndexOfWebContents(contents) ==
+                      model->active_index();
+  for (const TabRow& r : tab_rows_) {
+    if (r.contents.get() == contents) {
+      static_cast<Row*>(r.view.get())
+          ->Update(TitleOf(tab, contents), FaviconOf(contents),
+                   atlas::rest::IsResting(contents->WasDiscarded(), active),
+                   AudioOf(tab, contents));
+      return;
+    }
+  }
+}
+
+void KitSidebarView::ScrollActiveRowToVisible() {
+  TabStripModel* model = browser_->GetTabStripModel();
+  scroll_->DeprecatedLayoutImmediately();
+  for (const TabRow& r : tab_rows_) {
+    if (r.index == model->active_index()) {
+      r.view->ScrollViewToVisible();
+      return;
+    }
+  }
+}
+
+void KitSidebarView::ToggleMute(content::WebContents* contents) {
+  if (contents) {
+    SetTabAudioMuted(contents, !contents->IsAudioMuted(),
+                     TabMutedReason::kAudioIndicator, std::string());
+  }
 }
 
 void KitSidebarView::ToggleGroup(tab_groups::TabGroupId id) {
@@ -755,8 +995,12 @@ void KitSidebarView::DragTab(content::WebContents* contents,
     drop_line_->SetBackground(views::CreateSolidBackground(
         provider->GetColor(ui::kColorSysPrimary)));
   }
-  drop_line_->SetBounds(list_->x(), list_->y() + line_y - 1, list_->width(), 2);
-  drop_line_->SetVisible(true);
+  // The line is the sidebar's own child, in the list's coordinates scrolled.
+  gfx::Rect line(kInset, line_y - 1, list_->width() - 2 * kInset, 2);
+  line = views::View::ConvertRectToTarget(list_, this, line);
+  line.Intersect(scroll_->bounds());
+  drop_line_->SetBoundsRect(line);
+  drop_line_->SetVisible(!line.IsEmpty());
 }
 
 void KitSidebarView::MoveTab(int from, int to) {
@@ -786,7 +1030,9 @@ void KitSidebarView::OnTabStripModelChanged(
 
 void KitSidebarView::OnTabChangedAt(tabs::TabInterface* tab,
                                     TabChangeType change_type) {
-  Rebuild();
+  // A title, icon, loading or sound change of one tab: its row alone follows
+  // (QA-A9-WEB-ATLAS-6). The shape of the list did not change.
+  RefreshRow(tab->GetContents());
 }
 
 void KitSidebarView::OnTabPinnedStateChanged(tabs::TabInterface* tab,

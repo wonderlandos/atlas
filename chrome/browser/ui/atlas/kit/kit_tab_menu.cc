@@ -66,9 +66,13 @@ class TabMenu : public ui::SimpleMenuModel::Delegate {
     }
 #endif
     tabs::TabInterface* tab = tab_.Get();
-    return tab && model_->IsContextMenuCommandEnabled(
-                      model_->GetIndexOfTab(tab),
-                      static_cast<TabStripModel::ContextMenuCommand>(command_id));
+    // The tab may have left this window while the menu was open (an extension
+    // moved it, a drag in another window): its index is kNoTab then, and the
+    // model CHECKs an index (QA-A9-WEB-ATLAS-11).
+    const int index = tab ? model_->GetIndexOfTab(tab) : TabStripModel::kNoTab;
+    return index != TabStripModel::kNoTab &&
+           model_->IsContextMenuCommandEnabled(
+               index, static_cast<TabStripModel::ContextMenuCommand>(command_id));
   }
   bool IsCommandIdVisible(int command_id) const override {
 #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
@@ -97,9 +101,12 @@ class TabMenu : public ui::SimpleMenuModel::Delegate {
       return;
     }
 #endif
+    const int index = model_->GetIndexOfTab(tab);
+    if (index == TabStripModel::kNoTab) {
+      return;  // the tab left this window while the menu was open
+    }
     model_->ExecuteContextMenuCommand(
-        model_->GetIndexOfTab(tab),
-        static_cast<TabStripModel::ContextMenuCommand>(command_id));
+        index, static_cast<TabStripModel::ContextMenuCommand>(command_id));
   }
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {

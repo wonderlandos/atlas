@@ -121,8 +121,12 @@ def _candidates(tree, exts):
                 yield Path(root) / name
 
 
-def grit_pass(tree, rules, apply, prefix):
+def grit_pass(tree, rules, apply, prefix, xtb_rules=None):
     """Run RULES over the grd/grdp of TREE, then over the xtb with the ids that moved.
+
+    XTB_RULES (default: RULES) are the rules applied to the text of the translations; [] leaves every
+    translation's text alone and only moves its id with the English (a rule about an English word must not
+    rewrite the same letters in another language).
 
     Returns {prefix.grit.files, prefix.grit.messages, prefix.xtb.files, prefix.xtb.translations,
     prefix.grit.rule.<rule>, prefix.xtb.rule.<rule>: matches}."""
@@ -146,7 +150,8 @@ def grit_pass(tree, rules, apply, prefix):
             for name, n in hits.items():
                 counts[f"{prefix}.grit.rule.{name}"] += n
             fp_map.update(fps)
-        xtb_args = [(p, tree, rules, fp_map, apply) for p in _candidates(tree, {"xtb"})]
+        xtb_args = [(p, tree, rules if xtb_rules is None else xtb_rules, fp_map, apply)
+                    for p in _candidates(tree, {"xtb"})]
         for res in pool.imap_unordered(_xtb_file, xtb_args, chunksize=8):
             if res is None:
                 continue

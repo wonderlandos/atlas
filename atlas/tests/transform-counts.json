@@ -37,7 +37,17 @@
     "scheme.tab_search": 2,
     "scheme.xtb.files": 422,
     "scheme.xtb.rule.url": 1413,
-    "scheme.xtb.translations": 1295
+    "scheme.xtb.translations": 1295,
+    "words.flags_atlas": 1,
+    "words.flags_engine": 12,
+    "words.grit.files": 29,
+    "words.grit.messages": 323,
+    "words.grit.rule.incognito_cap": 347,
+    "words.grit.rule.incognito_low": 20,
+    "words.net_internals": 8,
+    "words.policy_title": 1,
+    "words.urls_title": 1,
+    "words.xtb.files": 699
   },
   "internal": {
     "blocker_assets": {

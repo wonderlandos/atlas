@@ -302,7 +302,12 @@ void ShowModel(MenuAnchor anchor,
                    type == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU;
     ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(i, &accelerator)) {
-      spec.trailing = accelerator.GetShortcutText();
+      // The shell's notation (Command = Super), not the engine's "Ctrl+T".
+      spec.trailing = ShortcutSymbols(
+          accelerator.IsCtrlDown(), accelerator.IsAltDown(),
+          accelerator.IsShiftDown(),
+          ui::Accelerator(accelerator.key_code(), ui::EF_NONE)
+              .GetShortcutText());
     }
     if (model->IsItemCheckedAt(i)) {
       spec.end_glyph = &kKitEmblemOkIcon;

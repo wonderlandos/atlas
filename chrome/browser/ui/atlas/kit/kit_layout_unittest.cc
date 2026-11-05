@@ -30,7 +30,8 @@ TEST(AtlasKitToolbarTest, OmniboxIsCentredAndAtMost560Wide) {
   EXPECT_EQ(g.omnibox.width(), tokens::kOmniboxMaxWidth);
   EXPECT_EQ(g.omnibox.height(), tokens::kOmniboxHeight);
   EXPECT_EQ(g.omnibox.CenterPoint().x(), 640);
-  EXPECT_EQ(g.omnibox.y(), 5);
+  EXPECT_EQ(g.omnibox.height(), 24);  // incl. the border (E2E-10)
+  EXPECT_EQ(g.omnibox.y(), 6);
 }
 
 TEST(AtlasKitToolbarTest, ActionsAreRightAlignedAndHiddenOnesTakeNoRoom) {

@@ -69,6 +69,9 @@ class SettingRow : public views::BoxLayoutView {
         l10n_util::GetStringUTF16(text.name_id), views::style::CONTEXT_LABEL,
         views::style::STYLE_PRIMARY));
     name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    // A long name (a translation) wraps to a second line; it was cut by the
+    // value column (ATLAS-E2E-07, RC-24).
+    name->SetMultiLine(true);
     head->SetFlexForView(name, 1);
     head->AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(on ? IDS_ATLAS_TOOLBAR_VALUE_ON

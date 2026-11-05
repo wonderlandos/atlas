@@ -11,7 +11,7 @@ dump_for_the_sampler`: the colours the theme gives the engine, flattened. Every 
 "DEVIATION" with the expected and the measured value; exit 1 when a row fails. Standard library only.
 
 Rows (tokens.md sections 2, 4, 8; the ATLAS-CHROME acceptance): toolbar 36 +-1, toolbar fill vs
-glass, omnibox 26 +-1, centred +-8, width <= 560, fill vs control, border, focus ring accent
+glass, omnibox 24 +-1, centred +-8, width <= 560, fill vs control, border, focus ring accent
 (dE <= 4, 2 px outside), focused fill vs card, load bar 2 px accent from the left edge, find bar 36
 +-1 px of glass, downloads ring in accent.
 """
@@ -181,7 +181,7 @@ def main(argv):
         row("toolbar fill vs glass", "dE <= 3", "%.1f" % de(s.px(col, top + 6), expect["glass"]), de(s.px(col, top + 6), expect["glass"]) <= 3)
         ys = [y for y in range(glass_top, y_line) if de(s.px(cx, y), expect["glass"]) > 3]
         y0, y1 = min(ys), max(ys)
-        row("omnibox height", "26 +-1 px", y1 - y0 + 1, abs(y1 - y0 + 1 - 26) <= 1)
+        row("omnibox height", "24 +-1 px", y1 - y0 + 1, abs(y1 - y0 + 1 - 24) <= 1)
         mid = (y0 + y1) // 2
         xs = [x for x in range(s.w) if de(s.px(x, y0 + 3), expect["glass"]) > 3 and 200 < x < s.w - 200]
         x0, x1 = min(xs), max(xs)

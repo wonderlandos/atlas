@@ -27,7 +27,7 @@ for id in $(grep -ho 'IDS_ATLAS_SIDEBAR_[A-Z_]*' "$area"/*.cc "$area"/*.h | sort
 done
 ok "every IDS_ATLAS_SIDEBAR_* the code asks for is in the string part"
 for id in $(grep -o 'name="IDS_ATLAS_SIDEBAR_[A-Z_]*"' "$grdp" | sed 's/name="//; s/"//'); do
-    grep -q "$id" "$area"/*.cc || bad "$id is in the string part but no code uses it"
+    grep -q "$id" "$area"/*.cc "$root/chrome/browser/ui/atlas/kit"/*.cc || bad "$id is in the string part but no code uses it"
 done
 
 # colours: no hex literal and no named Sk colour in non-test code of the area (the tests may use them)
@@ -37,6 +37,12 @@ hits="$(grep -nP '0x[0-9a-fA-F]{6,8}|#[0-9a-fA-F]{6}\b|SkColorSetRGB|SkColorSetA
 # words a person could read: no other product, vendor or author named in the area (comments included)
 hits="$(grep -niE 'helium|chrom(e|ium)|google|firefox|brave|vivaldi|arc browser' "$area"/*.cc "$area"/*.h "$root/chrome/app/atlas/sidebar_strings.grdp" 2>/dev/null | grep -v 'chrome/' || true)"
 [ -z "$hits" ] && ok "no other product named in the area" || bad "names another product: $hits"
+
+# one shortcut notation (E2E-05): the footer says what kit_text.cc ShortcutSymbols() writes for the engine's
+# new-tab binding Ctrl+T (the compositor turns Super+T into it): the Command symbol and T
+grep -q '^[[:space:]]*⌘T[[:space:]]*$' "$root/chrome/app/atlas/sidebar_strings.grdp" \
+    && ok "the footer shortcut is ⌘T (the shell's notation, = ShortcutSymbols(Ctrl, T))" \
+    || bad "the footer shortcut is not ⌘T"
 
 # tests are built
 for t in "$area"/*_unittest.cc; do

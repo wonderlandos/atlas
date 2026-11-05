@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
+
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -21,6 +23,10 @@ class BrowserWindowInterface;
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class ScrollView;
 }
 
 namespace gfx {
@@ -53,6 +59,8 @@ class KitSidebarView : public views::View,
   void TakeOver(views::View* content_area);
 
   // views::View:
+  // F6 (pane focus) lands on the row of the tab in front, else the first row.
+  void RequestFocus() override;
   void Layout(PassKey) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
@@ -73,8 +81,18 @@ class KitSidebarView : public views::View,
   void OnViewIsDeleting(views::View* observed_view) override;
 
  private:
-  // Builds the rows again from the tab model.
+  // Builds the rows again from the tab model: when the SHAPE of the list
+  // changed (a tab added, removed, moved, pinned, grouped). A change of one
+  // tab's title, icon, loading or sound updates its row in place
+  // (RefreshRow); rebuilding for that deleted the focused row, the row being
+  // dragged and the row's menu many times a second during a load.
   void Rebuild();
+  // Updates the row of `contents` (title, icon, rest, sound) without touching
+  // the other rows; nothing when the tab has no row (inside a folded group).
+  void RefreshRow(content::WebContents* contents);
+  // Brings the row of the tab in front into the visible part of the list.
+  void ScrollActiveRowToVisible();
+  void ToggleMute(content::WebContents* contents);
   void AddHeader(const std::u16string& text);
 
   // What a tab row asks of the sidebar: close its tab, show its menu, reorder
@@ -92,6 +110,8 @@ class KitSidebarView : public views::View,
   void ClearDrag();
 
   const raw_ptr<BrowserWindowInterface> browser_;
+  // The rows scroll when they are more than fit above the footer.
+  raw_ptr<views::ScrollView> scroll_ = nullptr;
   raw_ptr<views::View> list_ = nullptr;
   raw_ptr<views::View> footer_ = nullptr;
   // The line that shows where a dragged tab will land, and the tab rows (view
@@ -99,8 +119,11 @@ class KitSidebarView : public views::View,
   struct TabRow {
     raw_ptr<views::View> view;
     int index;
+    base::WeakPtr<content::WebContents> contents;
   };
   std::vector<TabRow> tab_rows_;
+  // One per tab row: the tab's alert state (sound) changed.
+  std::vector<base::CallbackListSubscription> alert_subscriptions_;
   raw_ptr<views::View> drop_line_ = nullptr;
   raw_ptr<views::View> dragged_row_ = nullptr;
   int drop_before_ = -1;

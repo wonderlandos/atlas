@@ -25,6 +25,25 @@ TEST(AtlasKitTextTest, OtherTextIsKept) {
   EXPECT_EQ(DoctrineClean(u"Cast, save, and share"), u"Cast, save, and share");
 }
 
+// E2E-05: one notation for a shortcut, the WolOS shell's symbols (Command = Super). The sidebar
+// footer's string (IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT) is this function's output for the engine's
+// new-tab binding (Ctrl+T), checked by atlas/tests/sidebar.sh.
+TEST(AtlasKitTextTest, ShortcutsAreWrittenWithTheShellsSymbols) {
+  EXPECT_EQ(ShortcutSymbols(true, false, false, u"T"), u"\u2318T");
+  EXPECT_EQ(ShortcutSymbols(true, false, true, u"N"), u"\u21E7\u2318N");
+  EXPECT_EQ(ShortcutSymbols(false, true, false, u"Home"), u"\u2325Home");
+  EXPECT_EQ(ShortcutSymbols(true, true, true, u"I"), u"\u2325\u21E7\u2318I");
+  EXPECT_EQ(ShortcutSymbols(false, false, false, u"F5"), u"F5");
+}
+
+// E2E-12: the product says "rest", the engine's menu says "Hibernate".
+TEST(AtlasKitTextTest, HibernateIsRest) {
+  EXPECT_EQ(DoctrineClean(u"Hibernate"), u"Rest");
+  EXPECT_EQ(DoctrineClean(u"Hibernate other tabs"), u"Rest other tabs");
+  EXPECT_EQ(DoctrineClean(u"Hibernated"), u"Hibernated");
+  EXPECT_EQ(DoctrineClean(u"Pin"), u"Pin");
+}
+
 TEST(AtlasKitTextTest, EveryOccurrenceIsReplaced) {
   EXPECT_EQ(DoctrineClean(u"Helium and Helium"), u"Atlas and Atlas");
 }

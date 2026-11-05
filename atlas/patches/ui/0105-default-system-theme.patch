@@ -1,0 +1,28 @@
+Atlas overlay patch 0105: ui/default-system-theme
+Why: the chrome of Atlas is exact (the WolOS accent on the privacy glyph, the star, the rest mark, the focus ring)
+ only in a profile that carries the preference extensions.theme.system_theme=1; WolOS seeds it
+ (crates/core theme/helium.rs), but a profile that was made another way (a new profile, a copied one, a web
+ app) showed the engine's white neutrals and blue #5578F4 (ATLAS-E2E-09). The default of the preference is
+ ui::GetDefaultSystemTheme(); it is now the GTK theme, which is what the seed asks for. Nothing else changes: the
+ choice of the Linux UI toolkit already treated the default as GTK.
+Files: ui/linux/linux_ui_factory.cc
+Test filter: AtlasKitSystemTheme (journey); journey: start with an empty profile, the privacy glyph is #7452F5
+Rebase risk: L (one return value in a short function)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied (dev slot 8)
+
+--- a/ui/linux/linux_ui_factory.cc
++++ b/ui/linux/linux_ui_factory.cc
+@@ -188,7 +188,10 @@
+ 
+   switch (base::nix::GetDesktopEnvironment(env.get())) {
+     default:
+-      return SystemTheme::kDefault;
++      // Atlas: the browser follows the system theme (WolOS's GTK theme and its
++      // accent) in every profile, not only in one that was given the
++      // preference when it was made (QA-E2E-09).
++      return SystemTheme::kGtk;
+   }
+ }
+ 

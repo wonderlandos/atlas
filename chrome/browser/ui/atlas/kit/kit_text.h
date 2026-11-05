@@ -19,6 +19,15 @@ std::u16string DoctrineClean(const std::u16string& label);
 // The rich tooltip of the Design System keeps to 40 characters a line
 // (rich-tooltip.toml), so long tab titles and file names do not stretch a
 // tooltip across the screen.
+// A shortcut written the way the WolOS shell writes them (crates/core
+// shortcuts.rs Combo::label): symbols, modifiers in the order Control, Option
+// (Alt), Shift, Command, then the key: "⇧⌘N", "⌥Home", "F5". On WolOS the
+// compositor turns Super+key into the Ctrl+key an app binds (wol-app), so the
+// engine's Ctrl is shown as the Command symbol (Super): the glyph is what the
+// person presses and what works. `key` is the key's own name ("T", "F5",
+// "Delete"); `shift` is whether Shift is part of the shortcut.
+std::u16string ShortcutSymbols(bool ctrl, bool alt, bool shift, std::u16string key);
+
 std::u16string WrapToLineChars(const std::u16string& text, size_t max_chars);
 
 }  // namespace atlas::kit

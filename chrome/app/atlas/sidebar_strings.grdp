@@ -24,6 +24,12 @@
   <message name="IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT" desc="The keys that open a new tab, shown at the right of the New tab row of the tab sidebar, written like the WolOS shortcut sheet: the command glyph stands for Super, the key with the WolOS logo.">
     ⌘T
   </message>
+  <message name="IDS_ATLAS_SIDEBAR_UNTITLED_TAB" desc="Title of a row of the tab sidebar for a tab that has no title and no address yet.">
+    New tab
+  </message>
+  <message name="IDS_ATLAS_SIDEBAR_GROUP_UNTITLED" desc="Name shown in the tab sidebar for a tab group that has no name. It is drawn in capital letters.">
+    Untitled group
+  </message>
   <message name="IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT" desc="Summary of a collapsed tab group in the tab sidebar: how many tabs it holds.">
     {COUNT, plural,
       =1 {1 tab}

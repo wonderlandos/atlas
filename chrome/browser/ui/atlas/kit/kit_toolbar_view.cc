@@ -117,9 +117,10 @@ void KitToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
     return;
   }
   canvas->DrawColor(provider->GetColor(kColorToolbar));
-  // The 1 px `line` under the bar.
-  canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1),
-                   provider->GetColor(kColorToolbarContentAreaSeparator));
+  // No line of our own under the bar: the content area draws the 1 px `line`
+  // along its top and left edge, and the sidebar draws the part of it that is
+  // above itself, at the same row (a second line here made it 2 px thick:
+  // E2E-11).
 }
 
 void KitToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {

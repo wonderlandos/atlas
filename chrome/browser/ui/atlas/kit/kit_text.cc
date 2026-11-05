@@ -17,10 +17,31 @@ bool IsWordChar(char16_t c) {
 
 }  // namespace
 
+// The product's words for what the engine's menus call otherwise: a tab that
+// gives its memory back is "resting" in Atlas, never "hibernating" (E2E-12).
+static std::u16string ProductWords(const std::u16string& label) {
+  static constexpr std::u16string_view kFrom = u"Hibernate";
+  static constexpr std::u16string_view kTo = u"Rest";
+  std::u16string out = label;
+  size_t at = 0;
+  while ((at = out.find(kFrom, at)) != std::u16string::npos) {
+    const size_t end = at + kFrom.size();
+    const bool word_start = at == 0 || !IsWordChar(out[at - 1]);
+    const bool word_end = end >= out.size() || !IsWordChar(out[end]);
+    if (word_start && word_end) {
+      out.replace(at, kFrom.size(), kTo);
+      at += kTo.size();
+    } else {
+      at = end;
+    }
+  }
+  return out;
+}
+
 std::u16string DoctrineClean(const std::u16string& label) {
   static constexpr std::u16string_view kNames[] = {u"Helium", u"Chromium",
                                                    u"Chrome"};
-  std::u16string out = label;
+  std::u16string out = ProductWords(label);
   for (std::u16string_view name : kNames) {
     size_t at = 0;
     while ((at = out.find(name, at)) != std::u16string::npos) {
@@ -36,6 +57,23 @@ std::u16string DoctrineClean(const std::u16string& label) {
     }
   }
   return out;
+}
+
+std::u16string ShortcutSymbols(bool ctrl,
+                               bool alt,
+                               bool shift,
+                               std::u16string key) {
+  std::u16string out;
+  if (alt) {
+    out += u"\u2325";  // ⌥
+  }
+  if (shift) {
+    out += u"\u21E7";  // ⇧
+  }
+  if (ctrl) {
+    out += u"\u2318";  // ⌘ (Super: the compositor remaps it to the engine's Ctrl)
+  }
+  return out + key;
 }
 
 std::u16string WrapToLineChars(const std::u16string& text, size_t max_chars) {

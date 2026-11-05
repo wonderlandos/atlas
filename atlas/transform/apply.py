@@ -3,7 +3,7 @@
 """All Atlas transforms in the order the build needs them, then the brand slot.
 
   apply.py --check TREE    count the matches of every transform on an untransformed tree (writes nothing)
-  apply.py --apply TREE    brand strings, the atlas:// scheme, the hosts, the blocker lists whose licence does not fit, then copy the brand slot
+  apply.py --apply TREE    brand strings, the atlas:// scheme, the hosts, the product words, the blocker lists whose licence does not fit, then copy the brand slot
                            (atlas/resources/atlas_resources.txt) over the tree; writes TREE/.atlas.stamp
   apply.py --verify TREE   the tree is transformed: nothing left to rewrite, every slot file in place
 
@@ -26,6 +26,7 @@ import blocker  # noqa: E402
 import brand  # noqa: E402
 import hosts  # noqa: E402
 import scheme  # noqa: E402
+import words  # noqa: E402
 
 ROOT = HERE.parent.parent
 SLOT = ROOT / "atlas" / "resources"
@@ -79,7 +80,7 @@ def main():
     args = _lib.parser(__doc__.split("\n\n")[0]).parse_args()
     mode, tree = _lib.mode_of(args)
     rc = 0
-    for name, mod in (("brand", brand), ("scheme", scheme), ("hosts", hosts), ("blocker", blocker)):
+    for name, mod in (("brand", brand), ("scheme", scheme), ("hosts", hosts), ("words", words), ("blocker", blocker)):
         result = mod.run(tree, apply=(mode == "apply"))
         rc |= _lib.finish(result, [name + "."], args, mode)
         if rc and mode == "apply":

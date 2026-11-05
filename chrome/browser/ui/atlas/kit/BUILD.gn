@@ -73,6 +73,8 @@ source_set("kit") {
     "//chrome/browser/ui/atlas/rest",
     "//chrome/browser/ui/atlas/sidebar",
     "//chrome/browser/ui/atlas/toolbar",
+    "//chrome/browser/ui/tabs/alert:impl",
+    "//chrome/browser/ui/tabs/alert:tab_alert",
     "//components/favicon/content",
     "//components/tab_groups",
     "//components/tabs:public",

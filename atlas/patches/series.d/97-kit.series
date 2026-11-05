@@ -8,3 +8,5 @@ ui/0101-kit-app-menu.patch
 ui/0102-kit-context-menu.patch
 ui/0103-kit-downloads.patch
 ui/0104-kit-layout-provider.patch
+ui/0105-default-system-theme.patch
+ui/0106-kit-sidebar-pane.patch

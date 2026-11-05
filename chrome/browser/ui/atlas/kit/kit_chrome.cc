@@ -39,6 +39,20 @@ bool IsKitChromeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kKitChromeSwitch);
 }
 
+views::View* KitSidebarOf(views::View* vertical_tab_strip_region) {
+  if (!vertical_tab_strip_region) {
+    return nullptr;
+  }
+  for (views::View* child : vertical_tab_strip_region->children()) {
+    for (views::View* inner : child->children()) {
+      if (auto* sidebar = views::AsViewClass<KitSidebarView>(inner)) {
+        return sidebar;
+      }
+    }
+  }
+  return nullptr;
+}
+
 void InstallKitToolbar(views::View* toolbar,
                        BrowserView* browser_view,
                        views::View* omnibox,

@@ -1,5 +1,5 @@
 Atlas overlay patch 0070: ui/ui-tokens
-Why: the numbers of the window the reel shows: toolbar 36 px (28 px hit area plus 4 px above and below), omnibox 26 px, sidebar rows 28 px with an 8 px inset and radius 6, radii controls 8 / cards 12 / large 16 / window 12 (the radius block of the OS design repo), download glyph 16 px; and one hook line that puts the WolOS tokens on the engine's colours (mixer in chrome/browser/ui/atlas/chrome). The values are the engine's constants and its colour pipeline, so no GN argument, policy or flag reaches them; the logic is in the overlay tree, the patch is hook lines and constants. The hunk in ui/gtk/gtk_color_mixers.cc lets the system theme colour the `toolbar` node (WolOS: `glass`).
+Why: the numbers of the window the reel shows: toolbar 36 px (28 px hit area plus 4 px above and below), omnibox 24 px (border included), sidebar rows 28 px with an 8 px inset and radius 6, radii controls 8 / cards 12 / large 16 / window 12 (the radius block of the OS design repo), download glyph 16 px; and one hook line that puts the WolOS tokens on the engine's colours (mixer in chrome/browser/ui/atlas/chrome). The values are the engine's constants and its colour pipeline, so no GN argument, policy or flag reaches them; the logic is in the overlay tree, the patch is hook lines and constants. The hunk in ui/gtk/gtk_color_mixers.cc lets the system theme colour the `toolbar` node (WolOS: `glass`).
 Files: chrome/browser/ui/layout_constants.cc, ui/views/layout/layout_provider.cc, chrome/browser/ui/views/helium/frame_corner_radius.cc, chrome/browser/ui/color/chrome_color_mixers.cc, chrome/browser/ui/color/BUILD.gn, ui/gtk/gtk_color_mixers.cc, ui/views/controls/menu/menu_config_linux.cc
 Test filter: *AtlasTokens*:*AtlasColorMixer*
 Rebase risk: M (layout_constants.cc and layout_provider.cc are also patched by the inherited series, the hunks are single return values; the mixer hook is one line after AddNativeChromeColorMixer)
@@ -14,8 +14,8 @@ Verified at: 156.0.8078.79, prepared tree with the inherited and platform series
        return touch_ui ? 3 : 8;
      case LayoutConstant::kLocationBarHeight:
 -      return touch_ui ? 36 : 28;
-+      // Atlas tokens.md section 4: the omnibox is 26 px high.
-+      return touch_ui ? 36 : 26;
++      // Atlas tokens.md section 4: the omnibox is 24 px high, border included.
++      return touch_ui ? 36 : 24;
      // LINT.IfChange(LocationBarIconSize)
      case LayoutConstant::kLocationBarIconSize:
        return touch_ui ? 20 : 16;

@@ -31,6 +31,14 @@ sys.path.insert(0, str(ROOT / "atlas" / "transform"))
 
 NAME = re.compile(r"\bHelium\b")
 SCHEME = re.compile(r"\bhelium://")
+# the product's own words (transform words.py): a private window is "Private", in the English messages
+# (a translation keeps its own word) and the strings the product reads out in its internal pages
+INCOGNITO = re.compile(r"\b[Ii]ncognito\b")
+WORDS_IN_FILES = {
+    "components/policy/core/browser/policy_conversions.h": re.compile(r'"Chrome Policies"'),
+    "components/webui/chrome_urls/resources/app.html.ts": re.compile(r"List of Chrome URLs"),
+    "chrome/browser/resources/net_internals/index.html": re.compile(r"\bchrome://(?:net-export|network)"),
+}
 HOSTS = re.compile(r"helium\.computer|imput\.net|imputnet|helium-services-are-disabled|services\.helium")
 
 # source files whose text a person can read in the browser
@@ -73,6 +81,8 @@ def scan_grit(path, rel, findings):
         text = visible(node)
         if NAME.search(text) or SCHEME.search(text) or HOSTS.search(text):
             findings.append(f"{rel}: {node.get('name') or node.get('id')}: {text.strip()[:100]}")
+        elif node.tag == "message" and INCOGNITO.search(text):
+            findings.append(f"{rel}: {node.get('name')}: says Incognito, the product says Private: {text.strip()[:80]}")
 
 
 def scan_tree(tree, findings):
@@ -107,6 +117,10 @@ def scan_tree(tree, findings):
                     continue
                 if NAME.search(line) or SCHEME.search(line) or HOSTS.search(line):
                     findings.append(f"{rel}:{n}: {line.strip()[:120]}")
+    for rel, pattern in WORDS_IN_FILES.items():
+        f = tree / rel
+        if f.is_file() and pattern.search(f.read_text(encoding="utf-8", errors="replace")):
+            findings.append(f"{rel}: still says the engine's words (transform words.py)")
     # the blocker list whose licence does not fit leaves the package
     assets = tree / "third_party/ublock/assets/assets.json"
     if assets.is_file() and "plowe" in assets.read_text(encoding="utf-8"):

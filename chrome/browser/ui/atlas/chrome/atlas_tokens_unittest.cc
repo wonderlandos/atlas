@@ -21,7 +21,7 @@ class AtlasTokensTest : public testing::Test {
   views::LayoutProvider provider_;
 };
 
-TEST_F(AtlasTokensTest, ToolbarIs36WithA28HitAreaAndA26Omnibox) {
+TEST_F(AtlasTokensTest, ToolbarIs36WithA28HitAreaAndA24Omnibox) {
   ui::TouchUiController::TouchUiScoperForTesting not_touch(false);
   EXPECT_EQ(GetLayoutConstant(LayoutConstant::kToolbarButtonHeight),
             atlas::tokens::kToolbarButtonHitArea);

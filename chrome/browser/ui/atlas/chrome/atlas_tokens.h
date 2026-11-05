@@ -31,7 +31,9 @@ inline constexpr int kRadiusLarge = 16;
 inline constexpr int kRadiusWindow = 12;
 
 // Omnibox (section 4).
-inline constexpr int kOmniboxHeight = 26;
+// 24 px including the border (lead decision 2026-11-05, E2E-10: RU-702 allows 24/28/36/40,
+// the reel measured 26).
+inline constexpr int kOmniboxHeight = 24;
 inline constexpr int kOmniboxMaxWidth = 560;
 inline constexpr int kFocusRingThickness = 2;
 inline constexpr int kProgressBarHeight = 2;

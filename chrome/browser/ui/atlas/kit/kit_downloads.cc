@@ -10,11 +10,14 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/weak_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
 #include "chrome/browser/ui/atlas/kit/kit_layout_provider.h"
+#include "chrome/browser/ui/atlas/kit/kit_metrics.h"
 #include "chrome/browser/ui/atlas/kit/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/atlas/sidebar/row_style.h"
 #include "chrome/grit/generated_resources.h"
@@ -41,8 +44,10 @@ namespace atlas::kit {
 
 namespace {
 
-// The card is the side sheet's width (side-sheet.toml): 336.
-const int kWidth = DownloadsCardWidth();
+// The card is the side sheet's width (side-sheet.toml): 336. A constant, not a
+// call at static-initialization time (the official build refuses new static
+// initializers: QA-A9-WEB-ATLAS-12).
+constexpr int kWidth = metrics::kSideSheetWidth;
 constexpr int kPad = 8;
 constexpr int kRowHeight = 52;
 constexpr int kHeaderHeight = 32;
@@ -56,18 +61,27 @@ gfx::FontList FontOfSize(int size, gfx::Font::Weight weight) {
       .DeriveWithWeight(weight);
 }
 
-class DownloadRow : public views::Button, public views::ContextMenuController {
+// One download. It is the delegate of its model: when the download is removed
+// (the downloads page, "Clear all", an extension) the model is told, and the row
+// must never touch it again, then leaves the list (QA-A9-WEB-ATLAS-2: the 500 ms
+// refresh read a model whose item was gone and the browser died).
+class DownloadRow : public views::Button,
+                    public views::ContextMenuController,
+                    public DownloadUIModel::Delegate {
   METADATA_HEADER(DownloadRow, views::Button)
 
  public:
   DownloadRow(DownloadUIModel* model,
               DownloadRowMenu menu,
-              base::RepeatingClosure close)
+              base::RepeatingClosure close,
+              base::RepeatingCallback<void(DownloadRow*)> gone)
       : views::Button(base::BindRepeating(&DownloadRow::Open,
                                           base::Unretained(this))),
         model_(model),
         menu_(std::move(menu)),
-        close_(std::move(close)) {
+        close_(std::move(close)),
+        gone_(std::move(gone)) {
+    model_->SetDelegate(this);
     set_context_menu_controller(this);
     SetFocusBehavior(FocusBehavior::ALWAYS);
     views::FocusRing::Install(this);
@@ -76,9 +90,29 @@ class DownloadRow : public views::Button, public views::ContextMenuController {
   }
   DownloadRow(const DownloadRow&) = delete;
   DownloadRow& operator=(const DownloadRow&) = delete;
-  ~DownloadRow() override = default;
+  ~DownloadRow() override {
+    if (model_) {
+      model_->SetDelegate(nullptr);
+    }
+  }
+
+  // DownloadUIModel::Delegate:
+  void OnDownloadUpdated() override { Refresh(); }
+  void OnDownloadDestroyed(const ContentId& id) override {
+    // The model has no download any more: not a call on it from here on. The
+    // card removes the row (and frees the model) once this call has returned.
+    model_ = nullptr;
+    if (gone_) {
+      gone_.Run(this);
+    }
+  }
+
+  bool gone() const { return !model_; }
 
   void Refresh() {
+    if (!model_) {
+      return;
+    }
     name_ = model_->GetFileNameToReportUser().LossyDisplayName();
     status_ = model_->GetStatusTextForLabel(
         FontOfSize(12, gfx::Font::Weight::NORMAL), kWidth - 2 * kPad - 56);
@@ -157,7 +191,7 @@ class DownloadRow : public views::Button, public views::ContextMenuController {
       views::View* source,
       const gfx::Point& point,
       ui::mojom::MenuSourceType source_type) override {
-    if (menu_ && GetWidget()) {
+    if (model_ && menu_ && GetWidget()) {
       keepalive_ = menu_.Run(model_->GetWeakPtr(), GetWidget()->GetTopLevelWidget(),
                              gfx::Rect(point, gfx::Size()));
     }
@@ -167,7 +201,7 @@ class DownloadRow : public views::Button, public views::ContextMenuController {
   void Open() {
     // A finished download opens (the engine's command); one in progress has
     // nothing to open yet.
-    if (model_->GetState() == download::DownloadItem::COMPLETE) {
+    if (model_ && model_->GetState() == download::DownloadItem::COMPLETE) {
       DownloadCommands(model_->GetWeakPtr())
           .ExecuteCommand(DownloadCommands::OPEN_WHEN_COMPLETE);
       if (close_) {
@@ -176,9 +210,10 @@ class DownloadRow : public views::Button, public views::ContextMenuController {
     }
   }
 
-  const raw_ptr<DownloadUIModel> model_;
+  raw_ptr<DownloadUIModel> model_;
   DownloadRowMenu menu_;
   base::RepeatingClosure close_;
+  base::RepeatingCallback<void(DownloadRow*)> gone_;
   std::shared_ptr<void> keepalive_;
   std::u16string name_;
   std::u16string status_;
@@ -197,7 +232,7 @@ class DownloadsCard : public views::View {
   DownloadsCard(std::vector<DownloadUIModel::DownloadUIModelPtr> models,
                 DownloadRowMenu menu,
                 base::RepeatingClosure close)
-      : models_(std::move(models)) {
+      : close_(close) {
     GetViewAccessibility().SetRole(ax::mojom::Role::kList);
     GetViewAccessibility().SetName(
         l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOADS_HEADER));
@@ -206,23 +241,30 @@ class DownloadsCard : public views::View {
     auto rows = std::make_unique<views::View>();
     rows->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
-    for (const auto& model : models_) {
-      rows_.push_back(rows->AddChildView(
-          std::make_unique<DownloadRow>(model.get(), menu, close)));
+    rows_view_ = rows.get();
+    for (auto& model : models) {
+      DownloadRow* row = rows->AddChildView(std::make_unique<DownloadRow>(
+          model.get(), menu, close,
+          base::BindRepeating(&DownloadsCard::OnRowGone,
+                              weak_factory_.GetWeakPtr())));
+      entries_.push_back({std::move(model), row});
     }
-    const int visible = std::min<int>(kMaxRows, models_.size());
     auto scroll = std::make_unique<views::ScrollView>();
     scroll->SetContents(std::move(rows));
-    scroll->ClipHeightTo(visible * kRowHeight, visible * kRowHeight);
     scroll->SetDrawOverflowIndicator(false);
     scroll->SetBackgroundColor(std::nullopt);
-    AddChildView(std::move(scroll));
+    scroll_ = AddChildView(std::move(scroll));
+    FitRows();
     timer_.Start(FROM_HERE, base::Milliseconds(500), this,
                  &DownloadsCard::Refresh);
   }
   DownloadsCard(const DownloadsCard&) = delete;
   DownloadsCard& operator=(const DownloadsCard&) = delete;
-  ~DownloadsCard() override = default;
+  ~DownloadsCard() override {
+    // The rows (children) go first and put their delegates back; the models
+    // they point at are still alive then.
+    RemoveAllChildViews();
+  }
 
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override {
@@ -250,15 +292,59 @@ class DownloadsCard : public views::View {
 
  private:
   void Refresh() {
-    for (DownloadRow* row : rows_) {
-      row->Refresh();
+    for (const Entry& entry : entries_) {
+      entry.row->Refresh();  // a row whose download is gone does nothing
     }
   }
 
-  std::vector<DownloadUIModel::DownloadUIModelPtr> models_;
-  std::vector<raw_ptr<DownloadRow>> rows_;
+  // The scroll area is as high as the rows that are left (at most kMaxRows).
+  void FitRows() {
+    const int visible = std::min<int>(kMaxRows, entries_.size());
+    scroll_->ClipHeightTo(visible * kRowHeight, visible * kRowHeight);
+    PreferredSizeChanged();
+  }
+
+  // A download was removed under the list. Its model must not be used again;
+  // the row and the model go after the call that told us has returned (the
+  // model is inside it).
+  void OnRowGone(DownloadRow* row) {
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadsCard::RemoveGoneRows,
+                                  weak_factory_.GetWeakPtr()));
+  }
+
+  void RemoveGoneRows() {
+    for (auto it = entries_.begin(); it != entries_.end();) {
+      if (it->row->gone()) {
+        DownloadRow* row = it->row;
+        it->row = nullptr;
+        rows_view_->RemoveChildViewT(row);  // deletes it
+        it = entries_.erase(it);            // then its model
+      } else {
+        ++it;
+      }
+    }
+    if (entries_.empty()) {
+      // Nothing left to list: the bubble closes (the engine's list does the same).
+      if (close_) {
+        close_.Run();
+      }
+      return;
+    }
+    FitRows();
+  }
+
+  struct Entry {
+    DownloadUIModel::DownloadUIModelPtr model;
+    raw_ptr<DownloadRow> row;
+  };
+  std::vector<Entry> entries_;
+  raw_ptr<views::View> rows_view_ = nullptr;
+  raw_ptr<views::ScrollView> scroll_ = nullptr;
+  base::RepeatingClosure close_;
   std::u16string header_;
   base::RepeatingTimer timer_;
+  base::WeakPtrFactory<DownloadsCard> weak_factory_{this};
 };
 
 BEGIN_METADATA(DownloadsCard)

@@ -30,6 +30,10 @@ inline constexpr char kKitChromeSwitch[] = "atlas-kit-chrome";
 // Whether this browser process draws the Kit chrome.
 bool IsKitChromeEnabled();
 
+// The Kit sidebar inside the engine's vertical tab strip region, or null when
+// the Kit chrome is not there. For BrowserView::GetAccessiblePanes (F6).
+views::View* KitSidebarOf(views::View* vertical_tab_strip_region);
+
 // Hook in ToolbarView::Init() (normal display mode only): adds the Kit toolbar
 // to `toolbar`, moves `omnibox` and the `actions` (left to right; null entries
 // are skipped) into it, and hides the stock children that the Kit toolbar
