@@ -1,0 +1,146 @@
+Atlas overlay patch 0095: ui/downloads-list
+Why: the downloads list of the reel (scene 7, still full-52_6 and pose atlas-downloads-light): a card
+headed "Downloads" in small capitals, no close button (Escape and a click outside close it), no footer
+row (the full list stays one step away in the menu and with Ctrl J), the document glyph in the accent
+colour on every row instead of the icon theme's file-type picture, and the hover and focus fill as a
+pill inset in the card like a selected sidebar row, the file name bold, and no quick buttons on hover
+(the row menu has the actions; keyboard focus still shows them). CHROME's 0070-0072 give the colours, fonts, radii
+and the section-header style; this is the rest of the frame. No setting chooses these, so the smallest
+tier is a few hook lines in the two views; the card fill of popovers is one line of the GTK colour
+mixer (the menu colour, which the WolOS theme gives as `card`).
+Files: chrome/browser/ui/views/download/bubble/download_dialog_view.cc,
+ chrome/browser/ui/views/download/bubble/download_bubble_row_view.cc, ui/gtk/gtk_color_mixers.cc
+Test filter: reel-check scene R07 (pair with the frame: header, rows, pill, glyph)
+Rebase risk: L (a string id, two visibility lines, the row's highlight path, icon colour, label style and hover)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/download/bubble/download_dialog_view.cc
++++ b/chrome/browser/ui/views/download/bubble/download_dialog_view.cc
+@@ -118,7 +118,7 @@
+ }  // namespace
+ 
+ views::View* DownloadDialogView::GetInitiallyFocusedView() {
+-  return close_button_;
++  return close_button_->GetVisible() ? close_button_ : nullptr;
+ }
+ 
+ void DownloadDialogView::CloseBubble() {
+@@ -139,8 +139,10 @@
+   header->SetOrientation(views::LayoutOrientation::kHorizontal);
+   header->SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
+ 
++  // Atlas (reel scene 7): the list is headed "Downloads", with no close button
++  // (Escape and a click outside close it) and no footer row (patch 0095).
+   auto* title = header->AddChildView(std::make_unique<views::Label>(
+-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_HEADER_LABEL),
++      l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOADS_HEADER),
+       views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
+   title->SetProperty(
+       views::kFlexBehaviorKey,
+@@ -167,6 +169,7 @@
+   // Remove the extra padding of ImageButton that causes the right padding of
+   // the title row to appear larger than the left padding.
+   close_button_->SetBorder(nullptr);
++  close_button_->SetVisible(false);
+ }
+ 
+ void DownloadDialogView::AddFooter() {
+@@ -186,7 +189,6 @@
+   MaybeAddOtrInfoRow(browser_);
+   BuildAndAddScrollView(browser_, std::move(bubble_controller),
+                         navigation_handler_, info, DefaultPreferredWidth());
+-  AddFooter();
+ }
+ 
+ DownloadDialogView::~DownloadDialogView() = default;
+--- a/chrome/browser/ui/views/download/bubble/download_bubble_row_view.cc
++++ b/chrome/browser/ui/views/download/bubble/download_bubble_row_view.cc
+@@ -23,6 +23,7 @@
+ #include "chrome/browser/download/drag_download_item.h"
+ #include "chrome/browser/icon_manager.h"
+ #include "chrome/browser/profiles/profile_avatar_icon_util.h"
++#include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
+ #include "chrome/browser/ui/browser_element_identifiers.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+ #include "chrome/browser/ui/chrome_pages.h"
+@@ -80,11 +81,19 @@
+ namespace {
+ 
+ ui::ImageModel GetDefaultIcon() {
++  // Atlas (reel scene 7, patch 0095): every row shows the document glyph in
++  // the accent colour, not the file-type picture of the icon theme.
+   return ui::ImageModel::FromVectorIcon(
+       features::IsRoundedIconsEnabled()
+           ? vector_icons::kDraftIcon
+           : vector_icons::kInsertDriveFileOutlineOldIcon,
+-      ui::kColorIcon, GetLayoutConstant(LayoutConstant::kDownloadIconSize));
++      ui::kColorAccent, GetLayoutConstant(LayoutConstant::kDownloadIconSize));
++}
++
++// Atlas (patch 0095): the rows never show the file-type picture, and hovering
++// a row never shows the quick buttons (the stock list does both).
++bool UseStockRowDecorations() {
++  return false;
+ }
+ 
+ gfx::Image GetDefaultIconImage(const ui::ColorProvider* color_provider) {
+@@ -203,8 +212,8 @@
+   base::FilePath file_path = info_->model()->GetTargetFilePath();
+   // Use a default icon (drive file outline icon) in case we have an empty
+   // target path, which is empty for non download offline items, and newly
+-  // started in-progress downloads.
+-  if (file_path.empty()) {
++  // started in-progress downloads. Atlas: always (patch 0095).
++  if (file_path.empty() || !UseStockRowDecorations()) {
+     file_icon_ = GetDefaultIconImage(GetColorProvider());
+     SetFileIconAsIcon(/*is_default_icon=*/true);
+     return true;
+@@ -354,7 +363,11 @@
+   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
+ 
+   views::InkDrop::Install(this, std::make_unique<views::InkDropHost>(this));
+-  views::InstallRectHighlightPathGenerator(this);
++  // Atlas (patch 0095): the hover and focus fill is a pill inset in the list
++  // card, like a selected sidebar row (tokens.md sections 3 and 8).
++  views::InstallRoundRectHighlightPathGenerator(
++      this, gfx::Insets::VH(0, atlas::tokens::kSidebarRowInset),
++      atlas::tokens::kRadiusControl);
+   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+   views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
+                                                /*highlight_on_hover=*/true,
+@@ -418,7 +431,8 @@
+   primary_label_->SetCanProcessEventsWithinSubtree(false);
+   primary_label_->SetMultiLine(true);
+   primary_label_->SetAllowCharacterBreak(true);
+-  primary_label_->SetTextStyle(views::style::STYLE_BODY_3_MEDIUM);
++  // Atlas (patch 0095): the file name is bold, as in the reel's list.
++  primary_label_->SetTextStyle(views::style::STYLE_BODY_3_BOLD);
+ 
+   main_button_holder_ = AddChildView(std::make_unique<views::FlexLayoutView>());
+   AddMainPageButton(DownloadCommands::CANCEL,
+@@ -623,7 +637,9 @@
+ }
+ 
+ void DownloadBubbleRowView::UpdateRowForHover(bool hovered) {
+-  quick_action_holder_->SetVisible(hovered);
++  // Atlas (patch 0095): hovering shows the pill only; the row menu has the
++  // actions, and keyboard focus still shows the quick buttons.
++  quick_action_holder_->SetVisible(hovered && UseStockRowDecorations());
+ }
+ 
+ void DownloadBubbleRowView::UpdateRowForFocus(
+--- a/ui/gtk/gtk_color_mixers.cc
++++ b/ui/gtk/gtk_color_mixers.cc
+@@ -96,7 +96,9 @@
+   // UI element colors
+   mixer[ui::kColorAvatarIconGuest] =
+       DeriveDefaultIconColor(ui::kColorPrimaryForeground);
+-  mixer[ui::kColorBubbleBackground] = {ui::kColorPrimaryBackground};
++  // Atlas (patch 0095): popovers are cards, like the menus (tokens.md
++  // section 8; the reel's downloads list).
++  mixer[ui::kColorBubbleBackground] = {ui::kColorMenuBackground};
+   mixer[ui::kColorBubbleFooterBackground] = {ui::kColorBubbleBackground};
+   mixer[ui::kColorButtonBackground] = {GetBgColor("button")};
+   mixer[ui::kColorButtonBackgroundProminent] =
