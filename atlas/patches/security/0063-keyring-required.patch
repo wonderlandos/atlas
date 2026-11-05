@@ -1,0 +1,74 @@
+Atlas overlay patch 0063: security/keyring-required
+Why: with --password-store=gnome-libsecret (the launcher's explicit store) the engine still falls back,
+silently, to a provider with a fixed, public key (tag v10) when the Secret Service is missing, so
+cookies and saved passwords would be written under a key anyone can compute. The fixed-key provider
+now only reads old v10 data when the explicit keyring store is chosen; it no longer encrypts. Without a
+keyring nothing is written (cookies stay session-only, no password is stored) instead of a weak
+write. A lower tier (flag, policy, pref) does not exist: the provider list is built in code. The launcher
+tells the person (ATLAS-PKG preflight).
+Files: components/os_crypt/async/browser/posix_key_provider.h, components/os_crypt/async/browser/posix_key_provider.cc, chrome/browser/browser_process_impl.cc
+Test filter: PosixKeyProvider*:OSCryptAsync*; journey atlas-keyring (keyring stopped: no v10 written)
+Rebase risk: L (one constructor argument; the list in browser_process_impl.cc changes rarely)
+Release: 0.13
+License: GPL-3.0-or-later (hunk in browser_process_impl.cc, a file the inherited series patches); BSD-3-Clause for the other two engine files
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/components/os_crypt/async/browser/posix_key_provider.h
++++ b/components/os_crypt/async/browser/posix_key_provider.h
+@@ -11,7 +11,8 @@
+ 
+ class PosixKeyProvider : public KeyProvider {
+  public:
+-  PosixKeyProvider();
++  // `use_for_encryption` false keeps the provider for reading old v10 data only.
++  explicit PosixKeyProvider(bool use_for_encryption = true);
+ 
+   PosixKeyProvider(const PosixKeyProvider&) = delete;
+   PosixKeyProvider& operator=(const PosixKeyProvider&) = delete;
+@@ -21,6 +22,9 @@
+   // KeyProvider:
+   void GetKey(KeyCallback callback) override;
+   bool UseForEncryption() override;
++
++ private:
++  const bool use_for_encryption_;
+ };
+ 
+ }  // namespace os_crypt_async
+--- a/components/os_crypt/async/browser/posix_key_provider.cc
++++ b/components/os_crypt/async/browser/posix_key_provider.cc
+@@ -23,7 +23,8 @@
+ 
+ }  // namespace
+ 
+-PosixKeyProvider::PosixKeyProvider() = default;
++PosixKeyProvider::PosixKeyProvider(bool use_for_encryption)
++    : use_for_encryption_(use_for_encryption) {}
+ 
+ PosixKeyProvider::~PosixKeyProvider() = default;
+ 
+@@ -33,7 +34,7 @@
+ }
+ 
+ bool PosixKeyProvider::UseForEncryption() {
+-  return true;
++  return use_for_encryption_;
+ }
+ 
+ }  // namespace os_crypt_async
+--- a/chrome/browser/browser_process_impl.cc
++++ b/chrome/browser/browser_process_impl.cc
+@@ -1650,8 +1650,12 @@
+ #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
+   // On other POSIX systems, this is the only key provider. On Linux, it is used
+   // as a fallback.
++  // Atlas: with the explicit keyring store the fixed-key provider only reads
++  // old data; without the keyring nothing is written under the fixed key.
+   providers.emplace_back(
+-      /*precedence=*/5u, std::make_unique<os_crypt_async::PosixKeyProvider>());
++      /*precedence=*/5u, std::make_unique<os_crypt_async::PosixKeyProvider>(
++                             /*use_for_encryption=*/password_store !=
++                             "gnome-libsecret"));
+ #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_LINUX)
+ 
+ #if BUILDFLAG(IS_MAC)
