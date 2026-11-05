@@ -314,6 +314,25 @@ std::optional<Reply> DecodeReply(std::string_view line) {
   return std::nullopt;
 }
 
+std::optional<std::string> EchoOfGreeting(std::string_view line) {
+  constexpr std::string_view kPrefix = "hello ";
+  if (!line.starts_with(kPrefix) || line.size() + 1 > kMaxGreeting) {
+    return std::nullopt;
+  }
+  std::string_view nonce = line.substr(kPrefix.size());
+  if (nonce.empty()) {
+    return std::nullopt;
+  }
+  for (char c : nonce) {
+    bool alnum = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
+                 (c >= 'A' && c <= 'Z');
+    if (!alnum) {
+      return std::nullopt;
+    }
+  }
+  return std::string(line) + "\n";
+}
+
 void LineReader::Append(std::string_view bytes) {
   if (overflowed_) {
     return;

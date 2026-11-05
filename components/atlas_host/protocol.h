@@ -13,11 +13,17 @@
 #include <string_view>
 #include <variant>
 
-// The Atlas Host Protocol, version 1: what the browser says to the program on
+// The Atlas Host Protocol, version 2: what the browser says to the program on
 // the other end of $XDG_RUNTIME_DIR/atlas/bridge.sock, and what it hears back.
 // The protocol is a published, versioned wire and this file is its browser
 // side; the other side is documented with the protocol and tested with the
 // same fixtures (components/atlas_host/testdata/, identical byte for byte).
+//
+// The bridge speaks first (ADR 0033): as soon as it accepts the connection it
+// writes `hello <nonce>`, and the browser writes the same line back before its
+// own hello. The kernel stamps every byte of that echo with the writing
+// process, so only the process that connected can answer it. See
+// EchoOfGreeting().
 //
 // One JSON object per line, UTF-8, at most kMaxLine bytes with the newline.
 // Fields are written in a fixed order. A request other than the hello has an
@@ -25,9 +31,11 @@
 namespace atlas_host {
 
 // The protocol version this side speaks.
-inline constexpr uint32_t kVersion = 1;
+inline constexpr uint32_t kVersion = 2;
 // The longest line either side sends, newline included.
 inline constexpr size_t kMaxLine = 32 * 1024;
+// The longest greeting line, newline included.
+inline constexpr size_t kMaxGreeting = 64;
 // The longest path of a request, in bytes.
 inline constexpr size_t kMaxPath = 4096;
 // Requests one connection may have waiting at once.
@@ -108,6 +116,12 @@ std::string EncodeReply(const Reply& reply);
 // exactly a request (reply) of this version.
 std::optional<Request> DecodeRequest(std::string_view line);
 std::optional<Reply> DecodeReply(std::string_view line);
+
+// The bridge's greeting, without its newline: `hello ` and a nonce of ASCII
+// letters and digits. Returns the line to write back (the same line, newline
+// included), or nullopt if |line| is not a greeting (a JSON reply, anything
+// else, a nonce that is empty or not alphanumeric, a line over kMaxGreeting).
+std::optional<std::string> EchoOfGreeting(std::string_view line);
 
 // The names on the wire.
 const char* VerbName(Verb verb);

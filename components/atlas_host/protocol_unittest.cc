@@ -129,8 +129,28 @@ TEST(AtlasHostProtocolTest, WhatIsNotARequestOfThisVersionIsNotEncoded) {
   EXPECT_EQ(EncodeRequest(VerbRequest{Verb::kShare, 1, "a"}), "");
   EXPECT_EQ(EncodeRequest(Hello{0, 5}), "");
   EXPECT_EQ(EncodeRequest(Hello{1, 0}), "");
-  EXPECT_EQ(EncodeRequest(Hello{1, 4242}),
-            "{\"op\":\"hello\",\"version\":1,\"pid\":4242}\n");
+  EXPECT_EQ(EncodeRequest(Hello{2, 4242}),
+            "{\"op\":\"hello\",\"version\":2,\"pid\":4242}\n");
+}
+
+// QA-A9-SEC-1: the bridge speaks first with `hello <nonce>` and the browser
+// writes the same line back.
+TEST(AtlasHostProtocolTest, AGreetingIsEchoedExactlyAndNothingElseIs) {
+  EXPECT_EQ(EchoOfGreeting("hello 0123456789abcdef0123456789abcdef"),
+            "hello 0123456789abcdef0123456789abcdef\n");
+  EXPECT_EQ(EchoOfGreeting("hello abc123"), "hello abc123\n");
+  EXPECT_EQ(EchoOfGreeting("hello"), std::nullopt);
+  EXPECT_EQ(EchoOfGreeting("hello "), std::nullopt);
+  EXPECT_EQ(EchoOfGreeting("hello a b"), std::nullopt);
+  EXPECT_EQ(EchoOfGreeting("hello a-b"), std::nullopt);
+  EXPECT_EQ(EchoOfGreeting("Hello abc"), std::nullopt);
+  EXPECT_EQ(EchoOfGreeting("{\"reply\":\"hello\",\"version\":2}"),
+            std::nullopt);
+  // A line that does not fit kMaxGreeting with its newline.
+  EXPECT_EQ(EchoOfGreeting("hello " + std::string(kMaxGreeting - 6, 'a')),
+            std::nullopt);
+  EXPECT_NE(EchoOfGreeting("hello " + std::string(kMaxGreeting - 7, 'a')),
+            std::nullopt);
 }
 
 TEST(AtlasHostProtocolTest, NumbersTakeTheWholeRangeOfAnId) {

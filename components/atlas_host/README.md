@@ -1,7 +1,7 @@
 # components/atlas_host
 
 The browser's side of the bridge to the WolOS desktop (owner: ATLAS-HOST). New BSD-3-Clause code with no
-WolOS source in it: the contract is the **Atlas Host Protocol**, version 1, a line-delimited JSON wire over
+WolOS source in it: the contract is the **Atlas Host Protocol**, version 2, a line-delimited JSON wire over
 `$XDG_RUNTIME_DIR/atlas/bridge.sock`, documented on the WolOS side in `docs/modules/atlas.md`.
 
 | File | What |
@@ -19,8 +19,13 @@ nothing when the socket is missing or the other end does not answer the hello (`
 
 ## Behaviour worth knowing
 
-- The hello is `{"op":"hello","version":1,"pid":<this process>}`; the other end checks the pid against the
-  kernel's and the executable against `/opt/atlas/atlas`.
+- The bridge speaks first: it writes `hello <nonce>` as soon as it accepts, and nothing is written before
+  that. The host writes the same line back, then the hello, in one write (ADR 0033, `EchoOfGreeting`);
+  the kernel stamps the echo with the writing process, so only the process that connected can answer.
+  A bridge that is over its limit answers with an error in place of the greeting.
+- The hello is `{"op":"hello","version":2,"pid":<this process>}`; the other end checks the pid against the
+  kernel's and the executable against `/opt/atlas/atlas`. The greeting and the hello share the hello
+  timeout.
 - At most 4 verbs wait at once on a connection; a fifth is answered `busy` here without being sent.
 - A verb is never given up on early: Share and Open With wait up to 10 minutes (the person is choosing in
   a sheet), Trash 30 seconds. After that the connection is closed and opened again, and the person reads

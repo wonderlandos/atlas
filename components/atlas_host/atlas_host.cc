@@ -114,7 +114,8 @@ class BridgeClient final : public AtlasHost {
  private:
   enum class State {
     kIdle,   // No connection.
-    kHello,  // Connected, the hello is not answered yet.
+    kGreeting,  // Connected, the bridge's greeting is not here yet.
+    kHello,     // The greeting is echoed, the hello is not answered yet.
     kReady,  // The hello is answered.
   };
 
@@ -144,8 +145,10 @@ class BridgeClient final : public AtlasHost {
                                   Result::Error(code, std::string(text))));
   }
 
-  // Opens the connection and sends the hello. Leaves state_ at kIdle if there
-  // is no one to talk to; when a retry makes sense one is scheduled.
+  // Opens the connection and waits for the bridge's greeting (it speaks
+  // first, ADR 0033); the greeting is echoed and the hello sent in
+  // HandleLine. Leaves state_ at kIdle if there is no one to talk to; when a
+  // retry makes sense one is scheduled.
   void Connect() {
     last_attempt_ = base::TimeTicks::Now();
     CloseConnection();
@@ -179,13 +182,23 @@ class BridgeClient final : public AtlasHost {
     watch_ = base::FileDescriptorWatcher::WatchReadable(
         fd_.get(), base::BindRepeating(&BridgeClient::OnReadable,
                                        base::Unretained(this)));
-    state_ = State::kHello;
+    state_ = State::kGreeting;
+    // One deadline for the greeting and the hello, as on the bridge's side.
     hello_timer_.Start(FROM_HERE, options_.hello_timeout,
                        base::BindOnce(&BridgeClient::OnHelloTimeout,
                                       base::Unretained(this)));
-    if (!Write(EncodeRequest(Hello{kVersion, options_.pid}))) {
+  }
+
+  // The bridge's greeting arrived: write it back, then the hello, in one
+  // write. Nothing is written before the greeting, so a line written before
+  // the bridge accepted can never be mistaken for this process's.
+  void AnswerGreeting(const std::string& echo) {
+    std::string hello = EncodeRequest(Hello{kVersion, options_.pid});
+    if (hello.empty() || !Write(echo + hello)) {
       Drop(kTextUnreachable, ErrorCode::kUnavailable, /*retry=*/true);
+      return;
     }
+    state_ = State::kHello;
   }
 
   // Closes without telling anyone; requests that wait stay as they are.
@@ -297,6 +310,24 @@ class BridgeClient final : public AtlasHost {
   }
 
   void HandleLine(const std::string& line) {
+    if (state_ == State::kGreeting) {
+      if (std::optional<std::string> echo = EchoOfGreeting(line)) {
+        AnswerGreeting(*echo);
+        return;
+      }
+      // Not a greeting. The bridge refuses before it greets only with an
+      // error (too many connections); anything else is not the bridge.
+      std::optional<Reply> refused = DecodeReply(line);
+      const auto* error =
+          refused ? std::get_if<ErrorReply>(&*refused) : nullptr;
+      if (!error) {
+        Drop(kTextBadAnswer, ErrorCode::kUnavailable, /*retry=*/false);
+        return;
+      }
+      Drop(error->text.c_str(), error->code,
+           /*retry=*/error->code == ErrorCode::kBusy);
+      return;
+    }
     std::optional<Reply> reply = DecodeReply(line);
     if (!reply) {
       Drop(kTextBadAnswer, ErrorCode::kUnavailable, /*retry=*/false);

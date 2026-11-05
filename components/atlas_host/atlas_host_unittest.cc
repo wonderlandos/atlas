@@ -36,6 +36,8 @@ namespace atlas_host {
 namespace {
 
 constexpr int32_t kPid = 4242;
+// The nonce of the greeting every fake bridge connection starts with.
+constexpr char kGreeting[] = "hello abc123";
 
 // A bridge on a socket of the test's own, run on the test's thread. It
 // answers by what the test tells it; nothing of WolOS is in it.
@@ -45,6 +47,8 @@ class FakeBridge {
     base::ScopedFD fd;
     std::unique_ptr<base::FileDescriptorWatcher::Controller> watch;
     LineReader reader;
+    // The browser wrote the greeting back (it is not a line of the protocol).
+    bool echoed = false;
   };
 
   // Called with each line a browser sends on a connection.
@@ -70,6 +74,10 @@ class FakeBridge {
 
   void set_on_line(OnLine f) { on_line_ = std::move(f); }
   void set_on_accept(OnAccept f) { on_accept_ = std::move(f); }
+  // A bridge that does not greet (an old one, or one that refuses at once).
+  void set_greeting(bool greet) { greet_ = greet; }
+  // Every line in the order it arrived, the echoes of the greeting included.
+  const std::vector<std::string>& raw_lines() const { return raw_lines_; }
   size_t accepted() const { return connections_.size(); }
   const std::vector<std::string>& lines() const { return lines_; }
 
@@ -108,6 +116,10 @@ class FakeBridge {
     connections_[index].watch = base::FileDescriptorWatcher::WatchReadable(
         fd, base::BindRepeating(&FakeBridge::Read, base::Unretained(this),
                                 index));
+    // The bridge speaks first (ADR 0033).
+    if (greet_) {
+      Send(index, kGreeting);
+    }
     if (on_accept_) {
       on_accept_(*this, index);
     }
@@ -127,6 +139,13 @@ class FakeBridge {
       connections_[index].reader.Append(
           std::string_view(buffer, static_cast<size_t>(n)));
       while (auto line = connections_[index].reader.Next()) {
+        raw_lines_.push_back(*line);
+        if (greet_ && !connections_[index].echoed) {
+          // The first line of a connection is the greeting written back.
+          connections_[index].echoed = true;
+          EXPECT_EQ(*line, kGreeting);
+          continue;
+        }
         lines_.push_back(*line);
         if (on_line_) {
           on_line_(*this, index, *line);
@@ -140,6 +159,8 @@ class FakeBridge {
   std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_;
   std::vector<Connection> connections_;
   std::vector<std::string> lines_;
+  std::vector<std::string> raw_lines_;
+  bool greet_ = true;
   OnLine on_line_;
   OnAccept on_accept_;
 };
@@ -206,7 +227,7 @@ class AtlasHostTest : public testing::Test {
       auto request = DecodeRequest(line);
       ASSERT_TRUE(request.has_value()) << line;
       if (std::holds_alternative<Hello>(*request)) {
-        b.SendReply(c, HelloReply{1});
+        b.SendReply(c, HelloReply{kVersion});
       } else if (answer) {
         answer(b, c, std::get<VerbRequest>(*request));
       }
@@ -494,6 +515,76 @@ TEST_F(AtlasHostTest, ARequestThatIsNotAFullPathIsRefusedBeforeItIsSent) {
   EXPECT_EQ(bridge.lines().size(), 1u);  // Only the hello.
 }
 
+// QA-A9-SEC-1: the bridge speaks first and the browser writes nothing until
+// it has heard the greeting; then the greeting, written back as it came, and
+// the hello.
+TEST_F(AtlasHostTest, TheGreetingIsEchoedBeforeTheHello) {
+  FakeBridge bridge(socket_);
+  Behave(bridge, nullptr);
+  auto host = AtlasHost::Create(FastOptions());
+  Availability availability(host.get());
+  host->EnsureConnected();
+  ASSERT_TRUE(availability.Next());
+  ASSERT_EQ(bridge.raw_lines().size(), 2u);
+  EXPECT_EQ(bridge.raw_lines()[0], kGreeting);
+  EXPECT_EQ(bridge.raw_lines()[1],
+            "{\"op\":\"hello\",\"version\":2,\"pid\":4242}");
+}
+
+TEST_F(AtlasHostTest, NothingIsWrittenToABridgeThatDoesNotGreet) {
+  FakeBridge bridge(socket_);
+  bridge.set_greeting(false);
+  Behave(bridge, nullptr);
+  auto host = AtlasHost::Create(FastOptions());
+  base::test::TestFuture<Result> future;
+  host->Request(Verb::kShare, base::FilePath("/tmp/x"), future.GetCallback());
+  Result r = future.Take();
+  EXPECT_FALSE(r.ok);
+  EXPECT_EQ(r.text, kTextNoAnswer);
+  EXPECT_TRUE(bridge.raw_lines().empty());  // Not even a hello.
+}
+
+TEST_F(AtlasHostTest, ALineThatIsNotAGreetingFirstClosesTheConnection) {
+  FakeBridge bridge(socket_);
+  bridge.set_greeting(false);
+  bridge.set_on_accept([](FakeBridge& b, size_t c) {
+    b.Send(c, "not a greeting");
+  });
+  auto host = AtlasHost::Create(FastOptions());
+  base::test::TestFuture<Result> future;
+  host->Request(Verb::kShare, base::FilePath("/tmp/x"), future.GetCallback());
+  Result r = future.Take();
+  EXPECT_FALSE(r.ok);
+  EXPECT_EQ(r.text, kTextBadAnswer);
+  EXPECT_TRUE(bridge.raw_lines().empty());
+}
+
+// The bridge refuses a connection over its limit before it greets.
+TEST_F(AtlasHostTest, ABusyBridgeAnswersInPlaceOfTheGreeting) {
+  FakeBridge bridge(socket_);
+  bridge.set_greeting(false);
+  bridge.set_on_accept([](FakeBridge& b, size_t c) {
+    if (c == 0) {
+      b.SendReply(c, ErrorReply{0, ErrorCode::kBusy, "Too many connections."});
+      b.Close(c);
+    } else {
+      b.Send(c, kGreeting);
+    }
+  });
+  bridge.set_on_line([](FakeBridge& b, size_t c, const std::string& line) {
+    if (line == kGreeting) {
+      return;
+    }
+    b.SendReply(c, HelloReply{kVersion});
+  });
+  auto host = AtlasHost::Create(FastOptions());
+  Availability availability(host.get());
+  host->EnsureConnected();
+  // The first attempt is refused as busy and tried again; the second greets.
+  EXPECT_TRUE(availability.Next());
+  EXPECT_EQ(bridge.accepted(), 2u);
+}
+
 TEST_F(AtlasHostTest, TheHelloNamesTheBrowserAndTheVersion) {
   FakeBridge bridge(socket_);
   Behave(bridge, nullptr);
@@ -502,7 +593,7 @@ TEST_F(AtlasHostTest, TheHelloNamesTheBrowserAndTheVersion) {
   host->EnsureConnected();
   ASSERT_TRUE(availability.Next());
   ASSERT_EQ(bridge.lines().size(), 1u);
-  EXPECT_EQ(bridge.lines()[0], "{\"op\":\"hello\",\"version\":1,\"pid\":4242}");
+  EXPECT_EQ(bridge.lines()[0], "{\"op\":\"hello\",\"version\":2,\"pid\":4242}");
 }
 
 TEST_F(AtlasHostTest, DestroyingTheHostDropsWhatWaitsWithoutCallingBack) {
