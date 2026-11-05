@@ -1,0 +1,19 @@
+- main:
+  - heading "Atlas" [level=1]
+  - search:
+    - textbox "Search or enter an address": a/b
+  - region "Pinned":
+    - heading "Pinned" [level=2]
+    - list "Pinned"
+    - paragraph: Pages you pin appear here.
+  - region "Pick up where you left off":
+    - heading "Pick up where you left off" [level=2]
+    - list "Pick up where you left off":
+      - listitem:
+        - link "Release notes Opened 20 minutes ago":
+          - /url: https://notes.example/release
+      - listitem:
+        - link "Train times Opened yesterday":
+          - /url: https://trains.example/
+- paragraph: Do Not Track is on
+- status: Video removed from Pinned

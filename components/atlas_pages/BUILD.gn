@@ -1,0 +1,39 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# The pages Atlas serves itself: common/ (the data source, the theme block, the host bridge),
+# newtab/ (owner: ATLAS-NTP) and setup/ (owner: ATLAS-FIRSTRUN). A dependency of //chrome/browser,
+# its pak is in chrome_paks.gni (anchor patch 0010).
+group("atlas_pages") {
+  public_deps = [
+    ":resources",
+    "common",
+    "newtab",
+    "setup",
+  ]
+}
+
+# The unit tests of the pages, collected by //chrome/browser/ui/atlas:unit_tests.
+group("unit_tests") {
+  testonly = true
+  deps = [
+    "newtab:unit_tests",
+    "setup:unit_tests",
+  ]
+}
+
+# One pak for all pages. Each directory lists its files in its own .grdp, with
+# resource_path="<directory>/<file>" (AtlasPageSource serves <directory>/ at the root of its host).
+grit("resources") {
+  source = "atlas_pages_resources.grd"
+  outputs = [
+    "grit/atlas_pages_resources.h",
+    "grit/atlas_pages_resources_map.cc",
+    "grit/atlas_pages_resources_map.h",
+    "atlas_pages_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/components/atlas_pages"
+}

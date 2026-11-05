@@ -1,0 +1,18 @@
+{
+  "pinned": [
+    {"title": "Home", "url": "https://home.example/", "category": "web"},
+    {"title": "Mail", "url": "https://mail.example/", "category": "talk"},
+    {"title": "Files", "url": "https://files.example/", "category": "files"},
+    {"title": "Video", "url": "https://video.example/", "category": "media"},
+    {"title": "Store", "url": "https://store.example/", "category": "store"},
+    {"title": "Settings", "url": "https://settings.example/", "category": "system"}
+  ],
+  "recent": [
+    {"title": "Release notes", "url": "https://notes.example/release", "when": 1767225000000},
+    {"title": "Train times", "url": "https://trains.example/", "when": 1767138000000}
+  ],
+  "doNotTrack": true,
+  "statusStrip": false,
+  "firstInWindow": true,
+  "strings": {"pinned": "Pinned"}
+}

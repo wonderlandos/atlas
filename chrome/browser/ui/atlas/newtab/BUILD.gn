@@ -1,0 +1,51 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+# Atlas new tab page, browser side (owner: ATLAS-NTP): handler, UI controller, pref registration.
+# The page files and the logic with no //chrome dependency are in //components/atlas_pages/newtab.
+# Linked into //chrome/browser/ui, which allows this target to include its headers (anchor patch
+# 0010).
+source_set("newtab") {
+  sources = [
+    "newtab_handler.cc",
+    "newtab_handler.h",
+    "newtab_prefs.cc",
+    "newtab_prefs.h",
+    "newtab_ui.cc",
+    "newtab_ui.h",
+  ]
+  public_deps = [ "//chrome/browser:browser_public_dependencies" ]
+  deps = [
+    "//base",
+    "//chrome/browser:browser_process",
+    "//chrome/browser/profiles:profile",
+    "//chrome/common",
+    "//components/atlas_pages/common",
+    "//components/atlas_pages/newtab",
+    "//components/omnibox/browser",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/sessions",
+    "//content/public/browser",
+    "//ui/base",
+    "//url",
+  ]
+}
+
+# Unit tests of this area (testonly); //chrome/browser/ui/atlas:unit_tests collects them.
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "newtab_handler_unittest.cc" ]
+  deps = [
+    ":newtab",
+    "//base/test:test_support",
+    "//chrome/test:test_support",
+    "//components/atlas_pages/newtab",
+    "//components/sessions",
+    "//components/sessions:test_support",
+    "//testing/gtest",
+  ]
+}

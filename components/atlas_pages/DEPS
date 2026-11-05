@@ -1,0 +1,7 @@
+include_rules = [
+  "+components/pref_registry",
+  "+content/public/browser",
+  "+services/network/public/mojom",
+  "+ui/base",
+  "+ui/color",
+]

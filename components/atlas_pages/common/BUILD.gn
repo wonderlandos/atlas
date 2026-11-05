@@ -1,0 +1,22 @@
+# Copyright 2026 The Atlas Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("common") {
+  sources = [
+    "atlas_page_source.cc",
+    "atlas_page_source.h",
+    "atlas_theme_css.cc",
+    "atlas_theme_css.h",
+  ]
+  public_deps = [
+    "//base",
+    "//content/public/browser",
+  ]
+  deps = [
+    "//components/atlas_pages:resources",
+    "//services/network/public/mojom",
+    "//ui/base",
+    "//ui/color",
+  ]
+}

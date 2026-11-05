@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/atlas_pages_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/atlas_pages_resources_map.cc"
+            type="resource_file_map_source" />
+    <output filename="grit/atlas_pages_resources_map.h"
+            type="resource_map_header" />
+    <output filename="atlas_pages_resources.pak" type="data_package" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <part file="common/common_resources.grdp" />
+      <part file="newtab/newtab_resources.grdp" />
+      <part file="setup/setup_resources.grdp" />
+    </includes>
+  </release>
+</grit>

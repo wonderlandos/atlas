@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Files every Atlas page can load (owner: ATLAS-ANCHOR). As in every grdp, file= is relative to the
+     root grd (components/atlas_pages), so "common/<file>". theme.css is the built-in fallback the
+     theme CSS provider returns in round 1; it is the generated file of the first-run page
+     (tools/gen_theme.py), copied, never edited by hand. -->
+<grit-part>
+  <include name="IDR_ATLAS_PAGES_COMMON_HOST_BRIDGE_JS"
+           file="common/atlas_host_bridge.js"
+           resource_path="common/atlas_host_bridge.js"
+           type="BINDATA" />
+  <include name="IDR_ATLAS_PAGES_COMMON_THEME_CSS"
+           file="common/theme.css"
+           resource_path="common/theme.css"
+           type="BINDATA" />
+</grit-part>
