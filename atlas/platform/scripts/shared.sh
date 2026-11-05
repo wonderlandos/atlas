@@ -126,6 +126,8 @@ helium_substitution() {
 
 helium_apply_translations() {
     python3 "$_main_repo/utils/i18n_apply.py" -t "$_src_dir"
+    # the Atlas strings (chrome/app/atlas/*.grdp): the inherited step cannot place them (atlas/transform/i18n_atlas.py)
+    python3 "$_main_repo/atlas/transform/i18n_atlas.py" -t "$_src_dir"
 }
 
 helium_version() {

@@ -88,6 +88,9 @@ fi
 for f in fed_subresource_proxy.cc fed_preconnect_guard.cc fed_dns_guard.cc; do
     [ -f "$root/chrome/browser/atlas/fed/$f" ] || err "chrome/browser/atlas/fed/$f: missing (the exclusive-fed fences)"
 done
+# every Atlas message is in the translation sources and translated in each Atlas language (L10N-ATLAS)
+python3 -I "$root/atlas/tests/check_strings.py" > /tmp/check_strings.$$ 2>&1 || { sed 's/^/     /' /tmp/check_strings.$$; err "atlas/tests/check_strings.py"; }
+rm -f /tmp/check_strings.$$
 # the Federate helper must reach the tarball beside the browser binary (the browser starts it from its own directory)
 grep -q 'ATLAS_FED_HELPER' "$root/atlas/platform/scripts/package.sh" || err "atlas/platform/scripts/package.sh: no ATLAS_FED_HELPER (the atlas-fed helper must be packaged beside the binary)"
 [ "$rc" -eq 0 ] && echo "ok   overlay series: ${#series[@]} patches, headers and names valid"

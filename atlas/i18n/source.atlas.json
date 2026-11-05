@@ -1,0 +1,338 @@
+[
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The line of Settings > About that names the version of the browser and of its engine, when the computer is not running WolOS. Example: Version 0.13.0 (Official Build) (64-bit). Engine 156.0.8078.79.",
+    "message": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION_WOLOS",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The line of Settings > About that names the version of the browser, the WolOS release and the engine. Example: Version 0.13.0 (Official Build) (64-bit). WolOS 0.13. Engine 156.0.8078.79.",
+    "message": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_LICENSE",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The sentence below the copyright line of Settings > About. The link goes to the page that lists the licenses of the software inside the browser.",
+    "message": "Atlas is made possible by open source software. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>See the credits<ph name=\"END_LINK\">&lt;/a&gt;</ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPENS_IN_NEW_TAB",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The accessibility description of a link that opens in a new tab.",
+    "message": "Opens in a new tab"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_UPDATES",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The row of Settings > About that says how the browser is updated. The link after it opens the Software Update pane of WolOS System Settings.",
+    "message": "Atlas updates with WolOS."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPEN_UPDATES",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The link after the sentence about updates in Settings > About. It opens the Software Update pane of WolOS System Settings.",
+    "message": "Open Software Update"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_WOLOS_LABEL",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The label of the row of the version page that shows the WolOS release.",
+    "message": "WolOS"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_ENGINE_LABEL",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The label of the row of the version page that shows the version of the browser engine.",
+    "message": "Engine"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_NO_WOLOS",
+    "source": "chrome/app/atlas/brand_strings.grdp",
+    "context": "The value of the WolOS row of the version page when the computer is not running WolOS.",
+    "message": "Not detected"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu: choose the app that opens the file. The ellipsis says the desktop asks which app.",
+    "message": "Open &amp;With…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu: share the file with the share sheet of the desktop. The ellipsis says the sheet asks where to send it.",
+    "message": "&amp;Share…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu: show the file in the file manager of the desktop, which is called Files.",
+    "message": "Show in &amp;Files"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu: move the file to the Trash of the desktop, from where it can be restored. Last in the menu because it removes the file from the folder.",
+    "message": "&amp;Move to Trash"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu, screen reader name of the Open With item. $1 is the file name.",
+    "message": "Open <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> with another app"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu, screen reader name of the Share item. $1 is the file name.",
+    "message": "Share <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu, screen reader name of the Show in Files item. $1 is the file name.",
+    "message": "Show <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> in Files"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Downloads list, row menu, screen reader name of the Move to Trash item. $1 is the file name.",
+    "message": "Move <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> to the Trash"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Title of the box that says Share, Open With or Move to Trash on a downloaded file did not happen. The reason is in the box.",
+    "message": "That did not happen"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOADS_HEADER",
+    "source": "chrome/app/atlas/host_strings.grdp",
+    "context": "Heading of the list of downloads that opens from the downloads button of the toolbar.",
+    "message": "Downloads"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Heading of the row of pinned pages on the new tab page.",
+    "message": "Pinned"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_RECENT",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Heading of the pages the person can go back to on the new tab page.",
+    "message": "Pick up where you left off"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED_EMPTY",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Shown on the new tab page under the Pinned heading when no page is pinned.",
+    "message": "Pages you pin appear here."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_TITLE",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Title of the empty state that replaces the pick-up cards on the new tab page when there is nothing to go back to.",
+    "message": "Nothing to pick up yet"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_HINT",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "One line under the empty state title on the new tab page.",
+    "message": "Pages you open show up here, so you can come back to them."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_ACTION",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Button of the empty state on the new tab page. It moves the cursor to the search field.",
+    "message": "Search or enter an address"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_SEARCH_PLACEHOLDER",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Placeholder and name of the search field on the new tab page. The person can type a web address or words to search for.",
+    "message": "Search or enter an address"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Second line of a pick-up card on the new tab page: when the page was last open. The time reads like '20 minutes ago' or 'yesterday', in the person's language.",
+    "message": "Opened <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED_JUST_NOW",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Second line of a pick-up card on the new tab page when the page was open less than a minute ago.",
+    "message": "Opened just now"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVE_FROM_PINNED",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Name of the button on a pinned card that takes the page off the Pinned row.",
+    "message": "Remove <ph name=\"TITLE\">$1<ex>Mail</ex></ph> from Pinned"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVED_FROM_PINNED",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "Said by a screen reader after a page was taken off the Pinned row.",
+    "message": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> removed from Pinned"
+  },
+  {
+    "name": "IDS_ATLAS_DNT_IS_ON",
+    "source": "chrome/app/atlas/pages_strings.grdp",
+    "context": "A quiet line at the bottom of the window and of the new tab page, shown while the setting that asks websites not to follow the person is on. Not an action.",
+    "message": "Do Not Track is on"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_PINNED",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Header of the pinned tabs in the tab sidebar. It is drawn in capital letters.",
+    "message": "Pinned"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_TODAY",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Header of the tabs used today in the tab sidebar. It is drawn in capital letters.",
+    "message": "Today"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_YESTERDAY",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Header of the tabs last used yesterday in the tab sidebar. It is drawn in capital letters.",
+    "message": "Yesterday"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_EARLIER",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Header of the tabs last used before yesterday in the tab sidebar. It is drawn in capital letters.",
+    "message": "Earlier"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Label of the row at the bottom of the tab sidebar that opens a new tab.",
+    "message": "New tab"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "The keys that open a new tab, shown at the right of the New tab row of the tab sidebar, written like the WolOS shortcut sheet: the command glyph stands for Super, the key with the WolOS logo.",
+    "message": "⌘T"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_UNTITLED_TAB",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Title of a row of the tab sidebar for a tab that has no title and no address yet.",
+    "message": "New tab"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_UNTITLED",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Name shown in the tab sidebar for a tab group that has no name. It is drawn in capital letters.",
+    "message": "Untitled group"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT",
+    "source": "chrome/app/atlas/sidebar_strings.grdp",
+    "context": "Summary of a collapsed tab group in the tab sidebar: how many tabs it holds.",
+    "message": "{COUNT, plural,\n      =1 {1 tab}\n      other {# tabs}}"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_ON",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Tooltip and accessible name of the privacy button in the toolbar while Do Not Track is on. Do Not Track is a request that sites may ignore, so the text never says anything is blocked.",
+    "message": "Do Not Track is on"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_OFF",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Tooltip and accessible name of the privacy button in the toolbar after the person turned Do Not Track off.",
+    "message": "Do Not Track is off"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TITLE",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Title of the small window that opens from the privacy button in the toolbar.",
+    "message": "Privacy"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Name of a row in the privacy window: the Do Not Track request.",
+    "message": "Do Not Track"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT_INFO",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "One line under the Do Not Track row: what the setting does.",
+    "message": "Sites are asked not to follow you. Some sites ignore the request."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Name of a row in the privacy window: Global Privacy Control, a signal sent to sites.",
+    "message": "Global Privacy Control"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC_INFO",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "One line under the Global Privacy Control row: what the setting does.",
+    "message": "Sites are told not to sell or share your data."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Name of a row in the privacy window: the list-based tracker blocker.",
+    "message": "Tracker blocking"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS_INFO",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "One line under the Tracker blocking row: what the setting does.",
+    "message": "A list built into Atlas stops known trackers from loading."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Name of a row in the privacy window: small random changes in what a page can read back from the canvas and audio, so sites cannot use those reads to recognise the person.",
+    "message": "Fingerprint noise"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE_INFO",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "One line under the Fingerprint noise row: what the setting does. Pages still look and sound as the site made them.",
+    "message": "Adds tiny changes to canvas and audio reads, so sites cannot use them to recognise you. Pages look and sound as made."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_ON",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Value shown at the right of a row in the privacy window when the setting is on.",
+    "message": "On"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_OFF",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Value shown at the right of a row in the privacy window when the setting is off.",
+    "message": "Off"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_SETTINGS_LINK",
+    "source": "chrome/app/atlas/toolbar_strings.grdp",
+    "context": "Link at the bottom of the privacy window that opens the privacy page of Settings.",
+    "message": "Privacy settings"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_APP_MENU_PASSWORDS",
+    "source": "chrome/app/atlas/vault_strings.grdp",
+    "context": "Item in the app menu that opens the saved passwords page.",
+    "message": "Passwords"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_SETTINGS_PASSWORDS",
+    "source": "chrome/app/atlas/vault_strings.grdp",
+    "context": "Entry in the settings menu that opens the saved passwords page in a new tab.",
+    "message": "Passwords"
+  }
+]

@@ -1,0 +1,282 @@
+[
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>.",
+    "message": "バージョン <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>。エンジン <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>。"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION_WOLOS",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>.",
+    "message": "バージョン <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>。WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>。エンジン <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>。"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_LICENSE",
+    "source": "Atlas is made possible by open source software. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>See the credits<ph name=\"END_LINK\">&lt;/a&gt;</ph>.",
+    "message": "Atlas はオープンソースソフトウェアによって実現されています。<ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>クレジットを表示<ph name=\"END_LINK\">&lt;/a&gt;</ph>。"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPENS_IN_NEW_TAB",
+    "source": "Opens in a new tab",
+    "message": "新しいタブで開きます"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_UPDATES",
+    "source": "Atlas updates with WolOS.",
+    "message": "Atlas は WolOS と一緒に更新されます。"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPEN_UPDATES",
+    "source": "Open Software Update",
+    "message": "ソフトウェア・アップデートを開く"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_WOLOS_LABEL",
+    "source": "WolOS",
+    "message": "WolOS"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_ENGINE_LABEL",
+    "source": "Engine",
+    "message": "エンジン"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_NO_WOLOS",
+    "source": "Not detected",
+    "message": "検出されませんでした"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH",
+    "source": "Open &amp;With…",
+    "message": "アプリで開く(&amp;W)…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE",
+    "source": "&amp;Share…",
+    "message": "共有(&amp;S)…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES",
+    "source": "Show in &amp;Files",
+    "message": "ファイルで表示(&amp;F)"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH",
+    "source": "&amp;Move to Trash",
+    "message": "ゴミ箱に入れる(&amp;M)"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME",
+    "source": "Open <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> with another app",
+    "message": "<ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> を別のアプリで開く"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME",
+    "source": "Share <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>",
+    "message": "<ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> を共有"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME",
+    "source": "Show <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> in Files",
+    "message": "<ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> をファイルで表示"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME",
+    "source": "Move <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> to the Trash",
+    "message": "<ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> をゴミ箱に入れる"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE",
+    "source": "That did not happen",
+    "message": "実行できませんでした"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOADS_HEADER",
+    "source": "Downloads",
+    "message": "ダウンロード"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED",
+    "source": "Pinned",
+    "message": "固定済み"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_RECENT",
+    "source": "Pick up where you left off",
+    "message": "前回の続きから"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED_EMPTY",
+    "source": "Pages you pin appear here.",
+    "message": "固定したページはここに表示されます。"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_TITLE",
+    "source": "Nothing to pick up yet",
+    "message": "再開できるページはまだありません"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_HINT",
+    "source": "Pages you open show up here, so you can come back to them.",
+    "message": "開いたページはここに表示されるので、あとで戻れます。"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_ACTION",
+    "source": "Search or enter an address",
+    "message": "検索またはアドレスを入力"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_SEARCH_PLACEHOLDER",
+    "source": "Search or enter an address",
+    "message": "検索またはアドレスを入力"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED",
+    "source": "Opened <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>",
+    "message": "<ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>に開きました"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED_JUST_NOW",
+    "source": "Opened just now",
+    "message": "たった今開きました"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVE_FROM_PINNED",
+    "source": "Remove <ph name=\"TITLE\">$1<ex>Mail</ex></ph> from Pinned",
+    "message": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> を固定から外す"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVED_FROM_PINNED",
+    "source": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> removed from Pinned",
+    "message": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> を固定から外しました"
+  },
+  {
+    "name": "IDS_ATLAS_DNT_IS_ON",
+    "source": "Do Not Track is on",
+    "message": "トラッキング拒否はオンです"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_PINNED",
+    "source": "Pinned",
+    "message": "固定済み"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_TODAY",
+    "source": "Today",
+    "message": "今日"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_YESTERDAY",
+    "source": "Yesterday",
+    "message": "昨日"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_EARLIER",
+    "source": "Earlier",
+    "message": "それ以前"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB",
+    "source": "New tab",
+    "message": "新しいタブ"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT",
+    "source": "⌘T",
+    "message": "⌘T"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_UNTITLED_TAB",
+    "source": "New tab",
+    "message": "新しいタブ"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_UNTITLED",
+    "source": "Untitled group",
+    "message": "名前のないグループ"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT",
+    "source": "{COUNT, plural,\n      =1 {1 tab}\n      other {# tabs}}",
+    "message": "{COUNT, plural, =1 {1 個のタブ} other {# 個のタブ}}"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_ON",
+    "source": "Do Not Track is on",
+    "message": "トラッキング拒否はオンです"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_OFF",
+    "source": "Do Not Track is off",
+    "message": "トラッキング拒否はオフです"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TITLE",
+    "source": "Privacy",
+    "message": "プライバシー"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT",
+    "source": "Do Not Track",
+    "message": "トラッキング拒否"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT_INFO",
+    "source": "Sites are asked not to follow you. Some sites ignore the request.",
+    "message": "サイトにトラッキングしないよう求めます。この要求を無視するサイトもあります。"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC",
+    "source": "Global Privacy Control",
+    "message": "Global Privacy Control"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC_INFO",
+    "source": "Sites are told not to sell or share your data.",
+    "message": "サイトに、データを販売・共有しないよう伝えます。"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS",
+    "source": "Tracker blocking",
+    "message": "トラッカーのブロック"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS_INFO",
+    "source": "A list built into Atlas stops known trackers from loading.",
+    "message": "Atlas に組み込まれたリストにより、既知のトラッカーの読み込みを止めます。"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE",
+    "source": "Fingerprint noise",
+    "message": "フィンガープリントノイズ"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE_INFO",
+    "source": "Adds tiny changes to canvas and audio reads, so sites cannot use them to recognise you. Pages look and sound as made.",
+    "message": "canvas と音声の読み取りにごくわずかな変化を加え、サイトがそれを使って見分けられないようにします。ページの見た目や音はそのままです。"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_ON",
+    "source": "On",
+    "message": "オン"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_OFF",
+    "source": "Off",
+    "message": "オフ"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_SETTINGS_LINK",
+    "source": "Privacy settings",
+    "message": "プライバシー設定"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_APP_MENU_PASSWORDS",
+    "source": "Passwords",
+    "message": "パスワード"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_SETTINGS_PASSWORDS",
+    "source": "Passwords",
+    "message": "パスワード"
+  }
+]

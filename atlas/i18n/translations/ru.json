@@ -1,0 +1,282 @@
+[
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>.",
+    "message": "Версия <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Движок <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION_WOLOS",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>.",
+    "message": "Версия <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Движок <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_LICENSE",
+    "source": "Atlas is made possible by open source software. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>See the credits<ph name=\"END_LINK\">&lt;/a&gt;</ph>.",
+    "message": "Atlas создан благодаря программному обеспечению с открытым исходным кодом. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>Посмотрите список авторов<ph name=\"END_LINK\">&lt;/a&gt;</ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPENS_IN_NEW_TAB",
+    "source": "Opens in a new tab",
+    "message": "Открывается в новой вкладке"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_UPDATES",
+    "source": "Atlas updates with WolOS.",
+    "message": "Atlas обновляется вместе с WolOS."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPEN_UPDATES",
+    "source": "Open Software Update",
+    "message": "Открыть «Обновление ПО»"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_WOLOS_LABEL",
+    "source": "WolOS",
+    "message": "WolOS"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_ENGINE_LABEL",
+    "source": "Engine",
+    "message": "Движок"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_NO_WOLOS",
+    "source": "Not detected",
+    "message": "Не обнаружено"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH",
+    "source": "Open &amp;With…",
+    "message": "Открыть &amp;с помощью…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE",
+    "source": "&amp;Share…",
+    "message": "&amp;Поделиться…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES",
+    "source": "Show in &amp;Files",
+    "message": "Показать в &amp;Файлах"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH",
+    "source": "&amp;Move to Trash",
+    "message": "&amp;Переместить в Корзину"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME",
+    "source": "Open <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> with another app",
+    "message": "Открыть <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> в другом приложении"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME",
+    "source": "Share <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>",
+    "message": "Поделиться файлом <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME",
+    "source": "Show <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> in Files",
+    "message": "Показать <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> в Файлах"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME",
+    "source": "Move <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> to the Trash",
+    "message": "Переместить <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> в корзину"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE",
+    "source": "That did not happen",
+    "message": "Не получилось"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOADS_HEADER",
+    "source": "Downloads",
+    "message": "Загрузки"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED",
+    "source": "Pinned",
+    "message": "Закреплённые"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_RECENT",
+    "source": "Pick up where you left off",
+    "message": "Продолжите с того же места"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED_EMPTY",
+    "source": "Pages you pin appear here.",
+    "message": "Здесь появятся страницы, которые вы закрепите."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_TITLE",
+    "source": "Nothing to pick up yet",
+    "message": "Пока нечего продолжать"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_HINT",
+    "source": "Pages you open show up here, so you can come back to them.",
+    "message": "Открытые вами страницы появятся здесь, чтобы вы могли к ним вернуться."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_ACTION",
+    "source": "Search or enter an address",
+    "message": "Введите запрос или адрес"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_SEARCH_PLACEHOLDER",
+    "source": "Search or enter an address",
+    "message": "Введите запрос или адрес"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED",
+    "source": "Opened <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>",
+    "message": "Открыто <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED_JUST_NOW",
+    "source": "Opened just now",
+    "message": "Открыто только что"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVE_FROM_PINNED",
+    "source": "Remove <ph name=\"TITLE\">$1<ex>Mail</ex></ph> from Pinned",
+    "message": "Убрать <ph name=\"TITLE\">$1<ex>Mail</ex></ph> из закреплённых"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVED_FROM_PINNED",
+    "source": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> removed from Pinned",
+    "message": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> убрано из закреплённых"
+  },
+  {
+    "name": "IDS_ATLAS_DNT_IS_ON",
+    "source": "Do Not Track is on",
+    "message": "Запрет отслеживания включён"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_PINNED",
+    "source": "Pinned",
+    "message": "Закреплённые"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_TODAY",
+    "source": "Today",
+    "message": "Сегодня"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_YESTERDAY",
+    "source": "Yesterday",
+    "message": "Вчера"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_EARLIER",
+    "source": "Earlier",
+    "message": "Ранее"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB",
+    "source": "New tab",
+    "message": "Новая вкладка"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT",
+    "source": "⌘T",
+    "message": "⌘T"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_UNTITLED_TAB",
+    "source": "New tab",
+    "message": "Новая вкладка"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_UNTITLED",
+    "source": "Untitled group",
+    "message": "Группа без названия"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT",
+    "source": "{COUNT, plural,\n      =1 {1 tab}\n      other {# tabs}}",
+    "message": "{COUNT, plural, =1 {1 вкладка} one {# вкладка} few {# вкладки} many {# вкладок} other {# вкладки}}"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_ON",
+    "source": "Do Not Track is on",
+    "message": "Запрет отслеживания включён"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_OFF",
+    "source": "Do Not Track is off",
+    "message": "Запрет отслеживания выключен"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TITLE",
+    "source": "Privacy",
+    "message": "Конфиденциальность"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT",
+    "source": "Do Not Track",
+    "message": "Запрет отслеживания"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT_INFO",
+    "source": "Sites are asked not to follow you. Some sites ignore the request.",
+    "message": "Сайтам предлагается не отслеживать вас. Некоторые сайты игнорируют этот запрос."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC",
+    "source": "Global Privacy Control",
+    "message": "Global Privacy Control"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC_INFO",
+    "source": "Sites are told not to sell or share your data.",
+    "message": "Сайтам сообщается, что ваши данные нельзя продавать или передавать."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS",
+    "source": "Tracker blocking",
+    "message": "Блокировка трекеров"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS_INFO",
+    "source": "A list built into Atlas stops known trackers from loading.",
+    "message": "Встроенный в Atlas список не даёт загружаться известным трекерам."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE",
+    "source": "Fingerprint noise",
+    "message": "Шум отпечатка"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE_INFO",
+    "source": "Adds tiny changes to canvas and audio reads, so sites cannot use them to recognise you. Pages look and sound as made.",
+    "message": "Добавляет крошечные изменения при чтении canvas и аудио, чтобы сайты не могли узнать вас по ним. Страницы выглядят и звучат так, как задумано."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_ON",
+    "source": "On",
+    "message": "Включено"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_OFF",
+    "source": "Off",
+    "message": "Выключено"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_SETTINGS_LINK",
+    "source": "Privacy settings",
+    "message": "Настройки конфиденциальности"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_APP_MENU_PASSWORDS",
+    "source": "Passwords",
+    "message": "Пароли"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_SETTINGS_PASSWORDS",
+    "source": "Passwords",
+    "message": "Пароли"
+  }
+]

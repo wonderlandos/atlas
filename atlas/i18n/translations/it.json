@@ -1,0 +1,282 @@
+[
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>.",
+    "message": "Versione <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. Motore <ph name=\"ENGINE_VERSION\">$4<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_VERSION_WOLOS",
+    "source": "Version <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Engine <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>.",
+    "message": "Versione <ph name=\"ATLAS_VERSION\">$1<ex>0.13.0</ex></ph> (<ph name=\"CHANNEL\">$2<ex>Official Build</ex></ph>) <ph name=\"BITS\">$3<ex>(64-bit)</ex></ph>. WolOS <ph name=\"WOLOS_RELEASE\">$4<ex>0.13</ex></ph>. Motore <ph name=\"ENGINE_VERSION\">$5<ex>156.0.8078.79</ex></ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_LICENSE",
+    "source": "Atlas is made possible by open source software. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>See the credits<ph name=\"END_LINK\">&lt;/a&gt;</ph>.",
+    "message": "Atlas è reso possibile dal software open source. <ph name=\"BEGIN_LINK\">&lt;a target=\"_blank\" href=\"$1\" aria-description=\"$2\"&gt;</ph>Guarda i riconoscimenti<ph name=\"END_LINK\">&lt;/a&gt;</ph>."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPENS_IN_NEW_TAB",
+    "source": "Opens in a new tab",
+    "message": "Si apre in una nuova scheda"
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_UPDATES",
+    "source": "Atlas updates with WolOS.",
+    "message": "Atlas si aggiorna insieme a WolOS."
+  },
+  {
+    "name": "IDS_ATLAS_ABOUT_OPEN_UPDATES",
+    "source": "Open Software Update",
+    "message": "Apri Aggiornamento software"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_WOLOS_LABEL",
+    "source": "WolOS",
+    "message": "WolOS"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_ENGINE_LABEL",
+    "source": "Engine",
+    "message": "Motore"
+  },
+  {
+    "name": "IDS_ATLAS_VERSION_NO_WOLOS",
+    "source": "Not detected",
+    "message": "Non rilevato"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH",
+    "source": "Open &amp;With…",
+    "message": "Apri &amp;con…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE",
+    "source": "&amp;Share…",
+    "message": "Co&amp;ndividi…"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES",
+    "source": "Show in &amp;Files",
+    "message": "Mostra in &amp;File"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH",
+    "source": "&amp;Move to Trash",
+    "message": "&amp;Sposta nel Cestino"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME",
+    "source": "Open <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> with another app",
+    "message": "Apri <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> con un’altra app"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME",
+    "source": "Share <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>",
+    "message": "Condividi <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME",
+    "source": "Show <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> in Files",
+    "message": "Mostra <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> in File"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME",
+    "source": "Move <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> to the Trash",
+    "message": "Sposta <ph name=\"FILE_NAME\">$1<ex>report.pdf</ex></ph> nel Cestino"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE",
+    "source": "That did not happen",
+    "message": "Non è stato possibile"
+  },
+  {
+    "name": "IDS_ATLAS_DOWNLOADS_HEADER",
+    "source": "Downloads",
+    "message": "Download"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED",
+    "source": "Pinned",
+    "message": "Fissate"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_RECENT",
+    "source": "Pick up where you left off",
+    "message": "Riprendi da dove eri rimasto"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_PINNED_EMPTY",
+    "source": "Pages you pin appear here.",
+    "message": "Le pagine che fissi compaiono qui."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_TITLE",
+    "source": "Nothing to pick up yet",
+    "message": "Ancora niente da riprendere"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_HINT",
+    "source": "Pages you open show up here, so you can come back to them.",
+    "message": "Le pagine che apri compaiono qui, così puoi tornarci."
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_EMPTY_ACTION",
+    "source": "Search or enter an address",
+    "message": "Cerca o inserisci un indirizzo"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_SEARCH_PLACEHOLDER",
+    "source": "Search or enter an address",
+    "message": "Cerca o inserisci un indirizzo"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED",
+    "source": "Opened <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>",
+    "message": "Aperta <ph name=\"WHEN\">$1<ex>20 minutes ago</ex></ph>"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_OPENED_JUST_NOW",
+    "source": "Opened just now",
+    "message": "Aperta proprio ora"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVE_FROM_PINNED",
+    "source": "Remove <ph name=\"TITLE\">$1<ex>Mail</ex></ph> from Pinned",
+    "message": "Rimuovi <ph name=\"TITLE\">$1<ex>Mail</ex></ph> dalle Fissate"
+  },
+  {
+    "name": "IDS_ATLAS_NEWTAB_REMOVED_FROM_PINNED",
+    "source": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> removed from Pinned",
+    "message": "<ph name=\"TITLE\">$1<ex>Mail</ex></ph> rimossa dalle Fissate"
+  },
+  {
+    "name": "IDS_ATLAS_DNT_IS_ON",
+    "source": "Do Not Track is on",
+    "message": "Non tracciare è attivo"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_PINNED",
+    "source": "Pinned",
+    "message": "Fissate"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_TODAY",
+    "source": "Today",
+    "message": "Oggi"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_YESTERDAY",
+    "source": "Yesterday",
+    "message": "Ieri"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_SECTION_EARLIER",
+    "source": "Earlier",
+    "message": "Precedenti"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB",
+    "source": "New tab",
+    "message": "Nuova scheda"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_NEW_TAB_SHORTCUT",
+    "source": "⌘T",
+    "message": "⌘T"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_UNTITLED_TAB",
+    "source": "New tab",
+    "message": "Nuova scheda"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_UNTITLED",
+    "source": "Untitled group",
+    "message": "Gruppo senza nome"
+  },
+  {
+    "name": "IDS_ATLAS_SIDEBAR_GROUP_TAB_COUNT",
+    "source": "{COUNT, plural,\n      =1 {1 tab}\n      other {# tabs}}",
+    "message": "{COUNT, plural, =1 {1 scheda} other {# schede}}"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_ON",
+    "source": "Do Not Track is on",
+    "message": "Non tracciare è attivo"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TOOLTIP_OFF",
+    "source": "Do Not Track is off",
+    "message": "Non tracciare è disattivato"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_TITLE",
+    "source": "Privacy",
+    "message": "Privacy"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT",
+    "source": "Do Not Track",
+    "message": "Non tracciare"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_DNT_INFO",
+    "source": "Sites are asked not to follow you. Some sites ignore the request.",
+    "message": "Ai siti viene chiesto di non seguirti. Alcuni siti ignorano la richiesta."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC",
+    "source": "Global Privacy Control",
+    "message": "Global Privacy Control"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_GPC_INFO",
+    "source": "Sites are told not to sell or share your data.",
+    "message": "Ai siti viene comunicato di non vendere né condividere i tuoi dati."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS",
+    "source": "Tracker blocking",
+    "message": "Blocco dei tracker"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_TRACKERS_INFO",
+    "source": "A list built into Atlas stops known trackers from loading.",
+    "message": "Un elenco integrato in Atlas impedisce il caricamento dei tracker noti."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE",
+    "source": "Fingerprint noise",
+    "message": "Rumore dell’impronta digitale"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_ROW_NOISE_INFO",
+    "source": "Adds tiny changes to canvas and audio reads, so sites cannot use them to recognise you. Pages look and sound as made.",
+    "message": "Aggiunge piccole variazioni alle letture di canvas e audio, così i siti non possono usarle per riconoscerti. Le pagine appaiono e suonano come previsto."
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_ON",
+    "source": "On",
+    "message": "Attivo"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_VALUE_OFF",
+    "source": "Off",
+    "message": "Disattivato"
+  },
+  {
+    "name": "IDS_ATLAS_TOOLBAR_PRIVACY_SETTINGS_LINK",
+    "source": "Privacy settings",
+    "message": "Impostazioni di privacy"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_APP_MENU_PASSWORDS",
+    "source": "Passwords",
+    "message": "Password"
+  },
+  {
+    "name": "IDS_ATLAS_VAULT_SETTINGS_PASSWORDS",
+    "source": "Passwords",
+    "message": "Password"
+  }
+]
