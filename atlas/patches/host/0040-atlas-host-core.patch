@@ -1,0 +1,48 @@
+Atlas overlay patch 0040: host/atlas-host-core
+Why: the browser must connect to the WolOS bridge (components/atlas_host) when it starts and close the
+ connection when it stops, so the downloads menu can offer Share, Open With and Move to Trash only when the
+ desktop answers. No lower tier reaches the browser's startup: it is two lines in chrome_browser_main.cc
+ (PostBrowserStart, PostMainMessageLoopRun) and an include; the client itself is new files in
+ components/atlas_host (the overlay tree), already built into //chrome/browser by patch 0010.
+Files: chrome/browser/chrome_browser_main.cc
+Test filter: *AtlasHost* (components/atlas_host unit tests); journey atlas-reel.yaml step R07
+Rebase risk: L (three small hunks near OnBrowserStarted() and web_usb_detector_.reset(), both stable)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in a file the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/chrome_browser_main.cc
++++ b/chrome/browser/chrome_browser_main.cc
+@@ -94,6 +94,9 @@
+ #include "chrome/common/profiler/thread_profiler_configuration.h"
+ #include "chrome/grit/branded_strings.h"
+ #include "chrome/installer/util/google_update_settings.h"
++#if BUILDFLAG(IS_LINUX)
++#include "components/atlas_host/atlas_host.h"
++#endif
+ #include "components/color/color_mixers.h"
+ #include "components/device_event_log/device_event_log.h"
+ #include "components/embedder_support/origin_trials/component_updater_utils.h"
+@@ -1733,6 +1736,11 @@
+ 
+   browser_process_->browser_policy_connector()->OnBrowserStarted();
+ 
++#if BUILDFLAG(IS_LINUX)
++  // Atlas: connect to the desktop's bridge (components/atlas_host).
++  atlas_host::AtlasHost::Start();
++#endif
++
+ #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+   // Allow ProcessSingleton to process messages.
+   // This is done here instead of just relying on the main message loop's start
+@@ -2233,6 +2241,10 @@
+ 
+   web_usb_detector_.reset();
+ 
++#if BUILDFLAG(IS_LINUX)
++  atlas_host::AtlasHost::Stop();
++#endif
++
+   for (auto& chrome_extra_part : chrome_extra_parts_) {
+     chrome_extra_part->PostMainMessageLoopRun();
+   }

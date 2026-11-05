@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 The Atlas Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!-- Atlas strings of the host area (owner: ATLAS-HOST). A part of
+     chrome/app/generated_resources.grd (anchor patch 0010): add <message name="IDS_ATLAS_..."> elements
+     here, never in generated_resources.grd. -->
+<grit-part>
+  <!-- The menu of a finished download in the downloads list: Open, Open With…, Share…, Show in Files,
+       a separator, Move to Trash. Sentence case, an ellipsis when the desktop asks for more. -->
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH" desc="Downloads list, row menu: choose the app that opens the file. The ellipsis says the desktop asks which app.">
+    Open &amp;With…
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_SHARE" desc="Downloads list, row menu: share the file with the share sheet of the desktop. The ellipsis says the sheet asks where to send it.">
+    &amp;Share…
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES" desc="Downloads list, row menu: show the file in the file manager of the desktop, which is called Files.">
+    Show in &amp;Files
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH" desc="Downloads list, row menu: move the file to the Trash of the desktop, from where it can be restored. Last in the menu because it removes the file from the folder.">
+    &amp;Move to Trash
+  </message>
+
+  <!-- What a screen reader says for the same items; $1 is the name of the file. -->
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME" desc="Downloads list, row menu, screen reader name of the Open With item. $1 is the file name.">
+    Open <ph name="FILE_NAME">$1<ex>report.pdf</ex></ph> with another app
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME" desc="Downloads list, row menu, screen reader name of the Share item. $1 is the file name.">
+    Share <ph name="FILE_NAME">$1<ex>report.pdf</ex></ph>
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME" desc="Downloads list, row menu, screen reader name of the Show in Files item. $1 is the file name.">
+    Show <ph name="FILE_NAME">$1<ex>report.pdf</ex></ph> in Files
+  </message>
+  <message name="IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME" desc="Downloads list, row menu, screen reader name of the Move to Trash item. $1 is the file name.">
+    Move <ph name="FILE_NAME">$1<ex>report.pdf</ex></ph> to the Trash
+  </message>
+
+  <!-- Shown when Share, Open With or Move to Trash did not happen; the message under it is the words of the desktop. -->
+  <message name="IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE" desc="Title of the box that says Share, Open With or Move to Trash on a downloaded file did not happen. The reason is in the box.">
+    That did not happen
+  </message>
+  <!-- The heading of the downloads list (overlay patch 0095); shown in small capitals. -->
+  <message name="IDS_ATLAS_DOWNLOADS_HEADER" desc="Heading of the list of downloads that opens from the downloads button of the toolbar.">
+    Downloads
+  </message>
+</grit-part>

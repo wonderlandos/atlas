@@ -1,0 +1,286 @@
+Atlas overlay patch 0041: host/download-verbs
+Why: the menu of a finished download in the downloads list offers Open, Open With..., Share..., Show in Files,
+ a separator and Move to Trash, the last three done by WolOS through the bridge. The verbs are not added to
+ DownloadCommands::Command (that would add a case to about fifteen switches of three models and the
+ statistics): their ids sit above kMaxValue (static_assert) and DownloadUiContextMenu handles them before
+ an id is cast to the enum, so the patch is the menu and the dispatch; the logic is in
+ components/atlas_host/download_verbs. The verbs are offered only when the bridge answered its hello; a
+ machine without it shows the engine's own menu. Show in folder is worded "Show in Files" (the action is the
+ engine's). The row menu view skips the click statistics for an id that is not an engine command. A failure
+ is shown in a message box with the words of the desktop; a sheet the person closes says nothing.
+Files: chrome/browser/download/BUILD.gn, chrome/browser/download/download_ui_context_menu.h,
+ chrome/browser/download/download_ui_context_menu.cc,
+ chrome/browser/ui/views/download/download_ui_context_menu_view.cc
+Test filter: *DownloadUiContextMenu*:*AtlasHost*; journey atlas-reel.yaml step R07
+Rebase risk: M (the menu builders and the switch in GetLabelForCommandId change between releases; the hooks are early returns)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches); BSD-3-Clause (the other hunks)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/download/BUILD.gn
++++ b/chrome/browser/download/BUILD.gn
+@@ -319,7 +319,11 @@
+ 
+   if (!is_android && !is_chromeos) {
+     sources += [ "download_ui_context_menu.cc" ]
+-    deps += [ "//chrome/browser/download/bubble" ]
++    deps += [
++      "//chrome/browser/download/bubble",
++      "//chrome/browser/ui:simple_message_box_headers",
++      "//components/atlas_host",
++    ]
+   }
+ 
+   if (is_chromeos) {
+--- a/chrome/browser/download/download_ui_context_menu.h
++++ b/chrome/browser/download/download_ui_context_menu.h
+@@ -16,6 +16,10 @@
+ #include "components/download/public/common/download_item.h"
+ #include "ui/menus/simple_menu_model.h"
+ 
++namespace atlas_host {
++struct Result;
++}
++
+ // This class is responsible for the download UI context menu. Platform
+ // specific subclasses are responsible for creating and running the menu. It may
+ // be triggered e.g. by right-clicking on the download entry within the Download
+@@ -52,6 +56,7 @@
+ 
+  private:
+   friend class DownloadUiContextMenuTest;
++  friend class AtlasDownloadUiContextMenuTest;
+   FRIEND_TEST_ALL_PREFIXES(DownloadUiContextMenuTest,
+                            InvalidDownloadWontCrashContextMenu);
+   FRIEND_TEST_ALL_PREFIXES(DownloadUiContextMenuTest, RecordCommandsEnabled);
+@@ -71,6 +76,12 @@
+ 
+   void AddAutoOpenToMenu(ui::SimpleMenuModel* model);
+ 
++  // Atlas: the menu of a finished download when the desktop's verbs are there
++  // (Open, Open With, Share, Show in Files, Move to Trash), and the verbs.
++  ui::SimpleMenuModel* GetAtlasFinishedMenuModel();
++  void RunAtlasVerb(int command_id);
++  void OnAtlasVerbDone(int command_id, atlas_host::Result result);
++
+   void RecordCommandsEnabled(ui::SimpleMenuModel* model);
+ 
+   // We show slightly different menus if the download is in progress vs. if the
+@@ -83,6 +94,7 @@
+   std::unique_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
+   std::unique_ptr<ui::SimpleMenuModel> deep_scanning_menu_model_;
+   std::unique_ptr<ui::SimpleMenuModel> insecure_download_menu_model_;
++  std::unique_ptr<ui::SimpleMenuModel> atlas_finished_download_menu_model_;
+ 
+   // Whether or not a histogram has been emitted recording which
+   // Download commands were enabled
+@@ -92,6 +104,8 @@
+   // Use WeakPtr because the context menu may outlive |download_|.
+   base::WeakPtr<DownloadUIModel> download_;
+   std::unique_ptr<DownloadCommands> download_commands_;
++
++  base::WeakPtrFactory<DownloadUiContextMenu> weak_factory_{this};
+ };
+ 
+ #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_UI_CONTEXT_MENU_H_
+--- a/chrome/browser/download/download_ui_context_menu.cc
++++ b/chrome/browser/download/download_ui_context_menu.cc
+@@ -6,16 +6,24 @@
+ 
+ #include <memory>
+ 
++#include "base/functional/bind.h"
+ #include "base/metrics/histogram_functions.h"
++#include "base/strings/utf_string_conversions.h"
+ #include "build/build_config.h"
+ #include "chrome/browser/download/chrome_download_manager_delegate.h"
+ #include "chrome/browser/download/download_commands.h"
+ #include "chrome/browser/download/download_stats.h"
++#include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
++#include "chrome/browser/ui/simple_message_box.h"
+ #include "chrome/grit/generated_resources.h"
++#include "components/atlas_host/download_verbs.h"
+ #include "components/download/public/common/download_danger_type.h"
+ #include "components/vector_icons/vector_icons.h"
++#include "content/public/browser/download_manager.h"
+ #include "content/public/common/content_features.h"
+ #include "extensions/common/extension.h"
++#include "ui/base/base_window.h"
+ #include "ui/base/l10n/l10n_util.h"
+ #include "ui/base/ui_base_features.h"
+ #include "ui/gfx/color_palette.h"
+@@ -23,6 +31,9 @@
+ 
+ using InsecureDownloadStatus = download::DownloadItem::InsecureDownloadStatus;
+ 
++// Atlas: the ids of the desktop's verbs stay above every engine command.
++static_assert(atlas_host::kCommandOpenWith > DownloadCommands::kMaxValue);
++
+ DownloadUiContextMenu::~DownloadUiContextMenu() {
+   DetachFromDownloadItem();
+ }
+@@ -95,12 +106,18 @@
+     return false;
+   }
+ 
++  if (atlas_host::IsDownloadVerbCommand(command_id)) {
++    // The file is there and done, as for Show in Files.
++    return atlas_host::DownloadVerbsAvailable() &&
++           download_commands_->IsCommandEnabled(DownloadCommands::SHOW_IN_FOLDER);
++  }
++
+   return download_commands_->IsCommandEnabled(
+       static_cast<DownloadCommands::Command>(command_id));
+ }
+ 
+ bool DownloadUiContextMenu::IsCommandIdChecked(int command_id) const {
+-  if (!download_commands_) {
++  if (!download_commands_ || atlas_host::IsDownloadVerbCommand(command_id)) {
+     return false;
+   }
+ 
+@@ -113,6 +130,10 @@
+     return false;
+   }
+ 
++  if (atlas_host::IsDownloadVerbCommand(command_id)) {
++    return atlas_host::DownloadVerbsAvailable();
++  }
++
+   return download_commands_->IsCommandVisible(
+       static_cast<DownloadCommands::Command>(command_id));
+ }
+@@ -122,6 +143,11 @@
+     return;
+   }
+ 
++  if (atlas_host::IsDownloadVerbCommand(command_id)) {
++    RunAtlasVerb(command_id);
++    return;
++  }
++
+   download_commands_->ExecuteCommand(
+       static_cast<DownloadCommands::Command>(command_id));
+ }
+@@ -134,6 +160,16 @@
+     int command_id) const {
+   int id = -1;
+ 
++  if (command_id == atlas_host::kCommandOpenWith) {
++    return l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH);
++  }
++  if (command_id == atlas_host::kCommandShare) {
++    return l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOAD_MENU_SHARE);
++  }
++  if (command_id == atlas_host::kCommandMoveToTrash) {
++    return l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH);
++  }
++
+   switch (static_cast<DownloadCommands::Command>(command_id)) {
+     case DownloadCommands::OPEN_WHEN_COMPLETE:
+       if (download_ && !download_->IsDone()) {
+@@ -149,7 +185,7 @@
+       id = IDS_DOWNLOAD_MENU_RESUME_ITEM;
+       break;
+     case DownloadCommands::SHOW_IN_FOLDER:
+-      id = IDS_DOWNLOAD_MENU_SHOW;
++      id = IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES;
+       break;
+     case DownloadCommands::DISCARD:
+       id = IDS_DOWNLOAD_MENU_DISCARD;
+@@ -290,6 +326,10 @@
+ 
+ ui::SimpleMenuModel* DownloadUiContextMenu::GetFinishedMenuModel(
+     bool is_download) {
++  if (is_download && atlas_host::DownloadVerbsAvailable()) {
++    return GetAtlasFinishedMenuModel();
++  }
++
+   if (finished_download_menu_model_) {
+     return finished_download_menu_model_.get();
+   }
+@@ -440,6 +480,70 @@
+   return insecure_download_menu_model_.get();
+ }
+ 
++ui::SimpleMenuModel* DownloadUiContextMenu::GetAtlasFinishedMenuModel() {
++  if (atlas_finished_download_menu_model_) {
++    return atlas_finished_download_menu_model_.get();
++  }
++
++  auto model = std::make_unique<ui::SimpleMenuModel>(this);
++  const std::u16string name =
++      download_ ? download_->GetFileNameToReportUser().LossyDisplayName()
++                : std::u16string();
++  auto add = [&](int command_id, int accessible_name_id) {
++    model->AddItem(command_id, GetLabelForCommandId(command_id));
++    if (accessible_name_id) {
++      model->SetAccessibleNameAt(
++          model->GetItemCount() - 1,
++          l10n_util::GetStringFUTF16(accessible_name_id, name));
++    }
++  };
++  add(DownloadCommands::OPEN_WHEN_COMPLETE, 0);
++  add(atlas_host::kCommandOpenWith,
++      IDS_ATLAS_DOWNLOAD_MENU_OPEN_WITH_ACCESSIBLE_NAME);
++  add(atlas_host::kCommandShare, IDS_ATLAS_DOWNLOAD_MENU_SHARE_ACCESSIBLE_NAME);
++  add(DownloadCommands::SHOW_IN_FOLDER,
++      IDS_ATLAS_DOWNLOAD_MENU_SHOW_IN_FILES_ACCESSIBLE_NAME);
++  model->AddSeparator(ui::NORMAL_SEPARATOR);
++  add(atlas_host::kCommandMoveToTrash,
++      IDS_ATLAS_DOWNLOAD_MENU_MOVE_TO_TRASH_ACCESSIBLE_NAME);
++
++  atlas_finished_download_menu_model_ = std::move(model);
++  return atlas_finished_download_menu_model_.get();
++}
++
++void DownloadUiContextMenu::RunAtlasVerb(int command_id) {
++  if (!download_) {
++    return;
++  }
++  atlas_host::RunDownloadVerb(
++      command_id, download_->GetFullPath(),
++      base::BindOnce(&DownloadUiContextMenu::OnAtlasVerbDone,
++                     weak_factory_.GetWeakPtr(), command_id));
++}
++
++void DownloadUiContextMenu::OnAtlasVerbDone(int command_id,
++                                            atlas_host::Result result) {
++  if (!result.ok) {
++    // A cancelled sheet is not an error and says nothing; a failure says what
++    // the desktop said, as it is.
++    // As a sheet of the window that holds the downloads list, if it is there.
++    BrowserWindowInterface* browser =
++        download_commands_ ? download_commands_->GetBrowser() : nullptr;
++    chrome::ShowWarningMessageBoxAsync(
++        browser ? browser->GetWindow()->GetNativeWindow()
++                : gfx::NativeWindow(),
++        l10n_util::GetStringUTF16(IDS_ATLAS_DOWNLOAD_VERB_FAILED_TITLE),
++        base::UTF8ToUTF16(result.text));
++    return;
++  }
++  if (command_id == atlas_host::kCommandMoveToTrash && download_ &&
++      download_->profile()) {
++    // The file is gone from the folder: let the downloads list find out now
++    // and show the row as removed.
++    download_->profile()->GetDownloadManager()->CheckForHistoryFilesRemoval();
++  }
++}
++
+ void DownloadUiContextMenu::AddAutoOpenToMenu(ui::SimpleMenuModel* menu) {
+   if (!download_) {
+     return;
+--- a/chrome/browser/ui/views/download/download_ui_context_menu_view.cc
++++ b/chrome/browser/ui/views/download/download_ui_context_menu_view.cc
+@@ -88,7 +88,9 @@
+ 
+ void DownloadUiContextMenuView::ExecuteCommand(int command_id,
+                                                int event_flags) {
+-  if (!download_commands_executed_recorded_[command_id]) {
++  // Atlas: the desktop's verbs are not engine commands and are not logged.
++  if (command_id <= DownloadCommands::kMaxValue &&
++      !download_commands_executed_recorded_[command_id]) {
+     base::UmaHistogramEnumeration(
+         "Download.ContextMenuAction",
+         DownloadCommandToContextMenuAction(
