@@ -1,0 +1,212 @@
+Atlas overlay patch 0073: ui/accent-seed
+Why: the settings portal names the accent as the nearest of nine presets (violet comes out as purple), so the pill, ring and tab colours would show a colour near the person's accent, not it. The GTK theme WolOS-<id> states the exact accent (the selected-row background that kColorAccent already reads) and changes with the theme id, so the engine takes the theme's accent as the colour it seeds the palette with and the portal preset only when the theme states none. Lower tiers were not enough: the portal cannot carry an arbitrary colour (its accent-color is a preset), and a launcher flag (--disable-features=UsePortalAccentColor) removes the user_color seed of the sys palette altogether.
+Files: ui/gtk/atlas_accent.h, ui/gtk/atlas_accent.cc, ui/gtk/atlas_accent_unittest.cc (new), ui/gtk/os_settings_provider_gtk.cc, ui/gtk/gtk_ui.cc, ui/gtk/BUILD.gn
+Test filter: gtk_unittests --gtest_filter='*AtlasAccent*'; journey atlas-theme (reel R03)
+Rebase risk: L (two one-line hooks in os_settings_provider_gtk.cc and gtk_ui.cc, two list lines in BUILD.gn; the logic is in new files)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series touches or adds), BSD-3-Clause (new files)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+---
+--- a/ui/gtk/BUILD.gn
++++ b/ui/gtk/BUILD.gn
+@@ -83,6 +83,8 @@
+   ]
+ 
+   sources = [
++    "atlas_accent.cc",
++    "atlas_accent.h",
+     "gtk_color_mixers.cc",
+     "gtk_color_mixers.h",
+     "gtk_compat.cc",
+@@ -205,6 +207,7 @@
+     configs += [ ":gtk_internal_config" ]
+ 
+     sources = [
++      "atlas_accent_unittest.cc",
+       "gtk_util_unittest.cc",
+       "run_all_unittests.cc",
+     ]
+--- a/ui/gtk/gtk_ui.cc
++++ b/ui/gtk/gtk_ui.cc
+@@ -65,6 +65,7 @@
+ #include "ui/gfx/image/image_skia_source.h"
+ #include "ui/gfx/linux/fontconfig_util.h"
+ #include "ui/gfx/skbitmap_operations.h"
++#include "ui/gtk/atlas_accent.h"
+ #include "ui/gtk/gtk_color_mixers.h"
+ #include "ui/gtk/gtk_compat.h"
+ #include "ui/gtk/gtk_key_bindings_handler.h"
+@@ -1288,7 +1289,8 @@
+ 
+ void GtkUi::AddGtkNativeColorMixer(ui::ColorProvider* provider,
+                                    const ui::ColorProviderKey& key) {
+-  gtk::AddGtkNativeColorMixer(provider, key, accent_color_);
++  gtk::AddGtkNativeColorMixer(provider, key,
++                              gtk::AtlasAccent(accent_color_));
+ }
+ 
+ void GtkUi::UpdateDeviceScaleFactor() {
+--- a/ui/gtk/os_settings_provider_gtk.cc
++++ b/ui/gtk/os_settings_provider_gtk.cc
+@@ -14,6 +14,7 @@
+ #include "base/time/time.h"
+ #include "ui/base/glib/scoped_gsignal.h"
+ #include "ui/gfx/color_utils.h"
++#include "ui/gtk/atlas_accent.h"
+ #include "ui/gtk/gtk_compat.h"
+ #include "ui/gtk/gtk_util.h"
+ #include "ui/native_theme/native_theme.h"
+@@ -84,7 +85,7 @@
+ }
+ 
+ std::optional<SkColor> OsSettingsProviderGtk::AccentColor() const {
+-  return accent_color_;
++  return AtlasAccent(accent_color_);
+ }
+ 
+ void OsSettingsProviderGtk::SetAccentColor(
+--- a/ui/gtk/atlas_accent.h
++++ b/ui/gtk/atlas_accent.h
+@@ -0,0 +1,35 @@
++// Copyright 2026 The Atlas Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_GTK_ATLAS_ACCENT_H_
++#define UI_GTK_ATLAS_ACCENT_H_
++
++#include <optional>
++
++#include "base/component_export.h"
++#include "third_party/skia/include/core/SkColor.h"
++
++namespace gtk {
++
++// The accent the browser seeds its colours with.
++//
++// The settings portal names the accent as one of nine presets (its
++// `accent-color`), the nearest preset to the colour the person picked. The
++// GTK theme states the exact colour: the selected-row background that
++// AddGtkNativeColorMixer() reads for ui::kColorAccent. The theme wins when it
++// states an opaque colour, so a theme change moves the accent with it and the
++// accent is the one the system drew; the portal's preset is only the answer
++// when the theme states none.
++COMPONENT_EXPORT(GTK)
++std::optional<SkColor> ChooseAtlasAccent(std::optional<SkColor> theme_accent,
++                                         std::optional<SkColor> portal_accent);
++
++// ChooseAtlasAccent() with the accent of the GTK theme in use, read the way
++// AddGtkNativeColorMixer() reads it. `portal_accent` is the portal's preset.
++COMPONENT_EXPORT(GTK)
++std::optional<SkColor> AtlasAccent(std::optional<SkColor> portal_accent);
++
++}  // namespace gtk
++
++#endif  // UI_GTK_ATLAS_ACCENT_H_
+--- a/ui/gtk/atlas_accent.cc
++++ b/ui/gtk/atlas_accent.cc
+@@ -0,0 +1,31 @@
++// Copyright 2026 The Atlas Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/gtk/atlas_accent.h"
++
++#include "ui/gtk/gtk_util.h"
++
++namespace gtk {
++
++namespace {
++
++// The node AddGtkNativeColorMixer() reads for ui::kColorAccent.
++constexpr char kSelectedCell[] =
++    "treeview.view treeview.view.cell:selected:focus";
++
++}  // namespace
++
++std::optional<SkColor> ChooseAtlasAccent(std::optional<SkColor> theme_accent,
++                                         std::optional<SkColor> portal_accent) {
++  if (theme_accent && SkColorGetA(*theme_accent) == SK_AlphaOPAQUE) {
++    return theme_accent;
++  }
++  return portal_accent;
++}
++
++std::optional<SkColor> AtlasAccent(std::optional<SkColor> portal_accent) {
++  return ChooseAtlasAccent(GetBgColor(kSelectedCell), portal_accent);
++}
++
++}  // namespace gtk
+--- a/ui/gtk/atlas_accent_unittest.cc
++++ b/ui/gtk/atlas_accent_unittest.cc
+@@ -0,0 +1,69 @@
++// Copyright 2026 The Atlas Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/gtk/atlas_accent.h"
++
++#include <optional>
++
++#include "testing/gtest/include/gtest/gtest.h"
++#include "third_party/skia/include/core/SkColor.h"
++#include "ui/base/glib/scoped_gobject.h"
++#include "ui/gtk/gtk_compat.h"
++#include "ui/gtk/gtk_util.h"
++
++namespace gtk {
++
++namespace {
++
++constexpr SkColor kViolet = SkColorSetRGB(0x74, 0x52, 0xf5);
++constexpr SkColor kRose = SkColorSetRGB(0xbb, 0x3f, 0x27);
++// The portal's preset nearest the violet: libadwaita's purple.
++constexpr SkColor kPortalPurple = SkColorSetRGB(0x91, 0x41, 0xac);
++
++}  // namespace
++
++TEST(AtlasAccentTest, TheThemeAccentBeatsThePortalPreset) {
++  EXPECT_EQ(ChooseAtlasAccent(kViolet, kPortalPurple), kViolet);
++  EXPECT_EQ(ChooseAtlasAccent(kRose, kPortalPurple), kRose);
++}
++
++TEST(AtlasAccentTest, ThePortalAnswersWhenTheThemeStatesNoOpaqueColour) {
++  EXPECT_EQ(ChooseAtlasAccent(std::nullopt, kPortalPurple), kPortalPurple);
++  EXPECT_EQ(ChooseAtlasAccent(SK_ColorTRANSPARENT, kPortalPurple),
++            kPortalPurple);
++  EXPECT_EQ(ChooseAtlasAccent(SkColorSetARGB(0x80, 0x74, 0x52, 0xf5),
++                              kPortalPurple),
++            kPortalPurple);
++}
++
++TEST(AtlasAccentTest, NoColourAtAllStaysNone) {
++  EXPECT_EQ(ChooseAtlasAccent(std::nullopt, std::nullopt), std::nullopt);
++  EXPECT_EQ(ChooseAtlasAccent(SK_ColorTRANSPARENT, std::nullopt), std::nullopt);
++}
++
++// Needs the GTK entry points the gtk component does not export, so it only builds
++// where gtk is linked statically (the release build); a component build skips it.
++#if !defined(COMPONENT_BUILD)
++// The theme read is GTK 3's (the build the engine ships): the colour a
++// stylesheet gives the selected focused row is the accent, whatever the portal
++// said. (A new stylesheet moves it once the engine clears its colour cache on
++// the theme change; the journey atlas-theme.yaml covers that.)
++TEST(AtlasAccentTest, ReadsTheAccentOfTheStylesheetInUse) {
++  if (GtkCheckVersion(4)) {
++    GTEST_SKIP() << "the screen-wide provider used here is GTK 3's";
++  }
++  auto provider = GetCssProvider(
++      "window.background treeview.view treeview.view.cell:selected:focus "
++      "{ background-color: #7452f5; background-image: none; }");
++  gtk_style_context_add_provider_for_screen(
++      gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider.get()),
++      GTK_STYLE_PROVIDER_PRIORITY_USER);
++  EXPECT_EQ(AtlasAccent(kPortalPurple), kViolet);
++  EXPECT_EQ(AtlasAccent(std::nullopt), kViolet);
++  gtk_style_context_remove_provider_for_screen(
++      gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider.get()));
++}
++#endif  // !defined(COMPONENT_BUILD)
++
++}  // namespace gtk
