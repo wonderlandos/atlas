@@ -1,0 +1,116 @@
+Atlas overlay patch 0103: ui/kit-downloads
+Why: the downloads list of the reel (scene 7, still full-52_6) is a Kit view when the Kit chrome is on (ADR 0062,
+chrome/browser/ui/atlas/kit/kit_downloads.cc): a card headed DOWNLOADS, rows of 52 px with the accent document
+glyph, the name in bold, one dim line, the hovered row as the accent pill, a progress line while a download runs,
+click opens a finished download, right click shows the row menu (the engine's DownloadUiContextMenuView, so
+HOST's verbs are in it when the bridge is there). A download that needs the engine's security page (dangerous,
+insecure, being scanned) makes the controller keep the engine's contents view for that list; so does the partial
+view (new download). The controller's calls into the contents view are guarded for the Kit list (it has no pages).
+Files: chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc
+Test filter: *AtlasKit*
+Rebase risk: M (the contents view is made in one block of ShowBubble; three null guards)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc
++++ b/chrome/browser/ui/views/download/bubble/download_toolbar_ui_controller.cc
+@@ -37,7 +37,10 @@
+ #include "chrome/browser/ui/color/chrome_color_id.h"
+ #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+ #include "chrome/browser/ui/views/chrome_layout_provider.h"
++#include "chrome/browser/ui/atlas/kit/kit_chrome.h"
++#include "chrome/browser/ui/atlas/kit/kit_downloads.h"
+ #include "chrome/browser/ui/views/download/bubble/download_bubble_contents_view.h"
++#include "chrome/browser/ui/views/download/download_ui_context_menu_view.h"
+ #include "chrome/browser/ui/views/download/bubble/download_bubble_started_animation_views.h"
+ #include "chrome/browser/ui/views/frame/browser_view.h"
+ #include "chrome/browser/ui/views/toolbar/pinned_action_toolbar_button.h"
+@@ -762,6 +765,9 @@
+   if (!bubble_delegate_) {
+     return;
+   }
++  if (!bubble_contents_) {
++    return;  // Atlas: the Kit list has no pages.
++  }
+   bubble_contents_->ShowPrimaryPage(std::nullopt);
+   bubble_delegate_->SetButtons(
+       static_cast<int>(ui::mojom::DialogButton::kNone));
+@@ -781,6 +787,12 @@
+ 
+ void DownloadToolbarUIController::ShowSecurityPage(
+     const ContentId& content_id) {
++  if (!bubble_contents_) {
++    // Atlas: the Kit list has no security page; the engine's bubble opens on it.
++    CloseDialog(views::Widget::ClosedReason::kUnspecified);
++    ShowBubble(DownloadBubbleMode::kComplete, content_id);
++    return;
++  }
+   bubble_contents_->ShowSecurityPage(content_id);
+   bubble_delegate_->set_margins(GetSecurityViewMargin());
+ }
+@@ -1015,16 +1027,44 @@
+   bubble_delegate->RegisterWindowClosingCallback(
+       base::BindOnce(&DownloadToolbarUIController::OnBubbleClosing,
+                      weak_factory_.GetWeakPtr()));
+-  auto bubble_contents = std::make_unique<DownloadBubbleContentsView>(
+-      browser_view_->browser(), bubble_controller_->GetWeakPtr(), GetWeakPtr(),
+-      primary_view_mode_,
+-      std::make_unique<DownloadBubbleContentsViewInfo>(
+-          std::move(primary_view_models)),
+-      bubble_delegate.get());
+-  bubble_contents_ = bubble_contents.get();
+-  bubble_delegate->SetContentsView(std::move(bubble_contents));
+-  // The contents view displays the primary view by default.
+-  bubble_delegate->set_margins(GetPrimaryViewMargin());
++  // Atlas (ADR 0062): the full list is the Kit's card (reel scene 7) unless a
++  // download needs the engine's security page; then, as in every other case,
++  // the engine's contents view.
++  std::unique_ptr<views::View> kit_list;
++  if (atlas::kit::IsKitChromeEnabled() &&
++      primary_view_mode_ == DownloadBubbleMode::kComplete &&
++      !pending_security_content_.has_value()) {
++    kit_list = atlas::kit::MakeKitDownloadsView(
++        primary_view_models,
++        base::BindRepeating(
++            [](base::WeakPtr<DownloadBubbleUIController> controller,
++               base::WeakPtr<DownloadUIModel> model, views::Widget* widget,
++               const gfx::Rect& rect) -> std::shared_ptr<void> {
++              auto menu = std::make_shared<DownloadUiContextMenuView>(
++                  model, controller);
++              menu->Run(widget, rect, ui::mojom::MenuSourceType::kMouse,
++                        base::RepeatingClosure());
++              return menu;
++            },
++            bubble_controller_->GetWeakPtr()),
++        base::BindRepeating(&DownloadToolbarUIController::HideDetails,
++                            weak_factory_.GetWeakPtr()));
++  }
++  if (kit_list) {
++    bubble_delegate->SetContentsView(std::move(kit_list));
++    bubble_delegate->set_margins(gfx::Insets());
++  } else {
++    auto bubble_contents = std::make_unique<DownloadBubbleContentsView>(
++        browser_view_->browser(), bubble_controller_->GetWeakPtr(),
++        GetWeakPtr(), primary_view_mode_,
++        std::make_unique<DownloadBubbleContentsViewInfo>(
++            std::move(primary_view_models)),
++        bubble_delegate.get());
++    bubble_contents_ = bubble_contents.get();
++    bubble_delegate->SetContentsView(std::move(bubble_contents));
++    // The contents view displays the primary view by default.
++    bubble_delegate->set_margins(GetPrimaryViewMargin());
++  }
+   bubble_delegate->SetEnableArrowKeyTraversal(true);
+   bubble_delegate_ = bubble_delegate.get();
+   views::Widget* bubble_widget =
+@@ -1239,7 +1279,8 @@
+ }
+ 
+ void DownloadToolbarUIController::OnAnyRowRemoved() {
+-  if (bubble_contents_->info().row_list_view_info().rows().empty()) {
++  if (bubble_contents_ &&
++      bubble_contents_->info().row_list_view_info().rows().empty()) {
+     CloseDialog(views::Widget::ClosedReason::kUnspecified);
+   }
+ }

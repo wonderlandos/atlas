@@ -10,6 +10,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
+#include "chrome/browser/ui/atlas/kit/kit_layout_provider.h"
 #include "chrome/browser/ui/atlas/sidebar/row_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/mojom/dialog_button.mojom.h"
@@ -20,6 +21,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
@@ -34,7 +37,6 @@ namespace atlas::kit {
 
 namespace {
 
-constexpr int kRow = tokens::kRowHeight;
 constexpr int kPad = 8;
 constexpr int kGlyph = 16;
 constexpr int kMinWidth = 200;
@@ -85,7 +87,7 @@ class Item : public views::Button {
     if (!trailing_.empty()) {
       w += 3 * kPad + gfx::GetStringWidth(trailing_, small);
     }
-    return gfx::Size(std::max(kMinWidth, w), kRow);
+    return gfx::Size(std::max(kMinWidth, w), MenuItemHeight(CurrentDensity()));
   }
 
   void OnPaintBackground(gfx::Canvas* canvas) override {
@@ -148,6 +150,25 @@ class Item : public views::Button {
   void StateChanged(ButtonState old_state) override {
     views::Button::StateChanged(old_state);
     SchedulePaint();
+  }
+  // Up and Down move between the rows (the bubble's own arrow traversal does
+  // not reach rows of a custom contents view); Enter and Space run one, Esc
+  // closes (the bubble).
+  bool OnKeyPressed(const ui::KeyEvent& event) override {
+    if ((event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN) &&
+        GetFocusManager()) {
+      GetFocusManager()->AdvanceFocus(event.key_code() == ui::VKEY_UP);
+      return true;
+    }
+    return views::Button::OnKeyPressed(event);
+  }
+  // The row under the pointer is the row (as in the engine's menus): the
+  // accent follows the pointer and the keyboard, never two rows at once.
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    views::Button::OnMouseEntered(event);
+    if (GetEnabled()) {
+      RequestFocus();
+    }
   }
   void OnFocus() override {
     views::Button::OnFocus();
@@ -283,11 +304,13 @@ views::Widget* KitPopover::Show(std::unique_ptr<KitPopover> popover) {
 }
 
 void KitPopover::CloseAndRun(base::OnceClosure action) {
-  GetWidget()->Close();
+  // The action is queued before the close: whoever hears of the close (the
+  // menu model) hears of it after the action ran.
   if (action) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(action));
   }
+  GetWidget()->Close();
 }
 
 }  // namespace atlas::kit

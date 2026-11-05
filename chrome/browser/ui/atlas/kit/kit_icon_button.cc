@@ -37,6 +37,11 @@ void KitIconButton::SetIcon(const gfx::VectorIcon& icon) {
   SchedulePaint();
 }
 
+void KitIconButton::SetTooltip(const std::u16string& tooltip) {
+  SetTooltipText(tooltip);
+  GetViewAccessibility().SetName(tooltip);
+}
+
 gfx::Size KitIconButton::CalculatePreferredSize(
     const views::SizeBounds& available_size) const {
   return gfx::Size(tokens::kToolbarButtonHitArea,

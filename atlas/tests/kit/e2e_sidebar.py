@@ -19,7 +19,8 @@ def move(x, y):
 def drag(x, y, x2, y2):
     subprocess.run([f"{K}/in.sh", T, "drag", str(x), str(y), str(x2), str(y2)], check=True, capture_output=True)
 def key(*k):
-    subprocess.run([f"{K}/in.sh", T, "key", *map(str, k)], check=True, capture_output=True)
+    # the virtual keyboard drops the first key of every call: a throw-away key (evdev 194, F24) goes first
+    subprocess.run([f"{K}/in.sh", T, "key", "194", *map(str, k)], check=True, capture_output=True)
 def shot(name):
     subprocess.run([f"{K}/shot.sh", T, f"{S}/{name}.png"], check=True)
 def pixel(x, y):
@@ -49,6 +50,14 @@ ROW = lambda i: 82 + 28 * i      # rows under the TODAY header
 n0 = len(tabs()); check("four tabs at start", n0 == 4, str(n0))
 click(80, ROW(0)); time.sleep(0.6)
 check("click selects Alpha", visible() == "Alpha", visible())
+# ---- keyboard: from the omnibox Tab walks the toolbar's right end into the sidebar rows (focus order), Down moves
+# to the next row, Enter activates it
+click(640, 17); time.sleep(0.4)
+for _ in range(3):
+    key(15); time.sleep(0.25)
+key(108); time.sleep(0.3); shot("ui-sidebar-0-keys"); key(28)
+ms, ok = wait(lambda: visible() == "Bravo")
+check("Tab x3 from the omnibox reaches a sidebar row; Down + Enter activates the next one", ok is not None, visible())
 # ---- drag Alpha (row 0) below Delta (row 3): the first row is now Bravo
 drag(80, ROW(0), 80, ROW(3) + 20); time.sleep(1.0); shot("ui-sidebar-2-dragged")
 click(80, ROW(0)); time.sleep(0.6)
@@ -70,4 +79,18 @@ time.sleep(0.5)
 click(80, ROW(0), 273); time.sleep(1.0); shot("ui-sidebar-4-menu")
 check("right click opens the tab menu as a Kit popover (accent row)", accent(100, ROW(0) + 22) or accent(100, ROW(0) + 20))
 key(1); time.sleep(0.5)
+# ---- groups: a tab goes into a new group (engine editor), the header folds and unfolds it
+shot("ui-sidebar-5-before-group")
+n = len(tabs())
+click(80, ROW(1), 273); time.sleep(0.8); click(150, ROW(1) + 77); time.sleep(1.2)   # "Add tab to new group"
+shot("ui-sidebar-6-group-editor"); key(1); time.sleep(1.0)                        # Esc: keep the default name
+shot("ui-sidebar-7-group")
+# the group header sits under the first tab row; its dot is the group colour (not the sidebar fill)
+r, g, b = pixel(20, 107)
+check("group header has a colour dot", max(r, g, b) - min(r, g, b) > 60, str((r, g, b)))
+pill = pixel(150, 134)                       # the active tab's pill, under the header
+click(80, 108); time.sleep(0.8); shot("ui-sidebar-8-group-folded")
+check("click on the group header folds it (the pill is gone: one summary row)", pixel(150, 134) != pill, f"{pill} -> {pixel(150, 134)}")
+click(80, 108); time.sleep(0.8); shot("ui-sidebar-9-group-unfolded")
+check("a second click unfolds it", pixel(150, 134) == pill)
 print(f"RESULT {sum(res)}/{len(res)}")

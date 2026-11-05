@@ -6,3 +6,5 @@
 ui/0100-kit-chrome-hooks.patch
 ui/0101-kit-app-menu.patch
 ui/0102-kit-context-menu.patch
+ui/0103-kit-downloads.patch
+ui/0104-kit-layout-provider.patch

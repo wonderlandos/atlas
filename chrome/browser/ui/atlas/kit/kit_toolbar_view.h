@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/command_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/view.h"
 
 class BrowserWindowInterface;
@@ -25,7 +26,9 @@ class KitIconButton;
 // (privacy, bookmark, downloads, extensions, menu: the engine's or the Atlas
 // toolbar area's buttons, re-hosted). It owns no browser state: the buttons
 // run the browser's commands and follow their enabled state.
-class KitToolbarView : public views::View, public CommandObserver {
+class KitToolbarView : public views::View,
+                       public CommandObserver,
+                       public views::ContextMenuController {
   METADATA_HEADER(KitToolbarView, views::View)
 
  public:
@@ -48,8 +51,16 @@ class KitToolbarView : public views::View, public CommandObserver {
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
+  // views::ContextMenuController: a right click on back or forward lists the
+  // pages of that direction (the engine's BackForwardMenuModel).
+  void ShowContextMenuForViewImpl(
+      views::View* source,
+      const gfx::Point& point,
+      ui::mojom::MenuSourceType source_type) override;
+
  private:
   void Run(int command_id);
+  void ReloadOrStop();
   void ToggleSidebar();
 
   const raw_ptr<BrowserWindowInterface> browser_;
@@ -57,6 +68,8 @@ class KitToolbarView : public views::View, public CommandObserver {
   raw_ptr<KitIconButton> back_ = nullptr;
   raw_ptr<KitIconButton> forward_ = nullptr;
   raw_ptr<KitIconButton> reload_ = nullptr;
+  // The page is loading: the reload button is the stop button.
+  bool loading_ = false;
   raw_ptr<views::View> omnibox_ = nullptr;
   std::vector<raw_ptr<views::View>> actions_;
 };

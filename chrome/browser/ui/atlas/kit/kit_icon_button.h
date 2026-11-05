@@ -33,6 +33,8 @@ class KitIconButton : public views::Button {
   ~KitIconButton() override;
 
   void SetIcon(const gfx::VectorIcon& icon);
+  // The tooltip, which is also the accessible name.
+  void SetTooltip(const std::u16string& tooltip);
 
   // views::Button:
   gfx::Size CalculatePreferredSize(

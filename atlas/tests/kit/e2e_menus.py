@@ -15,8 +15,9 @@ def tabs():
     return json.loads(cdp("tabs"))
 def click(x, y, button=272):
     subprocess.run([f"{K}/in.sh", T, "click", str(x), str(y), str(button)], check=True, capture_output=True)
-def key(k):
-    subprocess.run([f"{K}/in.sh", T, "key", str(k)], check=True, capture_output=True)
+def key(*codes):
+    # the virtual keyboard drops the first key of every call: a throw-away key (evdev 194, F24) goes first
+    subprocess.run([f"{K}/in.sh", T, "key", "194", *map(str, codes)], check=True, capture_output=True)
 def shot(name):
     subprocess.run([f"{K}/shot.sh", T, f"{S}/{name}.png"], check=True)
 def pixel(x, y):
@@ -68,4 +69,16 @@ check("row menu opens as a Kit popover beside the list (list stays open)", accen
 click(950, 177)  # "Always open with system viewer": runs the engine's command, closes the popover
 time.sleep(1.0); shot("ui-downloads-3-after")
 check("a row of the row menu closes the popover", not accent(950, 121))
+# ---- keyboard in the app menu: Down / Up move the accent row, Esc closes, Enter runs the row
+time.sleep(0.8)
+click(*MENU); time.sleep(0.8)
+key(108, 108); time.sleep(0.4); shot("ui-menu-4-keys")
+check("Down twice: the accent is on the third row", accent(1150, 108) and not accent(1150, 52))
+key(103); time.sleep(0.3)
+check("Up: back to the second row", accent(1150, 80) and not accent(1150, 108))
+key(1); time.sleep(0.6)
+check("Esc closes the popover", not accent(1150, 80))
+n = len(tabs()); click(*MENU); time.sleep(0.8); key(28)
+ms, ok = wait(lambda: len(tabs()) == n + 1)
+check("Enter on the first row runs New tab", ok is not None, f"tabs {n} -> {len(tabs())}")
 print(f"RESULT {sum(res)}/{len(res)}")

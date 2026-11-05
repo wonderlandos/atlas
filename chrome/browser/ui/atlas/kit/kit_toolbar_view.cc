@@ -12,11 +12,13 @@
 #include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
 #include "chrome/browser/ui/atlas/kit/kit_icon_button.h"
 #include "chrome/browser/ui/atlas/kit/kit_layout.h"
+#include "chrome/browser/ui/atlas/kit/kit_menu.h"
 #include "chrome/browser/ui/atlas/kit/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/tabs/vertical_tab_strip_state_controller.h"
+#include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -44,19 +46,22 @@ KitToolbarView::KitToolbarView(BrowserWindowInterface* browser) : browser_(brows
       kKitGoNextIcon,
       l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD)));
   reload_ = AddChildView(std::make_unique<KitIconButton>(
-      base::BindRepeating(&KitToolbarView::Run, base::Unretained(this),
-                          IDC_RELOAD),
+      base::BindRepeating(&KitToolbarView::ReloadOrStop,
+                          base::Unretained(this)),
       kKitViewRefreshIcon,
       l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD)));
 
-  for (int id : {IDC_BACK, IDC_FORWARD, IDC_RELOAD}) {
+  back_->set_context_menu_controller(this);
+  forward_->set_context_menu_controller(this);
+
+  for (int id : {IDC_BACK, IDC_FORWARD, IDC_RELOAD, IDC_STOP}) {
     chrome::AddCommandObserver(browser_, id, this);
     EnabledStateChangedForCommand(id, chrome::IsCommandEnabled(browser_, id));
   }
 }
 
 KitToolbarView::~KitToolbarView() {
-  for (int id : {IDC_BACK, IDC_FORWARD, IDC_RELOAD}) {
+  for (int id : {IDC_BACK, IDC_FORWARD, IDC_RELOAD, IDC_STOP}) {
     chrome::RemoveCommandObserver(browser_, id, this);
   }
 }
@@ -126,9 +131,43 @@ void KitToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
       forward_->SetEnabled(enabled);
       break;
     case IDC_RELOAD:
-      reload_->SetEnabled(enabled);
+      reload_->SetEnabled(enabled || loading_);
+      break;
+    case IDC_STOP:
+      // The engine enables stop while a page loads: reload becomes stop.
+      loading_ = enabled;
+      if (loading_) {
+        reload_->SetIcon(kKitProcessStopIcon);
+        reload_->SetTooltip(l10n_util::GetStringUTF16(IDS_TOOLTIP_STOP));
+        reload_->SetEnabled(true);
+      } else {
+        reload_->SetIcon(kKitViewRefreshIcon);
+        reload_->SetTooltip(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
+        reload_->SetEnabled(chrome::IsCommandEnabled(browser_, IDC_RELOAD));
+      }
       break;
   }
+}
+
+void KitToolbarView::ReloadOrStop() {
+  chrome::ExecuteCommand(browser_, loading_ ? IDC_STOP : IDC_RELOAD);
+}
+
+void KitToolbarView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::mojom::MenuSourceType source_type) {
+  if (source != back_ && source != forward_) {
+    return;
+  }
+  auto model = std::make_shared<BackForwardMenuModel>(
+      browser_, source == back_ ? BackForwardMenuModel::ModelType::kBackward
+                                : BackForwardMenuModel::ModelType::kForward);
+  if (model->GetItemCount() == 0) {
+    return;
+  }
+  ShowKitContextMenu(GetWidget(), gfx::Rect(point, gfx::Size()),
+                     model->AsWeakPtr(), model);
 }
 
 void KitToolbarView::Run(int command_id) {

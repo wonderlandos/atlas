@@ -1,0 +1,61 @@
+Atlas overlay patch 0104: ui/kit-layout-provider
+Why: dialogs, sheets and bubbles take the Design System's numbers when the Kit chrome is on (ADR 0062): the dialog
+inset 16 (sheet.toml), the buttons 8 px apart (sheet.toml) and padded 12 (button.toml). ChromeLayoutProvider asks
+atlas::kit::KitInsetsMetric / KitDistanceMetric first and uses the engine's value when they answer nothing; the
+numbers are in chrome/browser/ui/atlas/kit/kit_metrics.h and atlas/transform/kit_metrics.py --check holds them to
+the design repo's specs. Radii need no hook: patch 0070 already makes them the Design System's. The dependency is the
+small //chrome/browser/ui/atlas/kit:metrics target (no cycle with the views).
+Files: chrome/browser/ui/views/chrome_layout_provider.cc, chrome/browser/ui/views/BUILD.gn
+Test filter: *AtlasKitMetrics*
+Rebase risk: L (one include, two early returns, one dep line)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series patches)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/views/BUILD.gn
++++ b/chrome/browser/ui/views/BUILD.gn
+@@ -216,6 +216,7 @@
+   deps = [
+     ":layout_provider",
+     "//chrome/browser/ui:ui_features",
++    "//chrome/browser/ui/atlas/kit:metrics",
+     "//chrome/browser/ui/color:color_headers",
+     "//chrome/browser/ui/views/location_bar",
+     "//components/omnibox/browser",
+--- a/chrome/browser/ui/views/chrome_layout_provider.cc
++++ b/chrome/browser/ui/views/chrome_layout_provider.cc
+@@ -7,6 +7,7 @@
+ #include <algorithm>
+ 
+ #include "base/feature_list.h"
++#include "chrome/browser/ui/atlas/kit/kit_layout_provider.h"
+ #include "chrome/browser/ui/ui_features.h"
+ #include "chrome/browser/ui/views/chrome_typography.h"
+ #include "components/omnibox/common/omnibox_features.h"
+@@ -44,6 +45,13 @@
+ 
+ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
+   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
++  // Atlas (ADR 0062): dialogs and sheets use the Design System's insets.
++  if (atlas::kit::KitLayoutEnabled()) {
++    if (const std::optional<gfx::Insets> kit =
++            atlas::kit::KitInsetsMetric(metric)) {
++      return *kit;
++    }
++  }
+   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
+   switch (metric) {
+     case views::INSETS_DIALOG:
+@@ -117,6 +125,12 @@
+   DCHECK_GE(metric, views::VIEWS_DISTANCE_START);
+   DCHECK_LT(metric, views::VIEWS_DISTANCE_MAX);
+ 
++  if (atlas::kit::KitLayoutEnabled()) {
++    if (const std::optional<int> kit = atlas::kit::KitDistanceMetric(metric)) {
++      return *kit;
++    }
++  }
++
+   if (metric < views::VIEWS_DISTANCE_END) {
+     return LayoutProvider::GetDistanceMetric(metric);
+   }

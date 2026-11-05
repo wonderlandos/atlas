@@ -16,7 +16,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/atlas/chrome/atlas_tokens.h"
 #include "chrome/browser/ui/atlas/kit/kit_layout.h"
+#include "chrome/browser/ui/atlas/kit/kit_metrics.h"
 #include "chrome/browser/ui/atlas/kit/kit_tab_menu.h"
+#include "chrome/browser/ui/atlas/kit/kit_text.h"
+#include "chrome/browser/ui/atlas/rest/rest_mark.h"
 #include "chrome/browser/ui/atlas/kit/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/atlas/sidebar/row_style.h"
 #include "chrome/browser/ui/atlas/sidebar/sidebar_sections.h"
@@ -102,7 +105,7 @@ class Row : public views::Button, public views::ContextMenuController {
         title_(std::move(title)),
         active_(active),
         dim_title_(dim_title) {
-    SetTooltipText(title_);
+    SetTooltipText(WrapToLineChars(title_, metrics::kRichTooltipLineChars));
     GetViewAccessibility().SetName(title_);
     GetViewAccessibility().SetRole(ax::mojom::Role::kTab);
     if (active_) {
@@ -121,6 +124,9 @@ class Row : public views::Button, public views::ContextMenuController {
                                 ui::EF_MIDDLE_MOUSE_BUTTON);
     set_context_menu_controller(this);
   }
+  // A tab that gave its memory back (REST): dim title and favicon, and the
+  // frost mark where the close glyph is.
+  void set_resting(bool resting) { resting_ = resting; }
   void set_dragged(bool dragged) {
     if (dragged_ != dragged) {
       dragged_ = dragged;
@@ -189,12 +195,20 @@ class Row : public views::Button, public views::ContextMenuController {
           gfx::ImageSkiaOperations::CreateResizedImage(
               favicon_, skia::ImageOperations::RESIZE_BEST,
               gfx::Size(kGlyph, kGlyph)),
-          glyph_x, glyph_y);
+          glyph_x, glyph_y, resting_ ? 128 : 255);
     }
     if (width() < kMinWidthForText) {
       return;
     }
     int text_right = row.right() - kContentInset;
+    if (resting_ && !ShowsClose()) {
+      // The mark sits where the close glyph of the tab in front is.
+      gfx::Rect mark = atlas::rest::RestMarkBounds(row.width(), row.height());
+      mark.Offset(row.x(), row.y());
+      atlas::rest::PaintRestMark(canvas, GetMirroredRect(mark),
+                                 provider->GetColor(ui::kColorAccent));
+      text_right -= atlas::rest::kRestMarkSize + kGap;
+    }
     if (ShowsClose()) {
       canvas->DrawImageInt(
           gfx::CreateVectorIcon(kKitWindowCloseIcon, kGlyph,
@@ -217,7 +231,7 @@ class Row : public views::Button, public views::ContextMenuController {
         kBody, active_ ? gfx::Font::Weight::MEDIUM : gfx::Font::Weight::NORMAL);
     canvas->DrawStringRectWithFlags(
         title_, font,
-        dim_title_ || dragged_ ? sidebar::DimTextColor(*provider)
+        dim_title_ || dragged_ || resting_ ? sidebar::DimTextColor(*provider)
                    : sidebar::RowTitleColor(*provider),
         gfx::Rect(text_x, row.y(), std::max(0, text_right - text_x),
                   row.height()),
@@ -330,6 +344,7 @@ class Row : public views::Button, public views::ContextMenuController {
   gfx::Point press_;
   bool drag_started_ = false;
   bool dragged_ = false;
+  bool resting_ = false;
 };
 
 BEGIN_METADATA(Row)
@@ -352,9 +367,11 @@ class Header : public views::View {
   // A group's header: its colour as a dot, a click folds or unfolds the group,
   // a right click opens the engine's group editor.
   void SetGroup(ui::ColorId color,
+                bool collapsed,
                 base::RepeatingClosure toggle,
                 base::RepeatingClosure edit) {
     color_ = color;
+    collapsed_ = collapsed;
     toggle_ = std::move(toggle);
     edit_ = std::move(edit);
     GetViewAccessibility().SetRole(ax::mojom::Role::kButton);
@@ -394,10 +411,19 @@ class Header : public views::View {
                          kDot / 2.0f, flags);
       x += kDot + kGap / 2;
     }
+    int right = width() - kContentInset;
+    if (color_) {
+      // The fold state: a chevron at the end, down while the group is open.
+      canvas->DrawImageInt(
+          gfx::CreateVectorIcon(collapsed_ ? kKitPanEndIcon : kKitPanDownIcon,
+                                kGlyph, sidebar::DimTextColor(*provider)),
+          right - kGlyph, (height() - kGlyph) / 2);
+      right -= kGlyph + kGap;
+    }
     canvas->DrawStringRectWithFlags(
         text_, FontOfSize(kSecondary, gfx::Font::Weight::SEMIBOLD),
         sidebar::DimTextColor(*provider),
-        gfx::Rect(x, 0, width() - x - kContentInset, height()),
+        gfx::Rect(x, 0, std::max(0, right - x), height()),
         gfx::Canvas::TEXT_ALIGN_LEFT);
   }
 
@@ -406,6 +432,7 @@ class Header : public views::View {
 
   const std::u16string text_;
   std::optional<ui::ColorId> color_;
+  bool collapsed_ = false;
   base::RepeatingClosure toggle_;
   base::RepeatingClosure edit_;
 };
@@ -551,7 +578,7 @@ void KitSidebarView::Rebuild() {
             model->group_model()->GetTabGroup(id)->visual_data();
         auto header = std::make_unique<Header>(visual->title());
         header->SetGroup(
-            GetTabGroupDialogColorId(visual->color()),
+            GetTabGroupDialogColorId(visual->color()), visual->is_collapsed(),
             base::BindRepeating(&KitSidebarView::ToggleGroup,
                                 weak_factory_.GetWeakPtr(), id),
             base::BindRepeating(&KitSidebarView::EditGroup,
@@ -587,6 +614,8 @@ void KitSidebarView::Rebuild() {
             contents->GetTitle(), e.tab == model->active_index(),
             /*dim_title=*/false);
         row->set_favicon(FaviconOf(contents));
+        row->set_resting(atlas::rest::IsResting(contents->WasDiscarded(),
+                                                e.tab == model->active_index()));
         Row::TabHooks hooks;
         hooks.close = base::BindRepeating(&KitSidebarView::CloseTab,
                                           weak_factory_.GetWeakPtr(), base::Unretained(contents));

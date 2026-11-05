@@ -51,13 +51,13 @@ click(65, 690)  # footer New tab
 ms, ok = wait(lambda: len(tabs()) == n + 1)
 check("Footer New tab opens a tab", ok is not None, f"{ms:.0f} ms, tabs {n} -> {len(tabs())}" if ms else "")
 time.sleep(1); shot("kit-e2e-1-new-tab")
-# activate the 4th row (Train times) in the sidebar; rows are 28 px from y=68
-click(80, 166)
+# activate the 2nd row (Train times) in the sidebar; rows are 28 px from y=82 (one TODAY header above)
+click(80, 110)
 ms, ok = wait(lambda: "Train" in (visible() or {}).get("title", ""))
 check("Sidebar row click selects that tab", ok is not None, f"{ms:.0f} ms" if ms else "")
 time.sleep(0.5); shot("kit-e2e-2-row-selected")
 lat = []
-for y in (82, 110, 138, 166):
+for y in (82, 110, 82, 110):
     t0 = time.monotonic(); click(80, y)
     ms, ok = wait(lambda: (visible() or {}).get("title", "") != "", 3)
     lat.append(ms or -1)

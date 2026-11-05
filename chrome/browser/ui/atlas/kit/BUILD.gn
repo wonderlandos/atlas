@@ -12,12 +12,31 @@ assert(!is_android)
 # extensions container, the pinned actions with Downloads, the app menu button)
 # are re-hosted inside them. Engine files reach it through the hook lines of
 # patch 0100; it is off unless the browser starts with --atlas-kit-chrome.
+# The layout metrics of dialogs and sheets (the Design System's numbers). A source
+# set of its own with almost no dependencies, so that the engine's layout provider
+# (//chrome/browser/ui/views:layout_provider_impl) can ask it without depending on
+# the whole Kit chrome (which depends on the views the provider is under).
+source_set("metrics") {
+  sources = [
+    "kit_layout_provider.cc",
+    "kit_layout_provider.h",
+    "kit_metrics.h",
+  ]
+  deps = [
+    "//base",
+    "//ui/gfx",
+    "//ui/views",
+  ]
+}
+
 source_set("kit") {
   sources = [
     "kit_app_menu.cc",
     "kit_app_menu.h",
     "kit_chrome.cc",
     "kit_chrome.h",
+    "kit_downloads.cc",
+    "kit_downloads.h",
     "kit_icon_button.cc",
     "kit_icon_button.h",
     "kit_layout.cc",
@@ -43,6 +62,7 @@ source_set("kit") {
     "//ui/views",
   ]
   deps = [
+    ":metrics",
     "//base",
     "//base:i18n",
     "//cc/paint",
@@ -50,6 +70,7 @@ source_set("kit") {
     "//chrome/app:generated_resources",
     "//chrome/browser/ui:browser_commands",
     "//chrome/browser/ui/atlas/chrome",
+    "//chrome/browser/ui/atlas/rest",
     "//chrome/browser/ui/atlas/sidebar",
     "//chrome/browser/ui/atlas/toolbar",
     "//components/favicon/content",
@@ -74,13 +95,16 @@ test("atlas_kit_unittests") {
   sources = [
     "kit_layout.cc",
     "kit_layout.h",
+    "kit_layout_provider_unittest.cc",
     "kit_layout_unittest.cc",
     "kit_text.cc",
     "kit_text.h",
     "kit_text_unittest.cc",
   ]
   deps = [
+    ":metrics",
     "//base",
+    "//chrome/browser/ui/atlas/chrome",
     "//chrome/browser/ui/atlas/sidebar",
     "//testing/gtest",
     "//testing/gtest:gtest_main",

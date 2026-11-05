@@ -20,7 +20,7 @@ done
 cat > $P/Default/Preferences <<S
 {"extensions":{"theme":{"system_theme":1}},"browser":{"theme":{"color_scheme2":0},"custom_chrome_frame":false,"show_home_button":false}}
 S
-echo "{\"browser\":{\"enabled_labs_experiments\":[]}}" > "$P/Local State"
+echo "{\"internal_only_uis_enabled\":true,\"browser\":{\"enabled_labs_experiments\":[]}}" > "$P/Local State"
 (
  export XDG_RUNTIME_DIR=$R WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman WAYLAND_DISPLAY=wayland-0 WLR_HEADLESS_OUTPUTS=1
  export XDG_DATA_HOME=$K/data XDG_CONFIG_HOME=$K/config GTK_THEME=WolOS-$THEME-gtk3$([ $THEME = wol-dark ] && echo ":dark")

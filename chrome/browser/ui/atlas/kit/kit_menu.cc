@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/atlas/kit/kit_layout_provider.h"
 #include "chrome/browser/ui/atlas/kit/kit_menu.h"
 #include "chrome/browser/ui/atlas/kit/kit_text.h"
 
@@ -143,7 +144,7 @@ class ButtonRow : public views::View {
       w += l.second->GetPreferredSize().width() + 8;
     }
     w += static_cast<int>(buttons_.size()) * tokens::kToolbarButtonHitArea;
-    return gfx::Size(std::max(200, w), tokens::kRowHeight);
+    return gfx::Size(std::max(200, w), MenuItemHeight(CurrentDensity()));
   }
 
   void Layout(PassKey) override {
@@ -161,8 +162,8 @@ class ButtonRow : public views::View {
       const int w = std::max(it->second->GetPreferredSize().width(),
                              tokens::kToolbarButtonHitArea);
       right -= w;
-      it->second->SetBounds(right, (height() - tokens::kRowHeight) / 2, w,
-                            tokens::kRowHeight);
+      it->second->SetBounds(right, (height() - MenuItemHeight(CurrentDensity())) / 2,
+                            w, MenuItemHeight(CurrentDensity()));
     }
     title_->SetBounds(8, 0, std::max(0, right - 8), height());
   }
@@ -225,6 +226,23 @@ void ShowModel(MenuAnchor anchor,
     popover->SetAnchorRect(anchor.rect);
     popover->set_parent_window(anchor.parent);
   }
+  // Models that time the menu (the back and forward lists) or tell their
+  // delegate (the downloads row menu) need to hear it opened and closed, as
+  // the engine's menu runner tells them. The close is told after the row that
+  // ran, which is posted before the popover is closed.
+  model->MenuWillShow();
+  popover->RegisterWindowClosingCallback(base::BindOnce(
+      [](base::WeakPtr<ui::MenuModel> model) {
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, base::BindOnce(
+                           [](base::WeakPtr<ui::MenuModel> model) {
+                             if (model) {
+                               model->MenuWillClose();
+                             }
+                           },
+                           std::move(model)));
+      },
+      weak_model));
   if (views::Widget* held = anchor.hold_open.get()) {
     if (views::BubbleDialogDelegate* bubble =
             held->widget_delegate()

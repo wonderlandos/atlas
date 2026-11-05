@@ -38,4 +38,28 @@ std::u16string DoctrineClean(const std::u16string& label) {
   return out;
 }
 
+std::u16string WrapToLineChars(const std::u16string& text, size_t max_chars) {
+  std::u16string out;
+  size_t line = 0;
+  size_t i = 0;
+  while (i < text.size()) {
+    size_t end = text.find(u' ', i);
+    if (end == std::u16string::npos) {
+      end = text.size();
+    }
+    const size_t word = end - i;
+    if (line > 0 && line + 1 + word > max_chars) {
+      out += u'\n';
+      line = 0;
+    } else if (line > 0) {
+      out += u' ';
+      ++line;
+    }
+    out.append(text, i, word);
+    line += word;
+    i = end + 1;
+  }
+  return out;
+}
+
 }  // namespace atlas::kit
