@@ -23,7 +23,7 @@ res = []
 def check(name, ok, extra=""):
     res.append(ok); print(("PASS " if ok else "FAIL ") + name + (" " + extra if extra else ""), flush=True)
 click(1262, 17); time.sleep(1.0); shot(f"ui-density-{DENSITY}")
-col = column(1100, 30, 80)
+col = column(1180, 30, 80)
 accent = sum(1 for c in col if is_accent(c))
 check(f"{DENSITY}: the accent first row of the app menu is {HEIGHT} px high", accent == HEIGHT, f"{accent} px")
 print(f"RESULT {sum(res)}/{len(res)}")
