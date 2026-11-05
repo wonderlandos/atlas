@@ -1,0 +1,217 @@
+Atlas overlay patch 0070: ui/ui-tokens
+Why: the numbers of the window the reel shows: toolbar 36 px (28 px hit area plus 4 px above and below), omnibox 26 px, sidebar rows 28 px with an 8 px inset and radius 6, radii controls 8 / cards 12 / large 16 / window 12 (the radius block of the OS design repo), download glyph 16 px; and one hook line that puts the WolOS tokens on the engine's colours (mixer in chrome/browser/ui/atlas/chrome). The values are the engine's constants and its colour pipeline, so no GN argument, policy or flag reaches them; the logic is in the overlay tree, the patch is hook lines and constants. The hunk in ui/gtk/gtk_color_mixers.cc lets the system theme colour the `toolbar` node (WolOS: `glass`).
+Files: chrome/browser/ui/layout_constants.cc, ui/views/layout/layout_provider.cc, chrome/browser/ui/views/helium/frame_corner_radius.cc, chrome/browser/ui/color/chrome_color_mixers.cc, chrome/browser/ui/color/BUILD.gn, ui/gtk/gtk_color_mixers.cc, ui/views/controls/menu/menu_config_linux.cc
+Test filter: *AtlasTokens*:*AtlasColorMixer*
+Rebase risk: M (layout_constants.cc and layout_provider.cc are also patched by the inherited series, the hunks are single return values; the mixer hook is one line after AddNativeChromeColorMixer)
+Release: 0.13
+License: GPL-3.0-or-later (hunks in files the inherited series touches or adds)
+Verified at: 156.0.8078.79, prepared tree with the inherited and platform series applied
+
+--- a/chrome/browser/ui/layout_constants.cc
++++ b/chrome/browser/ui/layout_constants.cc
+@@ -77,7 +77,8 @@
+     case LayoutConstant::kLocationBarTrailingDecorationInnerPadding:
+       return touch_ui ? 3 : 8;
+     case LayoutConstant::kLocationBarHeight:
+-      return touch_ui ? 36 : 28;
++      // Atlas tokens.md section 4: the omnibox is 26 px high.
++      return touch_ui ? 36 : 26;
+     // LINT.IfChange(LocationBarIconSize)
+     case LayoutConstant::kLocationBarIconSize:
+       return touch_ui ? 20 : 16;
+@@ -147,23 +148,27 @@
+     case LayoutConstant::kPageInfoIconSize:
+       return 20;
+     case LayoutConstant::kDownloadIconSize:
+-      return 20;
++      // Atlas tokens.md section 8: the download glyph and its ring are 16 px.
++      return 16;
++    // Atlas tokens (design repo radius): cards 12, controls 8.
+     case LayoutConstant::kMainBackgroundRegionCornerRadius:
++      return 12;
+     case LayoutConstant::kToolbarCornerRadius:
+     case LayoutConstant::kVerticalTabCornerRadius:
+       return 8;
++    // Atlas tokens.md section 3: sidebar rows are 28 px with an 8 px inset.
+     case LayoutConstant::kVerticalTabHeight:
+-      return 30;
++      return 28;
+     case LayoutConstant::kVerticalTabPinnedHeight:
+-      return 30;
++      return 28;
+     case LayoutConstant::kVerticalTabMinWidth:
+-      return 30;
++      return 28;
+     case LayoutConstant::kVerticalTabStripHorizontalPadding:
+-      return 6;
++      return 8;
+     case LayoutConstant::kVerticalTabStripUncollapsedVerticalPadding:
+-      return 6;
++      return 8;
+     case LayoutConstant::kVerticalTabStripCollapsedVerticalPadding:
+-      return 6;
++      return 8;
+     case LayoutConstant::kVerticalTabStripComboButtonIconSize:
+       return 18;
+     case LayoutConstant::kVerticalTabStripButtonIconSize:
+@@ -195,7 +200,7 @@
+       return gfx::Insets(4);
+ 
+     case DOWNLOAD_ROW:
+-      return gfx::Insets::VH(8, 20);
++      return gfx::Insets::VH(6, 16);
+ 
+     case LOCATION_BAR_ICON_INTERIOR_PADDING:
+       return gfx::Insets::VH(2, 3);
+@@ -236,8 +241,10 @@
+       }
+ 
+     case TOOLBAR_INTERIOR_MARGIN: {
++      // Atlas tokens.md section 2: the toolbar is 36 px, that is the 28 px
++      // button hit area (kToolbarButtonHeight) plus 4 px above and below.
+       const int base = GetLayoutConstant(LayoutConstant::kHeliumBasePadding);
+-      return gfx::Insets::VH(base, base * 2);
++      return gfx::Insets::VH(4, base * 2);
+     }
+ 
+     case WEBUI_TAB_STRIP_TOOLBAR_INTERIOR_MARGIN:
+--- a/ui/views/layout/layout_provider.cc
++++ b/ui/views/layout/layout_provider.cc
+@@ -197,6 +197,8 @@
+     case Emphasis::kMedium:
+       return 4;
+     case Emphasis::kHigh:
++      // Atlas tokens (design repo radius.sm): controls (toolbar buttons, the
++      // omnibox) have radius 8.
+       return 8;
+     case Emphasis::kMaximum:
+       return std::min(size.width(), size.height()) / 2;
+@@ -209,14 +211,16 @@
+           {ShapeContextTokens::kBadgeRadius, ShapeSysTokens::kXSmall},
+           {ShapeContextTokens::kButtonRadius, ShapeSysTokens::kMSmall},
+           {ShapeContextTokens::kComboboxRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kDialogRadius, ShapeSysTokens::kSmall},
++          {ShapeContextTokens::kDialogRadius, ShapeSysTokens::kMediumSmall},
+           {ShapeContextTokens::kExtensionsMenuButtonRadius,
+            ShapeSysTokens::kXSmall},
+-          {ShapeContextTokens::kFindBarViewRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kMenuRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kMenuAuxRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kMenuTouchRadius, ShapeSysTokens::kSmall},
+-          {ShapeContextTokens::kOmniboxExpandedRadius, ShapeSysTokens::kMedium},
++          {ShapeContextTokens::kFindBarViewRadius,
++           ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kMenuRadius, ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kMenuAuxRadius, ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kMenuTouchRadius, ShapeSysTokens::kMediumSmall},
++          {ShapeContextTokens::kOmniboxExpandedRadius,
++           ShapeSysTokens::kMediumSmall},
+           {ShapeContextTokens::kTextfieldRadius, ShapeSysTokens::kSmall},
+           {ShapeContextTokens::kContentSeparatorRadius, ShapeSysTokens::kSmall},
+       });
+@@ -232,8 +236,10 @@
+   switch (token) {
+     case ShapeSysTokens::kXSmall:
+       return 4;
++    // Atlas tokens (design repo radius): controls 8, cards (menus, popovers,
++    // dialogs) 12, large 16.
+     case ShapeSysTokens::kMSmall:
+-      return 7;
++      return 8;
+     case ShapeSysTokens::kSmall:
+       return 8;
+     case ShapeSysTokens::kMediumSmall:
+--- a/ui/views/controls/menu/menu_config_linux.cc
++++ b/ui/views/controls/menu/menu_config_linux.cc
+@@ -10,6 +10,8 @@
+ 
+ void MenuConfig::InitPlatform() {
+   use_bubble_border = true;
++  // Atlas tokens.md section 8: menu rows are 28 px.
++  item_vertical_margin = 4;
+ }
+ 
+ }  // namespace views
+--- a/chrome/browser/ui/views/helium/frame_corner_radius.cc
++++ b/chrome/browser/ui/views/helium/frame_corner_radius.cc
+@@ -7,13 +7,14 @@
+ #include "build/build_config.h"
+ #include "chrome/browser/ui/layout_constants.h"
+ 
++// Atlas tokens.md section 2: the window radius is 12 (--window-radius).
+ int GetGenericFrameRadius() {
+-  return 8;
++  return 12;
+ }
+ 
+ #if !BUILDFLAG(IS_MAC)
+ int GetSystemWindowRadius() {
+-  return 8;
++  return 12;
+ }
+ #endif
+ 
+--- a/chrome/browser/ui/color/chrome_color_mixers.cc
++++ b/chrome/browser/ui/color/chrome_color_mixers.cc
+@@ -10,6 +10,7 @@
+ #include "base/containers/fixed_flat_map.h"
+ #include "base/functional/bind.h"
+ #include "base/no_destructor.h"
++#include "build/build_config.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
+ #include "chrome/browser/ui/color/chrome_color_mixer.h"
+ #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+@@ -25,6 +26,10 @@
+ #include "chrome/browser/ui/color/tab_strip_color_mixer.h"
+ #include "ui/color/color_provider_utils.h"
+ 
++#if BUILDFLAG(IS_LINUX)
++#include "chrome/browser/ui/atlas/chrome/atlas_color_mixer.h"
++#endif
++
+ namespace {
+ 
+ class ChromeColorProviderUtilsCallbacks
+@@ -88,6 +93,11 @@
+   // Must be the last one in order to override other mixer colors.
+   AddNativeChromeColorMixer(provider, key);
+ 
++#if BUILDFLAG(IS_LINUX)
++  // Atlas: the WolOS tokens on the colours above (after the native mixer).
++  atlas::AddAtlasColorMixer(provider, key);
++#endif
++
+   if (key.custom_theme) {
+     key.custom_theme->AddColorMixers(provider, key);
+   }
+--- a/chrome/browser/ui/color/BUILD.gn
++++ b/chrome/browser/ui/color/BUILD.gn
+@@ -71,6 +71,9 @@
+ 
+   if (is_linux) {
+     sources += [ "linux/native_chrome_color_mixer_linux.cc" ]
++
++    # Atlas: the WolOS tokens on the colour mixers (overlay tree).
++    deps += [ "//chrome/browser/ui/atlas/chrome" ]
+   }
+ 
+   if (is_mac) {
+--- a/ui/gtk/gtk_color_mixers.cc
++++ b/ui/gtk/gtk_color_mixers.cc
+@@ -44,8 +44,15 @@
+   const SkColor label_fg = GetFgColor("label");
+   const SkColor label_fg_disabled = GetFgColor("label:disabled");
+   const SkColor entry_border = GetBorderColor("entry");
+-  const SkColor toolbar_color =
++  // Atlas: a GTK theme may colour the `toolbar` node (WolOS: the `glass`
++  // token); with no colour there the toolbar stays the window colour.
++  const SkColor toolbar_bg = GetBgColor("toolbar");
++  const SkColor window_color =
+       color_utils::GetResultingPaintColor(primary_bg, frame_color);
++  const SkColor toolbar_color =
++      SkColorGetA(toolbar_bg) == SK_AlphaTRANSPARENT
++          ? window_color
++          : color_utils::GetResultingPaintColor(toolbar_bg, window_color);
+   const SkColor accent_fg = GetFgColor(
+       "treeview.view "
+       "treeview.view.cell:selected:focus label");
