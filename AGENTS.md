@@ -7,6 +7,10 @@ These rules apply to any AI agent working in this repository.
 - Work only on the branch `main`, and only in `atlas/`, `tools/` and this repository's own
   documents. Never edit anything under `patches/`, never edit the branch `upstream`, never rewrite
   history someone else has pushed.
+- New engine files of the overlay live at engine-shaped paths (`chrome/app/atlas/**`,
+  `chrome/browser/ui/atlas/**`, `components/atlas_host/**`, `components/atlas_pages/**`, listed in
+  `atlas/tree.list`) as staging for patch generation and the build; the rule above is about files of the
+  upstream mirror only.
 - One commit per patch, header as the commit message; check with
   `tools/apply-overlay.sh --dry-run TREE` before committing, and say so in your report. If you
   could not run it against a real tree, say that too.
