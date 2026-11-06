@@ -21,8 +21,8 @@ meeting new engine code, and it is always fixed in our patch.
 |---|---|
 | `patches/series` | the first overlay patches (0001-0005), applied after the inherited series and the platform series; closed, new patches go in a fragment |
 | `patches/series.d/NN-area.series` | one fragment per area, applied after `patches/series` in file-name order; its `# range: NNNN-NNNN` line is the numbers of its area; see "Numbering and owners" |
-| `patches/<area>/NNNN-name.patch` | one overlay patch; `NNNN` is unique across areas and never reused; areas: `privacy`, `security`, `brand`, `memory`, `host`, `ui`, `debloat`, `tor`, `build` |
-| `tree.list` | the overlay tree: directories of new engine files (`chrome/app/atlas`, `chrome/browser/ui/atlas`, `components/atlas_host`, `components/atlas_pages`) kept at their engine path in this repository and copied into the engine tree as they are |
+| `patches/<area>/NNNN-name.patch` | one overlay patch; `NNNN` is unique across areas and never reused; areas: `privacy`, `security`, `brand`, `memory`, `host`, `ui`, `debloat`, `tor`, `build`, `fed` |
+| `tree.list` | the overlay tree: directories of new engine files (`chrome/app/atlas`, `chrome/browser/atlas`, `chrome/browser/ui/atlas`, `components/atlas_host`, `components/atlas_pages`) kept at their engine path in this repository and copied into the engine tree as they are |
 | `flags.atlas.gn` | our GN arguments, appended after `flags.gn` and `platform/flags.atlas.linux.gn` (the last assignment wins) |
 | `platform/` | the Linux glue: build scripts, the platform patch series, package files (see its README) |
 | `onboarding/` | the Atlas first-run page (HTML, CSS, script, its tools and checks); not a build input until patch P-17 wires it in (0.14, see its README) |
@@ -56,6 +56,7 @@ same series file; the fragment names the range, and an author uses only the numb
 | `24-rest.series` | 0024-0029 | ATLAS-REST, the resting mark of tabs |
 | `30-toolbar.series` | 0030-0039 | ATLAS-TOOLBAR |
 | `40-host.series` | 0040-0049 | ATLAS-HOST (bridge client, download and context-menu verbs) |
+| `41-fed.series` | 0120-0129 | ATLAS-FED (fed:// in Atlas: scheme, loaders, location-bar glyph, exclusive-fed guards: no http(s) or DNS for a Federate name; helper `atlas-fed` in the WolOS repository, ADR 0052) |
 | `50-pages.series` | 0050-0059 | ATLAS-NTP (0050-0052), ATLAS-FIRSTRUN (0053-0059) |
 | `60-vault.series` | 0060-0069 | ATLAS-VAULT |
 | `70-chrome.series` | 0070-0079 | ATLAS-CHROME (0070-0072), ATLAS-THEME (0073-0079) |

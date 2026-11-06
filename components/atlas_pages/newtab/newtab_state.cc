@@ -11,6 +11,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/atlas_fed_tlds/fed_tlds.h"
 #include "components/atlas_pages/newtab/newtab_categories.h"
 
 namespace atlas::newtab {
@@ -39,8 +40,35 @@ std::string CleanTitle(std::string_view title) {
 }  // namespace
 
 bool IsWebUrl(const GURL& url) {
-  return url.is_valid() && url.has_host() &&
-         (url.SchemeIs("https") || url.SchemeIs("http"));
+  if (!url.is_valid() || !url.has_host()) {
+    return false;
+  }
+  if (url.SchemeIs(atlas_fed::kFedScheme)) {
+    return atlas_fed::IsFederateTldHost(url.host());
+  }
+  return url.SchemeIs("https") || url.SchemeIs("http");
+}
+
+std::optional<GURL> FederateAddressFor(std::string_view text) {
+  std::string trimmed;
+  base::TrimWhitespaceASCII(text, base::TRIM_ALL, &trimmed);
+  if (trimmed.empty() || trimmed.size() > 2048 ||
+      trimmed.find_first_of(" \t\r\n") != std::string::npos) {
+    return std::nullopt;
+  }
+  // A scheme-less name is the http spelling, as the address bar fixes it up.
+  GURL url(trimmed.find("://") == std::string::npos ? "http://" + trimmed
+                                                    : trimmed);
+  if (!url.is_valid()) {
+    return std::nullopt;
+  }
+  if (url.SchemeIs(atlas_fed::kFedScheme)) {
+    if (!url.has_host() || !atlas_fed::IsFederateTldHost(url.host())) {
+      return std::nullopt;
+    }
+    return url;
+  }
+  return atlas_fed::MapHttpToFed(url);
 }
 
 std::vector<PinnedPage> ParsePinned(const base::ListValue& list) {

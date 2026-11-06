@@ -72,12 +72,12 @@
     return el;
   }
 
-  // Only web addresses get an href: the card is a real link (status text, middle click), but
+  // Only web and Federate (fed:) addresses get an href: the card is a real link (status text, middle click), but
   // the host decides what opens.
   function webUrl(value) {
     try {
       const u = new URL(String(value));
-      return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : null;
+      return u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'fed:' ? u.href : null;
     } catch (e) {
       return null;
     }

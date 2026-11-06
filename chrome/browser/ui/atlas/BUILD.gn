@@ -19,6 +19,7 @@ source_set("atlas_ui") {
   ]
   deps = [
     "//base",
+    "//chrome/browser/atlas/fed",
     "//chrome/browser/ui/atlas/chrome",
     "//chrome/browser/ui/atlas/newtab",
     "//chrome/browser/ui/atlas/rest",
@@ -34,6 +35,7 @@ source_set("atlas_ui") {
 group("unit_tests") {
   testonly = true
   deps = [
+    "//chrome/browser/atlas/fed:unit_tests",
     "//chrome/browser/ui/atlas/brand:unit_tests",
     "//chrome/browser/ui/atlas/chrome:unit_tests",
     "//chrome/browser/ui/atlas/host:unit_tests",

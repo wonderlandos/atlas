@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 # The new tab page (owner: ATLAS-NTP): page files in newtab_resources.grdp (resource_path
 # "newtab/<file>", newtab/index.html is the page) and the logic that needs no //chrome (host
 # category table, pinned list, state sent to the page). The handler, the UI controller and the pref
@@ -18,6 +20,7 @@ source_set("newtab") {
   public_deps = [ "//components/atlas_pages/common" ]
   deps = [
     "//base",
+    "//components/atlas_fed_tlds",
     "//url",
   ]
 }
@@ -28,6 +31,23 @@ source_set("unit_tests") {
   deps = [
     ":newtab",
     "//base",
+    "//components/atlas_fed_tlds",
+    "//testing/gtest",
+    "//url",
+  ]
+}
+
+# The same tests as a binary of its own (a dev slot cannot build the monolithic unit_tests):
+# `ATLAS_TEST_TARGET=atlas_newtab_unittests slot-remote.sh N test '*AtlasNewTab*'`.
+test("atlas_newtab_unittests") {
+  sources = [
+    "newtab_state_unittest.cc",
+    "newtab_test_main.cc",
+  ]
+  deps = [
+    ":newtab",
+    "//base",
+    "//components/atlas_fed_tlds",
     "//testing/gtest",
     "//url",
   ]
