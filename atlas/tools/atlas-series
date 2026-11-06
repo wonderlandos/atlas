@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """atlas-series: the combined patch series of the atlas overlay.
 
-  atlas-series list                 the three series in order, minus atlas/drop.list
+  atlas-series list                 the combined series in order (kind, name), minus atlas/drop.list
+  atlas-series overlay              the overlay entries alone, one per line (paths under atlas/patches)
+  atlas-series check                validate the series files only (exit 1 on an error)
+  atlas-series write-series DIR     write DIR/series: the combined series minus atlas/drop.list with
+                                    absolute paths, for `utils/patches.py apply TREE DIR` (the build)
+  atlas-series install-tree TREE    copy the overlay's new-file directories (atlas/tree.list) into TREE,
+                                    replacing an older copy; the build runs it before the series
   atlas-series --dry-run TREE       apply the combined series to copies of the files it touches
                                     (TREE is a prepared source tree, never modified) and report
                                     the first patch that does not apply, with file and hunk
@@ -9,8 +15,20 @@
 Series, in the order the build applies them:
   inherited   <root>/patches/series
   platform    <root>/atlas/platform/patches/series
-  overlay     <root>/atlas/patches/series
+  overlay     <root>/atlas/patches/series, then <root>/atlas/patches/series.d/*.series in file-name
+              order (one fragment per area, so patch authors of different areas never edit the same
+              series file; entries are paths under atlas/patches)
 
+Overlay rules (an error stops the tool, a warning is printed on stderr):
+  error    a patch listed twice (in one file or in two)
+  error    two overlay patches with the same number NNNN (numbers are unique across areas)
+  error    an overlay entry that names a missing file
+  warning  a patch number outside the range of its fragment (a line `# range: NNNN-NNNN` in it)
+Overlay tree: atlas/tree.list names directories of new files (engine paths, e.g.
+components/atlas_pages) kept as plain files at the same path in this repository and copied into the
+engine tree as they are (install-tree; --dry-run copies them into its scratch tree first). Their last
+path component starts with "atlas". An overlay patch never touches a file in them (refused): the
+files are edited directly, patches only hook them into engine files.
 Drop rule: atlas/drop.list names inherited patches to leave out. A dropped patch must be a leaf:
 no later patch in the combined series may touch a file it touches (else the later patch would
 need it); the tool refuses otherwise.
@@ -25,6 +43,8 @@ import tempfile
 from pathlib import Path
 
 PATCH_FLAGS = ["-p1", "--ignore-whitespace", "--no-backup-if-mismatch", "--forward", "--batch"]
+RANGE_RE = re.compile(r"^#\s*range:\s*(\d{4})\s*-\s*(\d{4})\s*$")
+NUM_RE = re.compile(r"(?:^|/)(\d{4})-[^/]*\.patch$")
 
 
 def read_series(path):
@@ -38,6 +58,15 @@ def read_series(path):
     return out
 
 
+def read_range(path):
+    """The `# range: NNNN-NNNN` line of a fragment, as (low, high), or None."""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = RANGE_RE.match(line.strip())
+        if m:
+            return int(m.group(1)), int(m.group(2))
+    return None
+
+
 def targets(patch_text):
     """Files a patch touches (b-side of ---/+++ pairs, a-side for deletions)."""
     files = []
@@ -49,29 +78,115 @@ def targets(patch_text):
     return files
 
 
+def tree_dirs(root):
+    """Directories of new files (atlas/tree.list), checked."""
+    dirs = read_series(root / "atlas/tree.list")
+    for d in dirs:
+        parts = Path(d).parts
+        if Path(d).is_absolute() or ".." in parts or not parts[-1].startswith("atlas"):
+            sys.exit(f"atlas-series: tree.list entry {d}: must be a relative engine path whose last "
+                     "component starts with 'atlas'")
+        if not (root / d).is_dir():
+            sys.exit(f"atlas-series: tree.list names a missing directory: {d}")
+    return dirs
+
+
+def in_tree(path, dirs):
+    return any(path == d or path.startswith(d.rstrip("/") + "/") for d in dirs)
+
+
+def install_tree(root, tree):
+    n = 0
+    for d in tree_dirs(root):
+        dst = tree / d
+        if dst.is_symlink() or dst.is_file():
+            dst.unlink()
+        elif dst.is_dir():
+            shutil.rmtree(dst)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(root / d, dst, symlinks=False)
+        n += sum(1 for f in dst.rglob("*") if f.is_file())
+    return n
+
+
+def overlay_files(root):
+    """The overlay series files in apply order: series, then series.d/*.series by name."""
+    base = root / "atlas/patches"
+    files = [base / "series"]
+    frag = base / "series.d"
+    if frag.is_dir():
+        files += sorted(p for p in frag.iterdir() if p.is_file() and p.name.endswith(".series"))
+    return files
+
+
+def overlay(root, warn=True):
+    """Overlay entries [(name, series file)], validated (see the module doc)."""
+    base = root / "atlas/patches"
+    entries, where, numbers, warnings = [], {}, {}, []
+    for sf in overlay_files(root):
+        label = sf.relative_to(base).as_posix()
+        rng = read_range(sf) if sf.is_file() else None
+        for name in read_series(sf):
+            if name in where:
+                sys.exit(f"atlas-series: {name} is listed twice ({where[name]} and {label})")
+            where[name] = label
+            if not (base / name).is_file():
+                sys.exit(f"atlas-series: {label} names a missing file: atlas/patches/{name}")
+            m = NUM_RE.search(name)
+            if m:
+                num = int(m.group(1))
+                if num in numbers:
+                    sys.exit(f"atlas-series: patch number {m.group(1)} is used twice: "
+                             f"{numbers[num]} and {name}")
+                numbers[num] = name
+                if rng and not rng[0] <= num <= rng[1]:
+                    warnings.append(f"atlas-series: warning: {name} in {label}: number {m.group(1)} "
+                                    f"is outside the range {rng[0]:04d}-{rng[1]:04d} of that fragment")
+            entries.append((name, sf))
+    if warn:
+        for w in warnings:
+            print(w, file=sys.stderr)
+    return entries
+
+
 def combined(root):
     items = []  # (kind, name, path)
     for kind, base in (("inherited", root / "patches"),
-                       ("platform", root / "atlas/platform/patches"),
-                       ("overlay", root / "atlas/patches")):
+                       ("platform", root / "atlas/platform/patches")):
         for name in read_series(base / "series"):
             items.append((kind, name, base / name))
+    dirs = tree_dirs(root)
+    for name, _ in overlay(root):
+        path = root / "atlas/patches" / name
+        for f in targets(path.read_text(encoding="utf-8", errors="replace")):
+            if in_tree(f, dirs):
+                sys.exit(f"atlas-series: {name} touches {f}, a file of the overlay tree "
+                         "(atlas/tree.list): edit the file itself, patch only engine files")
+        items.append(("overlay", name, path))
     drop = set(read_series(root / "atlas/drop.list"))
     unknown = drop - {n for k, n, _ in items if k == "inherited"}
     if unknown:
         sys.exit("atlas-series: drop.list names patches that are not in the inherited series: "
                  + ", ".join(sorted(unknown)))
-    texts = {n: p.read_text(encoding="utf-8", errors="replace") for _, n, p in items}
-    names = [n for _, n, _ in items]
+    keys = [(k, n) for k, n, _ in items]
+    texts = {(k, n): p.read_text(encoding="utf-8", errors="replace") for k, n, p in items}
     for d in sorted(drop):
-        mine = set(targets(texts[d]))
-        for n in names[names.index(d) + 1:]:
-            if n in drop:
+        mine = set(targets(texts[("inherited", d)]))
+        for key in keys[keys.index(("inherited", d)) + 1:]:
+            if key[0] == "inherited" and key[1] in drop:
                 continue
-            clash = mine & set(targets(texts[n]))
+            clash = mine & set(targets(texts[key]))
             if clash:
-                sys.exit(f"atlas-series: {d} is not a leaf: {n} touches {sorted(clash)[0]}")
-    return [(k, n, p) for k, n, p in items if n not in drop]
+                sys.exit(f"atlas-series: {d} is not a leaf: {key[1]} touches {sorted(clash)[0]}")
+    return [(k, n, p) for k, n, p in items if not (k == "inherited" and n in drop)]
+
+
+def write_series(root, out):
+    items = combined(root)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "series").write_text("".join(f"{p.resolve()}\n" for _, _, p in items), encoding="utf-8")
+    print(f"{len(items)} patches -> {out / 'series'}")
+    return 0
 
 
 def dry_run(root, tree):
@@ -80,6 +195,7 @@ def dry_run(root, tree):
     with tempfile.TemporaryDirectory(prefix="atlas-series.") as tmp:
         work = Path(tmp)
         seen = set()
+        installed = install_tree(root, work)
         for kind, name, path in items:
             text = path.read_text(encoding="utf-8", errors="replace")
             for f in targets(text):
@@ -99,14 +215,17 @@ def dry_run(root, tree):
                     if re.search(r"FAILED|can't find file|Hunk|malformed|Reversed|rej", line):
                         print("  " + line)
                 return 1
+    tree_note = f" (+ {installed} new files of the overlay tree)" if installed else ""
     print(f"{counts['inherited']} inherited + {counts['platform']} platform + "
-          f"{counts['overlay']} overlay, applies clean")
+          f"{counts['overlay']} overlay, applies clean{tree_note}")
     return 0
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    ap.add_argument("cmd", nargs="?", choices=["list"], help="print the combined series")
+    ap.add_argument("cmd", nargs="?", choices=["list", "overlay", "check", "write-series", "install-tree"],
+                    help="what to do (see above)")
+    ap.add_argument("dir", nargs="?", help="output directory of write-series, TREE of install-tree")
     ap.add_argument("--dry-run", metavar="TREE", help="check that the series applies to TREE")
     ap.add_argument("--root", default=None, help="fork root (default: two levels above this file)")
     a = ap.parse_args()
@@ -117,6 +236,25 @@ def main():
         for kind, name, _ in combined(root):
             print(f"{kind}\t{name}")
         return 0
+    if a.cmd == "overlay":
+        for name, _ in overlay(root):
+            print(name)
+        return 0
+    if a.cmd == "check":
+        items = combined(root)
+        print(f"series ok: {sum(1 for i in items if i[0] == 'overlay')} overlay patches in "
+              f"{len(overlay_files(root))} series files")
+        return 0
+    if a.cmd == "install-tree":
+        if not a.dir or not Path(a.dir).is_dir():
+            ap.error("install-tree needs an existing engine tree")
+        n = install_tree(root, Path(a.dir))
+        print(f"overlay tree: {len(tree_dirs(root))} directories, {n} files -> {a.dir}")
+        return 0
+    if a.cmd == "write-series":
+        if not a.dir:
+            ap.error("write-series needs an output directory")
+        return write_series(root, Path(a.dir))
     ap.print_help()
     return 2
 

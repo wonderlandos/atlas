@@ -14,8 +14,9 @@ bad() { echo "FAIL $1"; rc=1; }
 G=(git -c user.name=test -c user.email=test@localhost -c init.defaultBranch=main -c advice.detachedHead=false)
 
 # --- apply-overlay.sh ------------------------------------------------------------------------
-mkdir -p "$t/fork/tools" "$t/fork/atlas/patches/privacy" "$t/tree/src"
+mkdir -p "$t/fork/tools" "$t/fork/atlas/tools" "$t/fork/atlas/patches/privacy" "$t/tree/src"
 cp "$tools/apply-overlay.sh" "$t/fork/tools/"
+cp "$here/../tools/atlas-series" "$t/fork/atlas/tools/"
 printf 'one\ntwo\nthree\nfour\n' > "$t/tree/src/f.txt"
 cat > "$t/fork/atlas/patches/privacy/0001-a.patch" <<'P'
 Atlas overlay patch 0001: privacy/a
@@ -59,6 +60,73 @@ echo 'privacy/0003-missing.patch' >> "$t/fork/atlas/patches/series"
 out="$(ao --dry-run "$t/tree" 2>&1)"; r=$?
 case "$out" in *"missing file: atlas/patches/privacy/0003-missing.patch"*) [ $r -eq 2 ] && ok "missing series entry refused" || bad "exit $r";; *) bad "missing entry: $out";; esac
 
+sed -i '$d' "$t/fork/atlas/patches/series"
+
+# fragments: atlas/patches/series.d/*.series come after the series, in file-name order
+mkdir -p "$t/fork/atlas/patches/series.d" "$t/fork/atlas/patches/ui" "$t/fork/atlas/patches/host"
+cat > "$t/fork/atlas/patches/ui/0020-c.patch" <<'P'
+--- a/src/f.txt
++++ b/src/f.txt
+@@ -1,4 +1,4 @@
+ one
+ TWO
+ THREE
+-four
++FOUR
+P
+printf 'x\n' > "$t/tree/src/g.txt"
+cat > "$t/fork/atlas/patches/host/0040-d.patch" <<'P'
+--- a/src/g.txt
++++ b/src/g.txt
+@@ -1 +1 @@
+-x
++X
+P
+printf '# range: 0020-0023\nui/0020-c.patch\n' > "$t/fork/atlas/patches/series.d/20-sidebar.series"
+printf '# range: 0040-0049\nhost/0040-d.patch\n' > "$t/fork/atlas/patches/series.d/40-host.series"
+out="$(ao --dry-run "$t/tree" 2>&1)"; r=$?
+case "$out" in *"ok   privacy/0002-b.patch"*"ok   ui/0020-c.patch"*"ok   host/0040-d.patch"*"4 ok, 0 failed of 4"*)
+    [ $r -eq 0 ] && ok "fragments applied after the series, stacked on it" || bad "fragments exit $r";; *) bad "fragments: $out";; esac
+mv "$t/fork/atlas/patches/series.d/40-host.series" "$t/fork/atlas/patches/series.d/15-host.series"
+out="$(ao --dry-run "$t/tree" 2>&1)"; r=$?
+case "$out" in *"ok   host/0040-d.patch"*"ok   ui/0020-c.patch"*"4 ok, 0 failed of 4"*) [ $r -eq 0 ] && ok "two areas apply in either order" || bad "swap exit $r";; *) bad "swap: $out";; esac
+mv "$t/fork/atlas/patches/series.d/15-host.series" "$t/fork/atlas/patches/series.d/40-host.series"
+echo 'ui/0020-c.patch' >> "$t/fork/atlas/patches/series.d/40-host.series"
+out="$(ao --dry-run "$t/tree" 2>&1)"; r=$?
+case "$out" in *"listed twice"*) [ $r -eq 2 ] && ok "patch listed in two fragments refused" || bad "twice exit $r";; *) bad "twice: $out";; esac
+sed -i '$d' "$t/fork/atlas/patches/series.d/40-host.series"
+
+# --full: one combined series (inherited minus drop.list, platform, overlay with fragments) through
+# the build's own utils/patches.py
+mkdir -p "$t/fork/utils" "$t/fork/patches/up" "$t/fork/atlas/platform/patches"
+cp "$here/../../utils/patches.py" "$here/../../utils/_common.py" "$t/fork/utils/"
+cp -r "$t/tree" "$t/pristine"
+printf 'z\n' > "$t/pristine/src/h.txt"
+cat > "$t/fork/patches/up/keep.patch" <<'P'
+--- a/src/h.txt
++++ b/src/h.txt
+@@ -1 +1 @@
+-z
++Z
+P
+cat > "$t/fork/patches/up/dropme.patch" <<'P'
+--- a/src/k.txt
++++ b/src/k.txt
+@@ -0,0 +1 @@
++dropped
+P
+printf 'up/keep.patch\nup/dropme.patch\n' > "$t/fork/patches/series"
+: > "$t/fork/atlas/platform/patches/series"
+echo up/dropme.patch > "$t/fork/atlas/drop.list"
+out="$(ao --full "$t/pristine" 2>&1)"; r=$?
+if [ $r -eq 0 ] && [ "$(tr '\n' ' ' < "$t/pristine/src/f.txt")" = "one TWO THREE FOUR " ] && [ "$(cat "$t/pristine/src/g.txt")" = X ] \
+    && [ "$(cat "$t/pristine/src/h.txt")" = Z ] && [ ! -e "$t/pristine/src/k.txt" ]; then
+    ok "full apply: inherited minus drop.list, then series and fragments"
+else
+    bad "full apply: exit $r: $out"
+fi
+rm -rf "$t/fork/utils" "$t/fork/patches" "$t/fork/atlas/platform" "$t/fork/atlas/drop.list"
+
 # --- sync-upstream.sh ------------------------------------------------------------------------
 up="$t/up"; mkdir -p "$up/.github/workflows"
 (cd "$up" && "${G[@]}" init -q && echo base > README.md && echo ci > .github/workflows/ci.yml && echo p > lib.txt \
@@ -66,7 +134,8 @@ up="$t/up"; mkdir -p "$up/.github/workflows"
 "${G[@]}" clone -q "$up" "$t/fork2" 2>/dev/null
 f2="$t/fork2"
 (cd "$f2" && "${G[@]}" remote rename origin upstream && "${G[@]}" branch -q upstream 1.0 \
-    && mkdir -p tools atlas/patches && cp "$tools/sync-upstream.sh" "$tools/apply-overlay.sh" tools/ && : > atlas/patches/series \
+    && mkdir -p tools atlas/patches atlas/tools && cp "$tools/sync-upstream.sh" "$tools/apply-overlay.sh" tools/ \
+    && cp "$here/../tools/atlas-series" atlas/tools/ && : > atlas/patches/series \
     && "${G[@]}" add -A && "${G[@]}" commit -qm "tools" \
     && "${G[@]}" rm -q .github/workflows/ci.yml && "${G[@]}" commit -qm "ci: remove" \
     && echo ours > README.md && "${G[@]}" commit -qam "README: ours")
