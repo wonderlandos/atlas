@@ -99,7 +99,15 @@ fetch_sources() {
 apply_patches() {
     if [ ! -f "${_src_dir}/.patched.stamp" ]; then
         "${_main_repo}/utils/prune_binaries.py" --keep-build-dependencies "${_src_dir}" "${_main_repo}/pruning.list"
-        "${_main_repo}/utils/patches.py" apply "${_src_dir}" "${_main_repo}/patches" "${_root_dir}/patches" "${_main_repo}/atlas/patches"
+        # One combined series (inherited minus atlas/drop.list, platform, overlay series and the
+        # area fragments atlas/patches/series.d/*.series), written by atlas-series; the overlay's
+        # new-file directories (atlas/tree.list) are copied in first so patches may hook them.
+        local combined
+        combined="$(mktemp -d "${TMPDIR:-/tmp}/atlas-series.XXXXXX")"
+        python3 -I "${_main_repo}/atlas/tools/atlas-series" --root "${_main_repo}" write-series "${combined}" >/dev/null
+        python3 -I "${_main_repo}/atlas/tools/atlas-series" --root "${_main_repo}" install-tree "${_src_dir}"
+        "${_main_repo}/utils/patches.py" apply "${_src_dir}" "${combined}"
+        rm -rf "${combined}"
         touch "${_src_dir}/.patched.stamp"
     fi
 }
